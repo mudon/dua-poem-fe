@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>Nur Mobile · Home | Duas | Poems | Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F4F0E8;
+      color: #2D2A24;
+      padding-bottom: 75px;
+    }
+    :root {
+      --sage: #7C9A6E;
+      --sage-light: #A8C39B;
+      --sage-mist: #E2ECD9;
+      --earth-brown: #B48C6C;
+      --shadow-md: 0 12px 24px rgba(0, 0, 0, 0.06);
+      --border-soft: 1px solid #EBE3D5;
+    }
+    .mobile-container { max-width: 600px; margin: 0 auto; padding: 0 1rem 1rem; }
+    
+    /* Header */
+    .header-bar {
+      background: var(--sage-mist);
+      border-radius: 0 0 32px 32px;
+      margin: 0 -1rem 1rem -1rem;
+      padding: 1rem 1rem 1rem 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .logo-area { display: flex; align-items: center; gap: 8px; }
+    .logo-icon { background: var(--sage); width: 38px; height: 38px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; }
+    .logo-text { font-weight: 700; font-size: 1.3rem; color: #3C4F34; }
+    .logo-text span { font-weight: 400; color: var(--earth-brown); }
+    .greeting h2 { font-size: 0.9rem; font-weight: 500; color: #5C5346; }
+    .search-box {
+      background: white;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0.6rem 1rem;
+      border-radius: 44px;
+      border: var(--border-soft);
+      margin-top: 0.8rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .search-box input { border: none; background: transparent; width: 100%; outline: none; font-size: 0.85rem; }
+    .search-box i { color: #B9AA97; }
+
+    /* Home tabs */
+    .home-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid #E2D9CF;
+      padding-bottom: 0.5rem;
+    }
+    .home-tab {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #9A8C79;
+      cursor: pointer;
+      padding: 0.2rem 0.5rem;
+      transition: 0.1s;
+    }
+    .home-tab.active {
+      color: var(--sage);
+      border-bottom: 2px solid var(--sage);
+    }
+    .section { display: none; animation: fade 0.2s; }
+    .section.active-section { display: block; }
+    @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* Cards */
+    .dua-card, .poem-card {
+      background: white; border-radius: 28px; padding: 1rem; margin-bottom: 1rem;
+      border: var(--border-soft); box-shadow: var(--shadow-md); cursor: pointer;
+      transition: 0.1s;
+    }
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .title-badge { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .title-badge h3 { font-size: 1rem; font-weight: 600; }
+    .verified { background: #E2F0DA; color: #3F7849; font-size: 0.6rem; padding: 0.2rem 0.7rem; border-radius: 30px; }
+    .pending { background: #FFF1E0; color: #C47D2E; }
+    .arabic { font-size: 1.1rem; font-family: 'Amiri', serif; direction: rtl; margin: 10px 0 5px; color: #2F3E2C; }
+    .transliteration { font-style: italic; font-size: 0.75rem; color: #7A6B5A; margin: 4px 0; }
+    .translation { font-size: 0.8rem; border-left: 3px solid var(--sage-light); padding-left: 10px; margin: 8px 0; color: #4C473F; }
+    .meta-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0; font-size: 0.65rem; color: #8F8575; }
+    .meta-chip { background: #F8F5EF; padding: 0.2rem 0.7rem; border-radius: 30px; display: inline-flex; align-items: center; gap: 5px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; }
+    .tag { background: #F1EEE7; padding: 0.2rem 0.7rem; border-radius: 30px; font-size: 0.6rem; font-weight: 500; color: #5D6F4A; }
+    
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid #F0EAE0;
+    }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .avatar { width: 32px; height: 32px; background: #DCE8D3; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.75rem; color: #4A5B3E; }
+    .user-details { display: flex; flex-direction: column; }
+    .user-name { font-size: 0.7rem; font-weight: 600; color: #5C5346; }
+    .views-count { font-size: 0.6rem; color: #9A8C79; display: flex; align-items: center; gap: 4px; }
+    .action-buttons { display: flex; gap: 20px; }
+    
+    .bookmark-btn { background: none; border: none; color: #AB9F8E; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+    .bookmark-count { font-size: 0.7rem; font-weight: 500; }
+    .report-indicator { display: flex; align-items: center; gap: 4px; background: none; border: none; color: #AB9F8E; font-size: 0.85rem; cursor: pointer; }
+    .report-badge-red { background-color: #E05A4F; color: white; font-size: 0.6rem; font-weight: bold; padding: 2px 5px; border-radius: 30px; min-width: 18px; text-align: center; display: none; }
+    .report-badge-red.show { display: inline-block; }
+    .like-btn { background: none; border: none; color: #D6B17E; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+    .like-count { font-size: 0.75rem; font-weight: 500; }
+    
+    /* Bottom navigation */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; background: #FEFCF7; border-top: 1px solid #EAE2D6;
+      display: flex; justify-content: space-around; padding: 0.6rem 1rem 0.8rem;
+      backdrop-filter: blur(8px); z-index: 20; max-width: 600px; margin: 0 auto; width: 100%;
+    }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 0.65rem; color: #9D9080; cursor: pointer; }
+    .nav-item.active { color: var(--sage); font-weight: 500; }
+    .section-title { display: flex; justify-content: space-between; align-items: baseline; margin: 0.5rem 0 1rem; }
+    .section-title h2 { font-size: 1.2rem; font-weight: 600; color: #4A5B3E; display: flex; align-items: center; gap: 8px; }
+    .count-pill { background: var(--sage-mist); padding: 0.2rem 0.65rem; border-radius: 40px; font-size: 0.7rem; font-weight: 500; color: #4A5B3E; }
+    
+    /* Profile page */
+    .profile-page {
+      display: none;
+      background: white;
+      border-radius: 28px;
+      padding: 1rem;
+      margin-top: 0.5rem;
+    }
+    .profile-page.active { display: block; }
+    .back-button { background: none; border: none; font-size: 1.2rem; color: var(--sage); display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; cursor: pointer; font-weight: 500; }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #F0EAE0;
+    }
+    .profile-avatar { width: 70px; height: 70px; background: #DCE8D3; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.8rem; color: #4A5B3E; }
+    .profile-info h2 { font-size: 1.3rem; font-weight: 600; }
+    .profile-bio { font-size: 0.8rem; color: #6E6558; margin-top: 4px; }
+    .profile-meta { font-size: 0.7rem; color: #9A8C79; margin-top: 4px; }
+    .profile-tabs {
+      display: flex;
+      gap: 16px;
+      border-bottom: 1px solid #E2D9CF;
+      margin-bottom: 1rem;
+    }
+    .profile-tab {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #9A8C79;
+      cursor: pointer;
+      padding: 0.5rem 0;
+      border-bottom: 2px solid transparent;
+    }
+    .profile-tab.active {
+      color: var(--sage);
+      border-bottom-color: var(--sage);
+    }
+    .profile-tab-content { display: none; }
+    .profile-tab-content.active { display: block; }
+    
+    /* Detail page (same as before) */
+    .detail-page { display: none; background: white; border-radius: 28px; padding: 1rem; margin-top: 0.5rem; }
+    .detail-page.active { display: block; }
+    .detail-arabic { font-size: 1.3rem; background: #F9F5EE; padding: 12px; border-radius: 20px; margin: 12px 0; text-align: right; }
+    .detail-field { margin-bottom: 1rem; }
+    .detail-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; color: #9A8C79; margin-bottom: 4px; }
+    .detail-text { font-size: 0.9rem; color: #3C3730; line-height: 1.4; }
+    .detail-report-btn { background: #FEF1EC; border: none; padding: 0.5rem 1rem; border-radius: 40px; color: #C25A3F; font-weight: 500; margin-top: 1rem; width: 100%; cursor: pointer; }
+    
+    /* Popout */
+    .popout-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(3px); z-index: 1000; visibility: hidden; opacity: 0; transition: 0.2s; }
+    .popout-overlay.active { visibility: visible; opacity: 1; }
+    .report-popout { position: fixed; bottom: 0; left: 0; right: 0; background: #FEFCF5; border-top-left-radius: 28px; border-top-right-radius: 28px; box-shadow: 0 -6px 20px rgba(0,0,0,0.12); z-index: 1001; transform: translateY(100%); transition: transform 0.25s ease-out; max-width: 600px; margin: 0 auto; width: 100%; max-height: 70vh; display: flex; flex-direction: column; }
+    .report-popout.open { transform: translateY(0); }
+    .popout-header { padding: 1rem; border-bottom: 1px solid #EFE8DE; display: flex; justify-content: space-between; align-items: center; background: #FEFAF2; border-radius: 28px 28px 0 0; }
+    .close-popout { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #A18E76; }
+    .report-list { overflow-y: auto; padding: 0.5rem 0 1rem; flex: 1; }
+    .report-item { padding: 0.9rem 1rem; border-bottom: 1px solid #F3EDE4; }
+    .report-reason { background: #FFEFE7; color: #B85C3A; padding: 0.2rem 0.6rem; border-radius: 30px; font-size: 0.65rem; font-weight: 500; display: inline-block; }
+    .report-desc { font-size: 0.75rem; color: #6E6558; margin-top: 6px; }
+    .report-meta { font-size: 0.6rem; color: #B1A187; margin-top: 5px; }
+  </style>
+</head>
+<body>
+<div class="mobile-container">
+  <div class="header-bar">
+    <div class="top-bar">
+      <div class="logo-area"><div class="logo-icon"><i class="fas fa-leaf"></i></div><div class="logo-text">nur<span>·deen</span></div></div>
+      <div class="greeting"><h2><i class="fas fa-user-circle"></i> As-salamu alaikum</h2></div>
+    </div>
+    <div class="search-box"><i class="fas fa-search"></i><input type="text" id="globalSearch" placeholder="Search..."><i class="fas fa-sliders-h"></i></div>
+  </div>
+
+  <!-- HOME SECTION -->
+  <div id="homeSection" class="section active-section">
+    <div class="home-tabs">
+      <div class="home-tab active" data-home-tab="duas">Latest Duas</div>
+      <div class="home-tab" data-home-tab="poems">Latest Poems</div>
+    </div>
+    <div id="homeDuasContainer"></div>
+    <div id="homePoemsContainer" style="display:none;"></div>
+  </div>
+
+  <!-- MY DUAS SECTION -->
+  <div id="myDuasSection" class="section">
+    <div class="section-title"><h2><i class="fas fa-book-quran"></i> My Duas <span id="myDuasCount" class="count-pill">0</span></h2><i class="fas fa-plus-circle" style="color: var(--sage);"></i></div>
+    <div id="myDuasContainer"></div>
+  </div>
+
+  <!-- MY POEMS SECTION -->
+  <div id="myPoemsSection" class="section">
+    <div class="section-title"><h2><i class="fas fa-feather-alt"></i> My Poems <span id="myPoemsCount" class="count-pill">0</span></h2><i class="fas fa-plus-circle" style="color: var(--sage);"></i></div>
+    <div id="myPoemsContainer"></div>
+  </div>
+
+  <!-- PROFILE PAGE -->
+  <div id="profilePage" class="profile-page">
+    <button class="back-button" id="backFromProfile"><i class="fas fa-arrow-left"></i> Back</button>
+    <div id="profileContent"></div>
+  </div>
+
+  <!-- DETAIL PAGE -->
+  <div id="detailPage" class="detail-page">
+    <button class="back-button" id="backFromDetail"><i class="fas fa-arrow-left"></i> Back</button>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <div class="nav-item active" data-section="home"><i class="fas fa-home"></i><span>Home</span></div>
+  <div class="nav-item" data-section="myDuas"><i class="fas fa-book-quran"></i><span>Duas</span></div>
+  <div class="nav-item" data-section="myPoems"><i class="fas fa-feather-alt"></i><span>Poems</span></div>
+  <div class="nav-item" data-section="profile"><i class="fas fa-user"></i><span>Profile</span></div>
+</div>
+
+<!-- Popout -->
+<div id="popoutOverlay" class="popout-overlay"></div>
+<div id="reportPopout" class="report-popout">
+  <div class="popout-header"><h3><i class="fas fa-flag"></i> Reports for <span id="popoutItemTitle"></span></h3><button class="close-popout" id="closePopoutBtn"><i class="fas fa-times"></i></button></div>
+  <div id="popoutReportList" class="report-list"></div>
+</div>
+
+<script>
+  // ---------- Data Models ----------
+  let reportsArray = [];
+  let nextReportId = 1;
+  let savesMap = {};
+
+  // ========== USER PROFILES & POSTS ==========
+  // Define users with their posts
+  const usersDB = {
+    "Aisha Mahmoud": {
+      id: "user_am",
+      name: "Aisha Mahmoud",
+      avatar: "AM",
+      bio: "Seeker of knowledge, lover of duas and poetry. Sharing blessings from the heart.",
+      joined: "Joined March 2024",
+      posts: {
+        duas: [101],
+        poems: []
+      }
+    },
+    "Omar Farooq": {
+      id: "user_of",
+      name: "Omar Farooq",
+      avatar: "OF",
+      bio: "Student of Islamic studies. Spreading authentic duas and reflections.",
+      joined: "Joined January 2024",
+      posts: {
+        duas: [102],
+        poems: []
+      }
+    },
+    "Layla Akhtar": {
+      id: "user_la",
+      name: "Layla Akhtar",
+      avatar: "LA",
+      bio: "Poet and nature lover. Words that heal.",
+      joined: "Joined December 2023",
+      posts: {
+        duas: [],
+        poems: [201]
+      }
+    },
+    "Yusuf Mansur": {
+      id: "user_ym",
+      name: "Yusuf Mansur",
+      avatar: "YM",
+      bio: "Spiritual writer, exploring the depths of the soul.",
+      joined: "Joined February 2024",
+      posts: {
+        duas: [],
+        poems: [202]
+      }
+    },
+    "You": {
+      id: "user_me",
+      name: "You",
+      avatar: "ME",
+      bio: "Your personal account. Share your duas and poems.",
+      joined: "Joined today",
+      posts: {
+        duas: [301, 302],
+        poems: [401]
+      }
+    }
+  };
+
+  // Content database with user reference
+  const allDuas = [
+    { id: 101, title: "Dua for Peace of Heart", verified: true, arabic: "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً", transliteration: "Rabbana atina fid dunya hasanah", translation: "Our Lord, give us good in this world...", category: "Peace", tags: ["Tranquility"], userId: "user_am", userName: "Aisha Mahmoud", userAvatar: "AM", views: "3.2k" },
+    { id: 102, title: "Dua for Parents", verified: true, arabic: "رَبِّ ارْحَمْهُمَا كَمَا رَبَّيَانِي صَغِيرًا", translation: "My Lord, have mercy on them...", category: "Family", tags: ["Mercy"], userId: "user_of", userName: "Omar Farooq", userAvatar: "OF", views: "1.8k" },
+    { id: 301, title: "My Daily Gratitude Dua", verified: false, arabic: "الْحَمْدُ لِلَّهِ عَلَى كُلِّ حَالٍ", translation: "All praise is for Allah in every circumstance.", category: "Gratitude", tags: ["Thankfulness"], userId: "user_me", userName: "You", userAvatar: "ME", views: "234" },
+    { id: 302, title: "Dua for Exams", verified: true, arabic: "رَبِّ اشْرَحْ لِي صَدْرِي", translation: "My Lord, expand my chest for me.", category: "Knowledge", tags: ["Success"], userId: "user_me", userName: "You", userAvatar: "ME", views: "0" }
+  ];
+  const allPoems = [
+    { id: 201, title: "The Walled Garden", verified: true, author: "Layla Akhtar", content: "Behind the wall, roses bloom in silence...", translation: "English", tags: ["Nature"], userId: "user_la", userName: "Layla Akhtar", userAvatar: "LA", views: "987" },
+    { id: 202, title: "Seeker’s Night", verified: false, author: "Yusuf Mansur", content: "In the stillness of the night, I call Your name...", tags: ["Spiritual"], userId: "user_ym", userName: "Yusuf Mansur", userAvatar: "YM", views: "0" },
+    { id: 401, title: "My Sunrise Prayer", verified: true, author: "You", content: "Before the dawn breaks, I raise my hands...", tags: ["Faith"], userId: "user_me", userName: "You", userAvatar: "ME", views: "672" }
+  ];
+
+  // Helper to get user posts
+  function getUserDuas(userId) {
+    return allDuas.filter(d => d.userId === userId);
+  }
+  function getUserPoems(userId) {
+    return allPoems.filter(p => p.userId === userId);
+  }
+
+  // Bookmark helpers
+  function loadSaves() {
+    const stored = localStorage.getItem('bookmarkSaves');
+    if (stored) { try { savesMap = JSON.parse(stored); } catch(e) { savesMap = {}; } }
+  }
+  function saveSaves() { localStorage.setItem('bookmarkSaves', JSON.stringify(savesMap)); }
+  function getSaveCount(type, id) { return savesMap[`${type}_${id}`] || 0; }
+  function incrementSave(type, id) {
+    const key = `${type}_${id}`;
+    savesMap[key] = (savesMap[key] || 0) + 1;
+    saveSaves();
+    updateSaveBadge(type, id);
+    return savesMap[key];
+  }
+  function decrementSave(type, id) {
+    const key = `${type}_${id}`;
+    if (savesMap[key] && savesMap[key] > 0) savesMap[key]--;
+    else savesMap[key] = 0;
+    saveSaves();
+    updateSaveBadge(type, id);
+    return savesMap[key];
+  }
+  function updateSaveBadge(type, id) {
+    const selector = `.bookmark-btn[data-type="${type}"][data-id="${id}"] .bookmark-count`;
+    const badgeSpan = document.querySelector(selector);
+    if (badgeSpan) badgeSpan.innerText = getSaveCount(type, id);
+  }
+  function updateAllSaveBadges() {
+    document.querySelectorAll('.bookmark-btn').forEach(btn => {
+      const type = btn.getAttribute('data-type');
+      const id = parseInt(btn.getAttribute('data-id'));
+      if (type && id) updateSaveBadge(type, id);
+    });
+  }
+
+  // Render card (generic, from data object)
+  function renderCardFromData(item, type, containerId) {
+    const isDua = type === 'dua';
+    const cardClass = isDua ? 'dua-card' : 'poem-card';
+    const title = item.title;
+    const itemId = item.id;
+    const userName = item.userName;
+    const userAvatar = item.userAvatar;
+    let views = item.views;
+    if (!views || views === undefined) views = "0";
+    const saveCount = getSaveCount(type, itemId);
+    const reportCount = reportsArray.filter(r => r.type === type && r.itemId == itemId).length;
+    const likeCount = Math.floor(Math.random() * 150) + 10;
+    
+    let innerHtml = `
+      <div class="${cardClass}" data-type="${type}" data-id="${itemId}" data-title="${title}">
+        <div class="card-header">
+          <div class="title-badge"><h3>${title}</h3><span class="verified ${!item.verified ? 'pending' : ''}">${item.verified ? 'Verified' : 'Pending'}</span></div>
+          <button class="like-btn"><i class="far fa-heart"></i> <span class="like-count">${likeCount}</span></button>
+        </div>
+    `;
+    if (isDua) {
+      innerHtml += `<div class="arabic">${item.arabic || ''}</div>
+        <div class="transliteration">${item.transliteration || ''}</div>
+        <div class="translation">"${item.translation}"</div>
+        <div class="meta-row"><span class="meta-chip"><i class="fas fa-layer-group"></i> ${item.category || 'General'}</span></div>
+        <div class="tags">${(item.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>`;
+    } else {
+      innerHtml += `<div class="meta-row"><span class="meta-chip"><i class="fas fa-user"></i> ${item.author || 'Unknown'}</span></div>
+        <div class="translation">"${item.content.substring(0, 80)}${item.content.length > 80 ? '…' : ''}"</div>
+        <div class="tags">${(item.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>`;
+    }
+    innerHtml += `
+        <div class="card-footer">
+          <div class="user-info" data-user-name="${userName}">
+            <div class="avatar">${userAvatar}</div>
+            <div class="user-details">
+              <div class="user-name">${userName}</div>
+              <div class="views-count"><i class="fas fa-eye"></i> ${views} views</div>
+            </div>
+          </div>
+          <div class="action-buttons">
+            <button class="bookmark-btn" data-type="${type}" data-id="${itemId}" data-title="${title}"><i class="far fa-bookmark"></i> <span class="bookmark-count">${saveCount}</span></button>
+            <button class="report-indicator" data-type="${type}" data-id="${itemId}" data-title="${title}"><i class="fas fa-flag"></i> <span class="report-badge-red">${reportCount > 0 ? reportCount : ''}</span></button>
+          </div>
+        </div>
+      </div>
+    `;
+    const container = document.getElementById(containerId);
+    if (container) container.insertAdjacentHTML('beforeend', innerHtml);
+    const reportSpan = container.querySelector(`.report-indicator[data-type="${type}"][data-id="${itemId}"] .report-badge-red`);
+    if (reportSpan && reportCount > 0) reportSpan.classList.add('show');
+    return { type, id: itemId, title };
+  }
+
+  // Load sections
+  function loadHome() {
+    document.getElementById('homeDuasContainer').innerHTML = '';
+    document.getElementById('homePoemsContainer').innerHTML = '';
+    allDuas.slice(0, 2).forEach(d => renderCardFromData(d, 'dua', 'homeDuasContainer'));
+    allPoems.slice(0, 2).forEach(p => renderCardFromData(p, 'poem', 'homePoemsContainer'));
+    attachAllListeners();
+    updateAllBadges();
+    updateAllSaveBadges();
+  }
+
+  function loadMyDuas() {
+    document.getElementById('myDuasContainer').innerHTML = '';
+    const myDuasList = allDuas.filter(d => d.userId === 'user_me');
+    myDuasList.forEach(d => renderCardFromData(d, 'dua', 'myDuasContainer'));
+    document.getElementById('myDuasCount').innerText = myDuasList.length;
+    attachAllListeners();
+    updateAllBadges();
+    updateAllSaveBadges();
+  }
+
+  function loadMyPoems() {
+    document.getElementById('myPoemsContainer').innerHTML = '';
+    const myPoemsList = allPoems.filter(p => p.userId === 'user_me');
+    myPoemsList.forEach(p => renderCardFromData(p, 'poem', 'myPoemsContainer'));
+    document.getElementById('myPoemsCount').innerText = myPoemsList.length;
+    attachAllListeners();
+    updateAllBadges();
+    updateAllSaveBadges();
+  }
+
+  // Profile page
+  function showProfile(userName) {
+    const user = usersDB[userName];
+    if (!user) return;
+    const userDuas = getUserDuas(user.id);
+    const userPoems = getUserPoems(user.id);
+    let profileHtml = `
+      <div class="profile-header">
+        <div class="profile-avatar">${user.avatar}</div>
+        <div class="profile-info">
+          <h2>${user.name}</h2>
+          <div class="profile-bio">${user.bio}</div>
+          <div class="profile-meta"><i class="far fa-calendar-alt"></i> ${user.joined}</div>
+        </div>
+      </div>
+      <div class="profile-tabs">
+        <div class="profile-tab active" data-profile-tab="details">Details</div>
+        <div class="profile-tab" data-profile-tab="duas">Duas (${userDuas.length})</div>
+        <div class="profile-tab" data-profile-tab="poems">Poems (${userPoems.length})</div>
+      </div>
+      <div id="profileTabDetails" class="profile-tab-content active">
+        <div style="padding: 0.5rem 0;">
+          <p><strong>About</strong><br>${user.bio}</p>
+          <p style="margin-top: 12px;"><strong>Member since</strong><br>${user.joined}</p>
+          <p style="margin-top: 12px;"><strong>Total contributions</strong><br>${userDuas.length + userPoems.length} posts</p>
+        </div>
+      </div>
+      <div id="profileTabDuas" class="profile-tab-content"></div>
+      <div id="profileTabPoems" class="profile-tab-content"></div>
+    `;
+    document.getElementById('profileContent').innerHTML = profileHtml;
+    // Render user's duas and poems
+    const duasContainer = document.getElementById('profileTabDuas');
+    const poemsContainer = document.getElementById('profileTabPoems');
+    duasContainer.innerHTML = '';
+    poemsContainer.innerHTML = '';
+    userDuas.forEach(d => renderCardFromData(d, 'dua', 'profileTabDuas'));
+    userPoems.forEach(p => renderCardFromData(p, 'poem', 'profileTabPoems'));
+    // Tab switching
+    document.querySelectorAll('.profile-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelectorAll('.profile-tab-content').forEach(c => c.classList.remove('active'));
+        const which = tab.getAttribute('data-profile-tab');
+        if (which === 'details') document.getElementById('profileTabDetails').classList.add('active');
+        else if (which === 'duas') document.getElementById('profileTabDuas').classList.add('active');
+        else if (which === 'poems') document.getElementById('profileTabPoems').classList.add('active');
+      });
+    });
+    // Hide other sections, show profile
+    document.getElementById('homeSection').classList.remove('active-section');
+    document.getElementById('myDuasSection').classList.remove('active-section');
+    document.getElementById('myPoemsSection').classList.remove('active-section');
+    document.getElementById('detailPage').classList.remove('active');
+    document.getElementById('profilePage').classList.add('active');
+    attachAllListeners();
+    updateAllBadges();
+    updateAllSaveBadges();
+  }
+
+  function hideProfile() {
+    document.getElementById('profilePage').classList.remove('active');
+    const activeNav = document.querySelector('.bottom-nav .nav-item.active');
+    const section = activeNav ? activeNav.getAttribute('data-section') : 'home';
+    if (section === 'home') document.getElementById('homeSection').classList.add('active-section');
+    else if (section === 'myDuas') document.getElementById('myDuasSection').classList.add('active-section');
+    else if (section === 'myPoems') document.getElementById('myPoemsSection').classList.add('active-section');
+  }
+
+  // --- Report logic ---
+  function updateBadgeForItem(type, itemId) {
+    const selector = `.report-indicator[data-type="${type}"][data-id="${itemId}"] .report-badge-red`;
+    const badgeSpan = document.querySelector(selector);
+    if (!badgeSpan) return;
+    const count = reportsArray.filter(r => r.type === type && r.itemId == itemId).length;
+    badgeSpan.innerText = count;
+    if (count > 0) badgeSpan.classList.add('show');
+    else badgeSpan.classList.remove('show');
+  }
+  function updateAllBadges() {
+    document.querySelectorAll('.report-indicator').forEach(ind => {
+      const type = ind.getAttribute('data-type');
+      const id = parseInt(ind.getAttribute('data-id'));
+      if (type && id) updateBadgeForItem(type, id);
+    });
+  }
+  function saveReports() { localStorage.setItem('reportsArray', JSON.stringify(reportsArray)); }
+  function addReport(type, itemId, title, reason, description) {
+    reportsArray.unshift({ id: nextReportId++, type, itemId, title, reason, description: description || 'No description', timestamp: new Date().toISOString() });
+    saveReports();
+    updateAllBadges();
+  }
+  function showReportPopout(type, itemId, title) {
+    const itemReports = reportsArray.filter(r => r.type === type && r.itemId == itemId);
+    document.getElementById('popoutItemTitle').innerText = title;
+    const container = document.getElementById('popoutReportList');
+    if (itemReports.length === 0) container.innerHTML = '<div style="padding:2rem; text-align:center; color:#B7AB98;">📭 No reports for this content.</div>';
+    else {
+      let html = '';
+      itemReports.forEach(r => {
+        const reasonText = r.reason.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        html += `<div class="report-item"><div><span class="report-reason">${reasonText}</span></div><div class="report-desc">📝 ${escapeHtml(r.description)}</div><div class="report-meta"><i class="far fa-clock"></i> ${new Date(r.timestamp).toLocaleString()}</div></div>`;
+      });
+      container.innerHTML = html;
+    }
+    document.getElementById('reportPopout').classList.add('open');
+    document.getElementById('popoutOverlay').classList.add('active');
+  }
+  function closeReportPopout() {
+    document.getElementById('reportPopout').classList.remove('open');
+    document.getElementById('popoutOverlay').classList.remove('active');
+  }
+
+  // Detail page
+  function findItem(type, id) {
+    const collection = type === 'dua' ? allDuas : allPoems;
+    return collection.find(i => i.id == id);
+  }
+  function showDetailPage(type, id) {
+    const data = findItem(type, id);
+    if (!data) return;
+    let html = `<h2 style="margin-bottom:0.5rem;">${data.title}</h2><div><span class="verified ${!data.verified ? 'pending' : ''}">${data.verified ? '✓ Verified' : '⏳ Pending Review'}</span></div>`;
+    if (type === 'dua') {
+      if (data.arabic) html += `<div class="detail-arabic">${data.arabic}</div>`;
+      if (data.transliteration) html += `<div class="detail-field"><div class="detail-label">Transliteration</div><div class="detail-text">${data.transliteration}</div></div>`;
+      if (data.translation) html += `<div class="detail-field"><div class="detail-label">Translation</div><div class="detail-text">${data.translation}</div></div>`;
+      if (data.category) html += `<div class="detail-field"><div class="detail-label">Category</div><div class="detail-text">${data.category}</div></div>`;
+    } else {
+      if (data.author) html += `<div class="detail-field"><div class="detail-label">Author</div><div class="detail-text">${data.author}</div></div>`;
+      if (data.content) html += `<div class="detail-field"><div class="detail-label">Poem text</div><div class="detail-text">${data.content}</div></div>`;
+      if (data.translation) html += `<div class="detail-field"><div class="detail-label">Translation</div><div class="detail-text">${data.translation}</div></div>`;
+    }
+    if (data.tags) html += `<div class="detail-field"><div class="detail-label">Tags</div><div>${data.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div></div>`;
+    html += `<button class="detail-report-btn" id="detailReportBtn"><i class="fas fa-flag"></i> Report this content</button>`;
+    document.getElementById('detailContent').innerHTML = html;
+    document.getElementById('homeSection').classList.remove('active-section');
+    document.getElementById('myDuasSection').classList.remove('active-section');
+    document.getElementById('myPoemsSection').classList.remove('active-section');
+    document.getElementById('profilePage').classList.remove('active');
+    document.getElementById('detailPage').classList.add('active');
+    document.getElementById('detailReportBtn').addEventListener('click', () => {
+      let reason = prompt('Report reason (wrong_translation, inappropriate, duplicate, other):', 'wrong_translation');
+      if (!reason) return;
+      let desc = prompt('Description (optional):', '');
+      addReport(type, id, data.title, reason.trim().toLowerCase(), desc || 'No description');
+      alert('Report submitted.');
+    });
+  }
+  function hideDetailPage() {
+    document.getElementById('detailPage').classList.remove('active');
+    const activeNav = document.querySelector('.bottom-nav .nav-item.active');
+    const section = activeNav ? activeNav.getAttribute('data-section') : 'home';
+    if (section === 'home') document.getElementById('homeSection').classList.add('active-section');
+    else if (section === 'myDuas') document.getElementById('myDuasSection').classList.add('active-section');
+    else if (section === 'myPoems') document.getElementById('myPoemsSection').classList.add('active-section');
+  }
+
+  function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
+
+  // Event handlers
+  function attachAllListeners() {
+    // User info click -> profile
+    document.querySelectorAll('.user-info').forEach(el => {
+      el.removeEventListener('click', userClickHandler);
+      el.addEventListener('click', userClickHandler);
+    });
+    document.querySelectorAll('.report-indicator').forEach(btn => {
+      btn.removeEventListener('click', reportHandler);
+      btn.addEventListener('click', reportHandler);
+    });
+    document.querySelectorAll('.bookmark-btn').forEach(btn => {
+      btn.removeEventListener('click', bookmarkHandler);
+      btn.addEventListener('click', bookmarkHandler);
+    });
+    document.querySelectorAll('.dua-card, .poem-card').forEach(card => {
+      card.removeEventListener('click', cardClickHandler);
+      card.addEventListener('click', cardClickHandler);
+    });
+    document.querySelectorAll('.like-btn').forEach(btn => {
+      btn.removeEventListener('click', likeHandler);
+      btn.addEventListener('click', likeHandler);
+    });
+  }
+  function userClickHandler(e) {
+    e.stopPropagation();
+    const userName = this.getAttribute('data-user-name');
+    if (userName) showProfile(userName);
+  }
+  function reportHandler(e) {
+    e.stopPropagation();
+    const btn = e.currentTarget;
+    const type = btn.getAttribute('data-type');
+    const id = parseInt(btn.getAttribute('data-id'));
+    const title = btn.getAttribute('data-title');
+    showReportPopout(type, id, title);
+  }
+  function bookmarkHandler(e) {
+    e.stopPropagation();
+    const btn = e.currentTarget;
+    const type = btn.getAttribute('data-type');
+    const id = parseInt(btn.getAttribute('data-id'));
+    const icon = btn.querySelector('i');
+    if (icon.classList.contains('far')) {
+      incrementSave(type, id);
+      icon.classList.replace('far', 'fas');
+      btn.querySelector('.bookmark-count').innerText = getSaveCount(type, id);
+      alert('Bookmarked');
+    } else {
+      decrementSave(type, id);
+      icon.classList.replace('fas', 'far');
+      btn.querySelector('.bookmark-count').innerText = getSaveCount(type, id);
+      alert('Removed');
+    }
+  }
+  function cardClickHandler(e) {
+    if (e.target.closest('.report-indicator') || e.target.closest('.bookmark-btn') || e.target.closest('.like-btn') || e.target.closest('.user-info')) return;
+    const card = e.currentTarget;
+    const type = card.getAttribute('data-type');
+    const id = parseInt(card.getAttribute('data-id'));
+    if (type && id) showDetailPage(type, id);
+  }
+  function likeHandler(e) {
+    e.stopPropagation();
+    const btn = e.currentTarget;
+    const icon = btn.querySelector('i');
+    const countSpan = btn.querySelector('.like-count');
+    let count = parseInt(countSpan.innerText);
+    if (icon.classList.contains('far')) {
+      icon.classList.replace('far', 'fas');
+      count++;
+      countSpan.innerText = count;
+      alert('Liked');
+    } else {
+      icon.classList.replace('fas', 'far');
+      count--;
+      countSpan.innerText = count;
+      alert('Unliked');
+    }
+  }
+
+  // Navigation
+  function setActiveSection(sectionId) {
+    document.getElementById('homeSection').classList.remove('active-section');
+    document.getElementById('myDuasSection').classList.remove('active-section');
+    document.getElementById('myPoemsSection').classList.remove('active-section');
+    document.getElementById(sectionId).classList.add('active-section');
+    if (sectionId === 'homeSection') loadHome();
+    else if (sectionId === 'myDuasSection') loadMyDuas();
+    else if (sectionId === 'myPoemsSection') loadMyPoems();
+  }
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const section = item.getAttribute('data-section');
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      item.classList.add('active');
+      if (document.getElementById('detailPage').classList.contains('active')) hideDetailPage();
+      if (document.getElementById('profilePage').classList.contains('active')) hideProfile();
+      if (document.getElementById('reportPopout').classList.contains('open')) closeReportPopout();
+      if (section === 'home') setActiveSection('homeSection');
+      else if (section === 'myDuas') setActiveSection('myDuasSection');
+      else if (section === 'myPoems') setActiveSection('myPoemsSection');
+      else if (section === 'profile') showProfile('You');
+    });
+  });
+
+  // Home tabs
+  const homeDuasContainer = document.getElementById('homeDuasContainer');
+  const homePoemsContainer = document.getElementById('homePoemsContainer');
+  document.querySelectorAll('.home-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.home-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const which = tab.getAttribute('data-home-tab');
+      if (which === 'duas') { homeDuasContainer.style.display = 'block'; homePoemsContainer.style.display = 'none'; }
+      else { homeDuasContainer.style.display = 'none'; homePoemsContainer.style.display = 'block'; }
+    });
+  });
+  homeDuasContainer.style.display = 'block';
+  homePoemsContainer.style.display = 'none';
+
+  // Search
+  document.getElementById('globalSearch').addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase();
+    const activeSection = document.querySelector('.section.active-section, .profile-page.active, .detail-page.active');
+    if (!activeSection) return;
+    const cards = activeSection.querySelectorAll('.dua-card, .poem-card');
+    cards.forEach(c => c.style.display = c.innerText.toLowerCase().includes(q) ? '' : 'none');
+  });
+
+  // Init
+  function initReports() {
+    const stored = localStorage.getItem('reportsArray');
+    if (stored) { try { reportsArray = JSON.parse(stored); if (reportsArray.length) nextReportId = Math.max(...reportsArray.map(r => r.id)) + 1; } catch(e) {} }
+    else { reportsArray = [{ id: 1, type: 'dua', itemId: 101, title: 'Dua for Peace of Heart', reason: 'wrong_translation', description: 'Translation seems off.', timestamp: new Date().toISOString() }]; nextReportId = 2; saveReports(); }
+    loadHome();
+  }
+  loadSaves();
+  initReports();
+  document.getElementById('backFromProfile').addEventListener('click', hideProfile);
+  document.getElementById('backFromDetail').addEventListener('click', hideDetailPage);
+  document.getElementById('closePopoutBtn').addEventListener('click', closeReportPopout);
+  document.getElementById('popoutOverlay').addEventListener('click', closeReportPopout);
+</script>
+</body>
+</html>
