@@ -1,23 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/models/dua_model.dart';
 import '../../../data/models/user_model.dart';
+import '../../../data/services/dua_service.dart';
 import '../../screens/dua_detail_screen.dart';
-import '../../blocs/dua_bloc/dua_bloc.dart';
-import '../../blocs/dua_bloc/dua_event.dart';
-import '../../../../core/themes/app_theme.dart';
+import '../../screens/user_detail_screen.dart';
+import '../../../core/themes/app_theme.dart';
+import '../../../app/dependency_injection.dart';
 
-class DuaCard extends StatelessWidget {
+class DuaCard extends StatefulWidget {
   final DuaModel dua;
   final UserModel currentUser;
 
   const DuaCard({super.key, required this.dua, required this.currentUser});
 
   @override
+  State<DuaCard> createState() => _DuaCardState();
+}
+
+class _DuaCardState extends State<DuaCard> {
+  late bool _isLiked;
+  late int _likeCount;
+  late bool _isBookmarked;
+  late int _bookmarkCount;
+  late int _reportCount;
+
+  @override
+  void initState() {
+    super.initState();
+    _isLiked = false;
+    _likeCount = widget.dua.likeCount;
+    _isBookmarked = false;
+    _bookmarkCount = widget.dua.bookmarkCount;
+    _reportCount = widget.dua.reportCount;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => Navigator.push(context, MaterialPageRoute(
-        builder: (_) => DuaDetailScreen(duaId: dua.id, currentUser: currentUser),
+        builder: (_) => DuaDetailScreen(duaId: widget.dua.id, currentUser: widget.currentUser),
       )),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -44,21 +65,21 @@ class DuaCard extends StatelessWidget {
                   child: Row(
                     children: [
                       Flexible(
-                        child: Text(dua.title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                        child: Text(widget.dua.title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                       ),
                       const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                         decoration: BoxDecoration(
-                          color: dua.verified ? const Color(0xFFE2F0DA) : const Color(0xFFFFF1E0),
+                          color: widget.dua.verified ? const Color(0xFFE2F0DA) : const Color(0xFFFFF1E0),
                           borderRadius: BorderRadius.circular(30),
                         ),
                         child: Text(
-                          dua.verified ? 'Verified' : 'Pending',
+                          widget.dua.verified ? 'Verified' : 'Pending',
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w500,
-                            color: dua.verified ? const Color(0xFF3F7849) : const Color(0xFFC47D2E),
+                            color: widget.dua.verified ? const Color(0xFF3F7849) : const Color(0xFFC47D2E),
                           ),
                         ),
                       ),
@@ -66,18 +87,18 @@ class DuaCard extends StatelessWidget {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () => context.read<DuaBloc>().add(ToggleLike(dua.id)),
+                  onTap: _toggleLike,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        dua.likeCount > 0 ? Icons.favorite : Icons.favorite_border,
+                        _isLiked ? Icons.favorite : Icons.favorite_border,
                         color: const Color(0xFFD6B17E),
                         size: 20,
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        '${dua.likeCount}',
+                        '$_likeCount',
                         style: const TextStyle(color: Color(0xFFD6B17E), fontWeight: FontWeight.w500, fontSize: 12),
                       ),
                     ],
@@ -85,13 +106,13 @@ class DuaCard extends StatelessWidget {
                 ),
               ],
             ),
-            if (dua.arabicText != null) ...[
+            if (widget.dua.arabicText != null) ...[
               const SizedBox(height: 8),
-              Text(dua.arabicText!, textDirection: TextDirection.rtl, style: const TextStyle(fontSize: 18, fontFamily: 'serif', color: Color(0xFF2F3E2C))),
+              Text(widget.dua.arabicText!, textDirection: TextDirection.rtl, style: const TextStyle(fontSize: 18, fontFamily: 'serif', color: Color(0xFF2F3E2C))),
             ],
-            if (dua.transliteration != null) ...[
+            if (widget.dua.transliteration != null) ...[
               const SizedBox(height: 4),
-              Text(dua.transliteration!, style: const TextStyle(fontStyle: FontStyle.italic, fontSize: 12, color: Color(0xFF7A6B5A))),
+              Text(widget.dua.transliteration!, style: const TextStyle(fontStyle: FontStyle.italic, fontSize: 12, color: Color(0xFF7A6B5A))),
             ],
             const SizedBox(height: 6),
             Container(
@@ -99,20 +120,20 @@ class DuaCard extends StatelessWidget {
               decoration: const BoxDecoration(
                 border: Border(left: BorderSide(color: Color(0xFFA8C39B), width: 3)),
               ),
-              child: Text(dua.translation, style: const TextStyle(fontSize: 13, color: Color(0xFF4C473F))),
+              child: Text(widget.dua.translation, style: const TextStyle(fontSize: 13, color: Color(0xFF4C473F))),
             ),
             const SizedBox(height: 8),
             Row(
               children: [
-                _MetaChip(icon: Icons.category_outlined, label: dua.category),
+                _MetaChip(icon: Icons.category_outlined, label: widget.dua.category),
               ],
             ),
-            if (dua.tags.isNotEmpty) ...[
+            if (widget.dua.tags.isNotEmpty) ...[
               const SizedBox(height: 8),
               Wrap(
                 spacing: 6,
                 runSpacing: 4,
-                children: dua.tags.map((t) => _TagPill(label: t)).toList(),
+                children: widget.dua.tags.map((t) => _TagPill(label: t)).toList(),
               ),
             ],
             const SizedBox(height: 12),
@@ -122,27 +143,27 @@ class DuaCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 GestureDetector(
-                  onTap: () {
-                    // navigate to user profile
-                  },
+                  onTap: () => Navigator.push(context, MaterialPageRoute(
+                    builder: (_) => UserDetailScreen(userName: widget.dua.userName, userId: widget.dua.userId),
+                  )),
                   child: Row(
                     children: [
                       CircleAvatar(
                         radius: 16,
                         backgroundColor: const Color(0xFFDCE8D3),
-                        child: Text(dua.userAvatar, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF4A5B3E))),
+                        child: Text(widget.dua.userAvatar, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF4A5B3E))),
                       ),
                       const SizedBox(width: 8),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(dua.userName, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF5C5346))),
+                          Text(widget.dua.userName, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF5C5346))),
                           const SizedBox(height: 2),
                           Row(
                             children: [
                               const Icon(Icons.visibility, size: 12, color: Color(0xFF9A8C79)),
                               const SizedBox(width: 2),
-                              Text(dua.views, style: const TextStyle(fontSize: 10, color: Color(0xFF9A8C79))),
+                              Text(widget.dua.views, style: const TextStyle(fontSize: 10, color: Color(0xFF9A8C79))),
                               const Text(' views', style: TextStyle(fontSize: 10, color: Color(0xFF9A8C79))),
                             ],
                           ),
@@ -154,29 +175,29 @@ class DuaCard extends StatelessWidget {
                 Row(
                   children: [
                     GestureDetector(
-                      onTap: () => context.read<DuaBloc>().add(ToggleBookmark(dua.id)),
+                      onTap: _toggleBookmark,
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            dua.bookmarkCount > 0 ? Icons.bookmark : Icons.bookmark_border,
+                            _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
                             color: const Color(0xFFAB9F8E),
                             size: 20,
                           ),
                           const SizedBox(width: 4),
-                          Text('${dua.bookmarkCount}',
+                          Text('$_bookmarkCount',
                             style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFFAB9F8E))),
                         ],
                       ),
                     ),
                     const SizedBox(width: 16),
                     GestureDetector(
-                      onTap: () => _showReportPopout(context),
+                      onTap: _showReportPopout,
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(Icons.flag_outlined, color: Color(0xFFAB9F8E), size: 18),
-                          if (dua.reportCount > 0)
+                          if (_reportCount > 0)
                             Container(
                               margin: const EdgeInsets.only(left: 4),
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
@@ -185,7 +206,7 @@ class DuaCard extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(30),
                               ),
                               child: Text(
-                                '${dua.reportCount}',
+                                '$_reportCount',
                                 style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
                               ),
                             ),
@@ -202,7 +223,21 @@ class DuaCard extends StatelessWidget {
     );
   }
 
-  void _showReportPopout(BuildContext context) {
+  void _toggleLike() {
+    setState(() {
+      _isLiked = !_isLiked;
+      _likeCount += _isLiked ? 1 : -1;
+    });
+  }
+
+  void _toggleBookmark() {
+    setState(() {
+      _isBookmarked = !_isBookmarked;
+      _bookmarkCount += _isBookmarked ? 1 : -1;
+    });
+  }
+
+  void _showReportPopout() {
     final reasons = ['wrong_translation', 'inappropriate', 'duplicate', 'spam', 'other'];
     showModalBottomSheet(
       context: context,
@@ -211,7 +246,10 @@ class DuaCard extends StatelessWidget {
       builder: (ctx) => _ReportBottomSheet(
         reasons: reasons,
         onSubmit: (reason, description) {
-          context.read<DuaBloc>().add(ReportDua(dua.id, reason, description));
+          getIt<DuaService>().addReport(widget.dua.id, reason, description);
+          setState(() {
+            _reportCount = getIt<DuaService>().getReportCount(widget.dua.id);
+          });
           Navigator.pop(ctx);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Report submitted')),
