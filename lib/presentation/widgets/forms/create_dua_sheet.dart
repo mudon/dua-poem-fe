@@ -9,8 +9,9 @@ import '../../../data/services/tag_service.dart';
 
 class CreateDuaSheet extends StatefulWidget {
   final VoidCallback? onCreated;
+  final VoidCallback? onBack;
 
-  const CreateDuaSheet({super.key, this.onCreated});
+  const CreateDuaSheet({super.key, this.onCreated, this.onBack});
 
   @override
   State<CreateDuaSheet> createState() => _CreateDuaSheetState();
@@ -162,7 +163,10 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
       padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
       child: Row(
         children: [
-          Container(width: 40, height: 4, decoration: BoxDecoration(color: AppTheme.warmGray, borderRadius: BorderRadius.circular(2))),
+          if (widget.onBack != null)
+            IconButton(icon: const Icon(Icons.arrow_back, color: AppTheme.earthBrown), onPressed: widget.onBack)
+          else
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: AppTheme.warmGray, borderRadius: BorderRadius.circular(2))),
           const SizedBox(width: 12),
           const Expanded(child: Text('New Dua', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.earthBrown))),
           IconButton(icon: const Icon(Icons.close, color: AppTheme.earthBrown), onPressed: () => Navigator.of(context).pop()),

@@ -10,9 +10,7 @@ import '../blocs/dua_bloc/dua_bloc.dart';
 import '../widgets/common/dua_card.dart';
 import '../widgets/common/poem_card.dart';
 import '../widgets/common/home_tab_bar.dart';
-import '../widgets/forms/create_dua_sheet.dart';
-import '../widgets/forms/create_poem_sheet.dart';
-import '../widgets/forms/create_picker_sheet.dart';
+import '../widgets/forms/create_flow_sheet.dart';
 import '../../data/repositories/dua_repository.dart';
 import '../../data/repositories/poem_repository.dart';
 import '../../app/dependency_injection.dart';
@@ -76,40 +74,23 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-void _showCreatePicker(BuildContext context) async {
-  final type = await   showModalBottomSheet<String>(
+void _showCreatePicker(BuildContext context) {
+  final homeBloc = context.read<HomeBloc>();
+  showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => const CreatePickerSheet(),
+    builder: (_) => CreateFlowSheet(
+      onDuaCreated: () {
+        homeBloc.add(FetchLatestDuas());
+        homeBloc.add(FetchLatestPoems());
+      },
+      onPoemCreated: () {
+        homeBloc.add(FetchLatestDuas());
+        homeBloc.add(FetchLatestPoems());
+      },
+    ),
   );
-  if (type == null || !context.mounted) return;
-  final homeBloc = context.read<HomeBloc>();
-  if (type == 'dua') {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => CreateDuaSheet(
-        onCreated: () {
-          homeBloc.add(FetchLatestDuas());
-          homeBloc.add(FetchLatestPoems());
-        },
-      ),
-    );
-  } else if (type == 'poem') {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => CreatePoemSheet(
-        onCreated: () {
-          homeBloc.add(FetchLatestDuas());
-          homeBloc.add(FetchLatestPoems());
-        },
-      ),
-    );
-  }
 }
 
 class _HeaderBar extends StatelessWidget {
