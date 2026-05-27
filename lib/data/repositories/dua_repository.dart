@@ -16,7 +16,7 @@ class DuaRepository {
     }
   }
 
-  Future<ApiResult<List<DuaModel>>> getUserDuas(int userId) async {
+  Future<ApiResult<List<DuaModel>>> getUserDuas(String userId) async {
     try {
       final duas = await _duaService.getUserDuas(userId);
       return ApiResult.success(duas);
@@ -25,7 +25,7 @@ class DuaRepository {
     }
   }
 
-  Future<ApiResult<DuaModel>> getDuaDetail(int id) async {
+  Future<ApiResult<DuaModel>> getDuaDetail(String id) async {
     try {
       final dua = await _duaService.getDuaDetail(id);
       return ApiResult.success(dua);
@@ -34,7 +34,7 @@ class DuaRepository {
     }
   }
 
-  Future<ApiResult<void>> toggleBookmark(int duaId) async {
+  Future<ApiResult<void>> toggleBookmark(String duaId) async {
     try {
       await _duaService.toggleBookmark(duaId);
       return ApiResult.success(null);
@@ -43,7 +43,7 @@ class DuaRepository {
     }
   }
 
-  Future<ApiResult<void>> toggleLike(int duaId) async {
+  Future<ApiResult<void>> toggleLike(String duaId) async {
     try {
       await _duaService.toggleLike(duaId);
       return ApiResult.success(null);
@@ -52,7 +52,7 @@ class DuaRepository {
     }
   }
 
-  Future<ApiResult<void>> reportDua(int duaId, String reason, String description) async {
+  Future<ApiResult<void>> reportDua(String duaId, String reason, String description) async {
     try {
       await _duaService.reportDua(duaId, reason, description);
       return ApiResult.success(null);

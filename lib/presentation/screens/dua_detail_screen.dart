@@ -9,7 +9,7 @@ import '../blocs/dua_bloc/dua_event.dart';
 import '../../app/dependency_injection.dart';
 
 class DuaDetailScreen extends StatefulWidget {
-  final int duaId;
+  final String duaId;
   final UserModel currentUser;
 
   const DuaDetailScreen({super.key, required this.duaId, required this.currentUser});

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../data/models/dua_model.dart';
 import '../../../data/models/user_model.dart';
-import '../../../data/services/dua_service.dart';
 import '../../../core/themes/app_theme.dart';
+import '../../../data/services/dua_service.dart';
 import '../../../app/dependency_injection.dart';
 
 class DuaCard extends StatefulWidget {
@@ -234,19 +234,17 @@ class _DuaCardState extends State<DuaCard> {
 
   void _showReportPopout() {
     final reasons = ['wrong_translation', 'inappropriate', 'duplicate', 'spam', 'other'];
+    final scaffoldContext = ScaffoldMessenger.of(context);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => _ReportBottomSheet(
         reasons: reasons,
-        onSubmit: (reason, description) {
-          getIt<DuaService>().addReport(widget.dua.id, reason, description);
-          setState(() {
-            _reportCount = getIt<DuaService>().getReportCount(widget.dua.id);
-          });
-          Navigator.pop(ctx);
-          ScaffoldMessenger.of(context).showSnackBar(
+        onSubmit: (reason, description) async {
+          await getIt<DuaService>().reportDua(widget.dua.id, reason, description);
+          if (ctx.mounted) Navigator.pop(ctx);
+          scaffoldContext.showSnackBar(
             const SnackBar(content: Text('Report submitted')),
           );
         },

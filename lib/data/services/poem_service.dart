@@ -1,72 +1,45 @@
+import '../../core/network/dio_client.dart';
 import '../models/poem_model.dart';
 
 class PoemService {
+  final DioClient _dioClient;
+
+  PoemService(this._dioClient);
+
   Future<List<PoemModel>> getLatestPoems() async {
-    return _mockPoems;
+    final response = await _dioClient.dio.get('/poems');
+    return (response.data as List)
+        .map((e) => PoemModel.fromApiJson(e as Map<String, dynamic>))
+        .toList();
   }
 
-  Future<List<PoemModel>> getUserPoems(int userId) async {
-    return _mockPoems.where((p) => p.userId == userId).toList();
+  Future<List<PoemModel>> getUserPoems(String userId) async {
+    final response = await _dioClient.dio.get('/poems');
+    final all = (response.data as List)
+        .map((e) => PoemModel.fromApiJson(e as Map<String, dynamic>))
+        .toList();
+    return all.where((p) => p.userId == userId).toList();
   }
 
-  Future<PoemModel> getPoemDetail(int id) async {
-    return _mockPoems.firstWhere((p) => p.id == id, orElse: () => _mockPoems.first);
+  Future<PoemModel> getPoemDetail(String id) async {
+    final response = await _dioClient.dio.get('/poems/$id');
+    return PoemModel.fromApiJson(response.data as Map<String, dynamic>);
   }
 
-  Future<void> toggleBookmark(int poemId) async {}
+  Future<void> toggleBookmark(String poemId) async {
+    try {
+      await _dioClient.dio.post('/poems/$poemId/favorite');
+    } catch (_) {
+      await _dioClient.dio.delete('/poems/$poemId/favorite');
+    }
+  }
 
-  Future<void> toggleLike(int poemId) async {}
+  Future<void> toggleLike(String poemId) async {}
 
-  Future<void> reportPoem(int poemId, String reason, String description) async {}
+  Future<void> reportPoem(String poemId, String reason, String description) async {
+    await _dioClient.dio.post('/poems/$poemId/reports', data: {
+      'reason': reason,
+      'description': description,
+    });
+  }
 }
-
-final _mockPoems = [
-  PoemModel(
-    id: 1,
-    title: 'The Seeking Heart',
-    verified: true,
-    content: 'In every breath a chance to turn,\nTo seek the light for which we yearn.\nThrough darkest nights and weary days,\nYour mercy meets us in a gaze.',
-    translation: 'A poem about turning towards the Divine',
-    category: 'Spiritual',
-    tags: ['Seeking', 'Light'],
-    userId: 4,
-    userName: 'Layla Akhtar',
-    userAvatar: 'LA',
-    views: '3.4k',
-    bookmarkCount: 67,
-    likeCount: 189,
-    reportCount: 0,
-  ),
-  PoemModel(
-    id: 2,
-    title: 'Waves of Mercy',
-    verified: false,
-    content: 'Like waves upon the endless shore,\nHis mercy flows forevermore.\nEach rising tide a fresh embrace,\nA sign of everlasting grace.',
-    translation: 'A poem about divine mercy',
-    category: 'Mercy',
-    tags: ['Mercy', 'Ocean'],
-    userId: 5,
-    userName: 'Yusuf Mansur',
-    userAvatar: 'YM',
-    views: '1.1k',
-    bookmarkCount: 34,
-    likeCount: 95,
-    reportCount: 0,
-  ),
-  PoemModel(
-    id: 3,
-    title: 'My Sunrise Prayer',
-    verified: true,
-    content: 'Before the dawn breaks, I raise my hands,\nA silent plea across the lands.\nWith morning light my soul takes flight,\nSeeking refuge in Your might.',
-    translation: 'A prayer poem at dawn',
-    category: 'Faith',
-    tags: ['Faith', 'Prayer'],
-    userId: 3,
-    userName: 'You',
-    userAvatar: 'ME',
-    views: '672',
-    bookmarkCount: 15,
-    likeCount: 42,
-    reportCount: 0,
-  ),
-];

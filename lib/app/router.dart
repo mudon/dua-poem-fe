@@ -103,7 +103,7 @@ class AppRouter {
       GoRoute(
         path: '/dua/:duaId',
         builder: (_, state) {
-          final duaId = int.parse(state.pathParameters['duaId']!);
+          final duaId = state.pathParameters['duaId']!;
           final currentUser = state.extra as UserModel;
           return DuaDetailScreen(duaId: duaId, currentUser: currentUser);
         },
@@ -111,7 +111,7 @@ class AppRouter {
       GoRoute(
         path: '/poem/:poemId',
         builder: (_, state) {
-          final poemId = int.parse(state.pathParameters['poemId']!);
+          final poemId = state.pathParameters['poemId']!;
           final currentUser = state.extra as UserModel;
           return PoemDetailScreen(poemId: poemId, currentUser: currentUser);
         },
@@ -119,7 +119,7 @@ class AppRouter {
       GoRoute(
         path: '/user/:userId',
         builder: (_, state) {
-          final userId = int.parse(state.pathParameters['userId']!);
+          final userId = state.pathParameters['userId']!;
           final userName = state.extra as String? ?? 'User';
           return UserDetailScreen(userId: userId, userName: userName);
         },

@@ -16,7 +16,7 @@ class PoemRepository {
     }
   }
 
-  Future<ApiResult<List<PoemModel>>> getUserPoems(int userId) async {
+  Future<ApiResult<List<PoemModel>>> getUserPoems(String userId) async {
     try {
       final poems = await _poemService.getUserPoems(userId);
       return ApiResult.success(poems);
@@ -25,7 +25,7 @@ class PoemRepository {
     }
   }
 
-  Future<ApiResult<PoemModel>> getPoemDetail(int id) async {
+  Future<ApiResult<PoemModel>> getPoemDetail(String id) async {
     try {
       final poem = await _poemService.getPoemDetail(id);
       return ApiResult.success(poem);
@@ -34,7 +34,7 @@ class PoemRepository {
     }
   }
 
-  Future<ApiResult<void>> toggleBookmark(int poemId) async {
+  Future<ApiResult<void>> toggleBookmark(String poemId) async {
     try {
       await _poemService.toggleBookmark(poemId);
       return ApiResult.success(null);
@@ -43,7 +43,7 @@ class PoemRepository {
     }
   }
 
-  Future<ApiResult<void>> toggleLike(int poemId) async {
+  Future<ApiResult<void>> toggleLike(String poemId) async {
     try {
       await _poemService.toggleLike(poemId);
       return ApiResult.success(null);

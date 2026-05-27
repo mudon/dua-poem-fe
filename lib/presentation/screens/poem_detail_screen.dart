@@ -6,7 +6,7 @@ import '../../data/repositories/poem_repository.dart';
 import '../../app/dependency_injection.dart';
 
 class PoemDetailScreen extends StatefulWidget {
-  final int poemId;
+  final String poemId;
   final UserModel currentUser;
 
   const PoemDetailScreen({super.key, required this.poemId, required this.currentUser});

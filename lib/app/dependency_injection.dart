@@ -8,6 +8,7 @@ import '../data/services/dua_service.dart';
 import '../data/services/poem_service.dart';
 import '../data/services/category_service.dart';
 import '../data/services/tag_service.dart';
+import '../data/services/user_service.dart';
 import '../data/repositories/auth_repository.dart';
 import '../data/repositories/dua_repository.dart';
 import '../data/repositories/poem_repository.dart';
@@ -32,10 +33,11 @@ Future<void> setupDependencies() async {
 
   // Services
   getIt.registerLazySingleton(() => AuthService(getIt<DioClient>()));
-  getIt.registerLazySingleton(() => DuaService());
-  getIt.registerLazySingleton(() => PoemService());
+  getIt.registerLazySingleton(() => DuaService(getIt<DioClient>()));
+  getIt.registerLazySingleton(() => PoemService(getIt<DioClient>()));
   getIt.registerLazySingleton(() => CategoryService(getIt<DioClient>()));
   getIt.registerLazySingleton(() => TagService(getIt<DioClient>()));
+  getIt.registerLazySingleton(() => UserService(getIt<DioClient>()));
 
   // Repositories
   getIt.registerLazySingleton(() => AuthRepository(getIt<AuthService>(), secureStorage));
