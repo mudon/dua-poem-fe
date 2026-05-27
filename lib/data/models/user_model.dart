@@ -1,7 +1,9 @@
 class UserModel {
-  final int id;
+  final String id;
   final String name;
   final String email;
+  final String role;
+  final DateTime createdAt;
   final String? avatar;
   final String? bio;
   final String joinedDate;
@@ -10,17 +12,32 @@ class UserModel {
     required this.id,
     required this.name,
     required this.email,
+    this.role = 'user',
+    required this.createdAt,
     this.avatar,
     this.bio,
-    required this.joinedDate,
-  });
+    String? joinedDate,
+  }) : joinedDate = joinedDate ?? _formatDate(createdAt);
 
-  factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
-        id: json['id'],
-        name: json['name'],
-        email: json['email'],
-        avatar: json['avatar'],
-        bio: json['bio'],
-        joinedDate: json['joinedDate'],
-      );
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    final createdAt = DateTime.parse(json['createdAt']);
+    return UserModel(
+      id: json['id'].toString(),
+      name: json['name'] ?? '',
+      email: json['email'] ?? '',
+      role: json['role'] ?? 'user',
+      createdAt: createdAt,
+      avatar: json['avatar'],
+      bio: json['bio'],
+      joinedDate: json['joinedDate'],
+    );
+  }
+
+  static String _formatDate(DateTime dt) {
+    final months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return 'Joined ${months[dt.month - 1]} ${dt.year}';
+  }
 }

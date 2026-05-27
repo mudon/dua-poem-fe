@@ -189,11 +189,12 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
   UserModel _toUserModel() {
     final user = _user;
     return UserModel(
-      id: user?.id ?? widget.userId,
+      id: (user?.id ?? widget.userId).toString(),
       name: user?.name ?? widget.userName,
       email: '',
       avatar: user?.avatar,
       bio: user?.bio,
+      createdAt: DateTime.now(),
       joinedDate: user?.joined ?? '',
     );
   }

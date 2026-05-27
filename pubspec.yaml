@@ -43,6 +43,7 @@ dependencies:
   get_it: ^9.2.1
 
   # Local storage
+  flutter_secure_storage: ^10.3.0
   shared_preferences: ^2.5.5
 
   # Icons
@@ -50,6 +51,9 @@ dependencies:
 
   # Form validation
   email_validator: ^3.0.0
+
+  # Routing
+  go_router: ^17.2.3
 
   # Networking
   dio: ^5.9.2

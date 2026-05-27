@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../data/models/poem_model.dart';
 import '../../../data/models/user_model.dart';
-import '../../screens/poem_detail_screen.dart';
-import '../../screens/user_detail_screen.dart';
 
 class PoemCard extends StatefulWidget {
   final PoemModel poem;
@@ -32,9 +31,7 @@ class _PoemCardState extends State<PoemCard> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(
-        builder: (_) => PoemDetailScreen(poemId: widget.poem.id, currentUser: widget.currentUser),
-      )),
+      onTap: () => context.push('/poem/${widget.poem.id}', extra: widget.currentUser),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         padding: const EdgeInsets.all(16),
@@ -128,9 +125,7 @@ class _PoemCardState extends State<PoemCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.push(context, MaterialPageRoute(
-                    builder: (_) => UserDetailScreen(userName: widget.poem.userName, userId: widget.poem.userId),
-                  )),
+                  onTap: () => context.push('/user/${widget.poem.userId}', extra: widget.poem.userName),
                   child: Row(
                     children: [
                       CircleAvatar(

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/models/user_model.dart';
 import '../../core/themes/app_theme.dart';
+import '../blocs/auth_bloc/auth_bloc.dart';
+import '../blocs/auth_bloc/auth_state.dart';
 import '../blocs/home_bloc/home_bloc.dart';
 import '../blocs/home_bloc/home_event.dart';
 import '../blocs/home_bloc/home_state.dart';
@@ -9,11 +10,12 @@ import '../widgets/common/dua_card.dart';
 import '../../app/dependency_injection.dart';
 
 class MyDuasScreen extends StatelessWidget {
-  final UserModel user;
-  const MyDuasScreen({super.key, required this.user});
+  const MyDuasScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final user = (context.read<AuthBloc>().state as Authenticated).user;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF4F0E8),
       body: SafeArea(
@@ -21,7 +23,7 @@ class MyDuasScreen extends StatelessWidget {
           create: (_) => getIt<HomeBloc>()..add(FetchLatestDuas()),
           child: BlocBuilder<HomeBloc, HomeState>(
             builder: (context, state) {
-              final duas = state.latestDuas.where((d) => d.userId == user.id).toList();
+              final duas = state.latestDuas.where((d) => d.userId.toString() == user.id).toList();
               return Padding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
                 child: Column(

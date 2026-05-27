@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'app/dependency_injection.dart';
-import 'presentation/screens/auth_screen.dart';
-import 'presentation/screens/main_screen.dart';
+import 'app/router.dart';
 import 'presentation/blocs/auth_bloc/auth_bloc.dart';
-import 'presentation/blocs/auth_bloc/auth_state.dart';
 import 'presentation/blocs/auth_bloc/auth_event.dart';
 import 'core/themes/app_theme.dart';
 import 'data/repositories/dua_repository.dart';
@@ -21,23 +19,24 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authBloc = getIt<AuthBloc>()..add(CheckAuthStatus());
+
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider.value(value: getIt<DuaRepository>()),
         RepositoryProvider.value(value: getIt<PoemRepository>()),
       ],
       child: BlocProvider.value(
-        value: getIt<AuthBloc>()..add(CheckAuthStatus()),
-        child: MaterialApp(
-          title: 'nur·deen',
-          theme: AppTheme.lightTheme,
-          home: BlocBuilder<AuthBloc, AuthState>(
-            builder: (context, state) {
-              if (state is Authenticated) return MainScreen(user: state.user);
-              if (state is Unauthenticated) return const AuthScreen();
-              return const Scaffold(body: Center(child: CircularProgressIndicator()));
-            },
-          ),
+        value: authBloc,
+        child: Builder(
+          builder: (context) {
+            final router = AppRouter(authBloc).router;
+            return MaterialApp.router(
+              title: 'nur·deen',
+              theme: AppTheme.lightTheme,
+              routerConfig: router,
+            );
+          },
         ),
       ),
     );

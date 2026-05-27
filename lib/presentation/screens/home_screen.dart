@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/models/user_model.dart';
 import '../../core/themes/app_theme.dart';
+import '../blocs/auth_bloc/auth_bloc.dart';
+import '../blocs/auth_bloc/auth_state.dart';
 import '../blocs/home_bloc/home_bloc.dart';
 import '../blocs/home_bloc/home_event.dart';
 import '../blocs/home_bloc/home_state.dart';
@@ -14,11 +15,12 @@ import '../../data/repositories/poem_repository.dart';
 import '../../app/dependency_injection.dart';
 
 class HomeScreen extends StatelessWidget {
-  final UserModel user;
-  const HomeScreen({super.key, required this.user});
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final user = (context.read<AuthBloc>().state as Authenticated).user;
+
     return BlocProvider(
       create: (context) => HomeBloc(
         RepositoryProvider.of<DuaRepository>(context),
@@ -65,7 +67,7 @@ class HomeScreen extends StatelessWidget {
 }
 
 class _HeaderBar extends StatelessWidget {
-  final UserModel user;
+  final dynamic user;
 
   const _HeaderBar({required this.user});
 
