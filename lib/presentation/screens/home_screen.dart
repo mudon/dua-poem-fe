@@ -10,6 +10,9 @@ import '../blocs/dua_bloc/dua_bloc.dart';
 import '../widgets/common/dua_card.dart';
 import '../widgets/common/poem_card.dart';
 import '../widgets/common/home_tab_bar.dart';
+import '../widgets/forms/create_dua_sheet.dart';
+import '../widgets/forms/create_poem_sheet.dart';
+import '../widgets/forms/create_picker_sheet.dart';
 import '../../data/repositories/dua_repository.dart';
 import '../../data/repositories/poem_repository.dart';
 import '../../app/dependency_injection.dart';
@@ -26,41 +29,81 @@ class HomeScreen extends StatelessWidget {
         RepositoryProvider.of<DuaRepository>(context),
         RepositoryProvider.of<PoemRepository>(context),
       )..add(FetchLatestDuas())..add(FetchLatestPoems()),
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF4F0E8),
-        body: SafeArea(
-          child: BlocProvider(
-            create: (context) => getIt<DuaBloc>(),
-            child: Column(
-              children: [
-                _HeaderBar(user: user),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
-                    child: Column(
-                      children: [
-                        const HomeTabBar(),
-                        BlocBuilder<HomeBloc, HomeState>(
-                          builder: (context, state) {
-                            if (state.isLoading) return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
-                            if (state.error != null) return Center(child: Text(state.error!));
-                            return state.showDuasTab
-                                ? Column(
-                                    children: state.latestDuas.map((d) => DuaCard(dua: d, currentUser: user)).toList(),
-                                  )
-                                : Column(
-                                    children: state.latestPoems.map((p) => PoemCard(poem: p, currentUser: user)).toList(),
-                                  );
-                          },
-                        ),
-                      ],
+      child: Builder(
+        builder: (inner) => Scaffold(
+          backgroundColor: const Color(0xFFF4F0E8),
+          floatingActionButton: FloatingActionButton(
+            backgroundColor: AppTheme.sage,
+            onPressed: () => _showCreatePicker(inner),
+            child: const Icon(Icons.add, color: Colors.white),
+          ),
+          body: SafeArea(
+            child: BlocProvider(
+              create: (context) => getIt<DuaBloc>(),
+              child: Column(
+                children: [
+                  _HeaderBar(user: user),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
+                      child: Column(
+                        children: [
+                          const HomeTabBar(),
+                          BlocBuilder<HomeBloc, HomeState>(
+                            builder: (context, state) {
+                              if (state.isLoading) return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
+                              if (state.error != null) return Center(child: Text(state.error!));
+                              return state.showDuasTab
+                                  ? Column(
+                                      children: state.latestDuas.map((d) => DuaCard(dua: d, currentUser: user)).toList(),
+                                    )
+                                  : Column(
+                                      children: state.latestPoems.map((p) => PoemCard(poem: p, currentUser: user)).toList(),
+                                    );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+void _showCreatePicker(BuildContext context) async {
+  final type = await showModalBottomSheet<String>(
+    context: context,
+    isScrollControlled: true,
+    builder: (_) => const CreatePickerSheet(),
+  );
+  if (type == null || !context.mounted) return;
+  final homeBloc = context.read<HomeBloc>();
+  if (type == 'dua') {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => CreateDuaSheet(
+        onCreated: () {
+          homeBloc.add(FetchLatestDuas());
+          homeBloc.add(FetchLatestPoems());
+        },
+      ),
+    );
+  } else if (type == 'poem') {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => CreatePoemSheet(
+        onCreated: () {
+          homeBloc.add(FetchLatestDuas());
+          homeBloc.add(FetchLatestPoems());
+        },
       ),
     );
   }

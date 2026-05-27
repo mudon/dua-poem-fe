@@ -36,6 +36,11 @@ class DuaService {
 
   Future<void> toggleLike(String duaId) async {}
 
+  Future<DuaModel> createDua(Map<String, dynamic> data) async {
+    final response = await _dioClient.dio.post('/duas', data: data);
+    return DuaModel.fromApiJson(response.data as Map<String, dynamic>);
+  }
+
   Future<void> reportDua(String duaId, String reason, String description) async {
     await _dioClient.dio.post('/duas/$duaId/reports', data: {
       'reason': reason,

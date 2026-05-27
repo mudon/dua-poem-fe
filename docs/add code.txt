@@ -1,0 +1,67 @@
+Uncaught (in promise) DartError: Error: Could not find the correct Provider<HomeBloc> above this HomeScreen Widget
+
+This happens because you used a `BuildContext` that does not include the provider
+of your choice. There are a few common scenarios:
+
+- You added a new provider in your `main.dart` and performed a hot-reload.
+  To fix, perform a hot-restart.
+
+- The provider you are trying to read is in a different route.
+
+  Providers are "scoped". So if you insert of provider inside a route, then
+  other routes will not be able to access that provider.
+
+- You used a `BuildContext` that is an ancestor of the provider you are trying to read.
+
+  Make sure that HomeScreen is under your MultiProvider/Provider<HomeBloc>.
+  This usually happens when you are creating a provider and trying to read it immediately.
+
+  For example, instead of:
+
+  ```
+  Widget build(BuildContext context) {
+    return Provider<Example>(
+      create: (_) => Example(),
+      // Will throw a ProviderNotFoundError, because `context` is associated
+      // to the widget that is the parent of `Provider<Example>`
+      child: Text(context.watch<Example>().toString()),
+    );
+  }
+  ```
+
+  consider using `builder` like so:
+
+  ```
+  Widget build(BuildContext context) {
+    return Provider<Example>(
+      create: (_) => Example(),
+      // we use `builder` to obtain a new `BuildContext` that has access to the provider
+      builder: (context, child) {
+        // No longer throws
+        return Text(context.watch<Example>().toString());
+      }
+    );
+  }
+  ```
+
+If none of these solutions work, consider asking for help on StackOverflow:
+https://stackoverflow.com/questions/tagged/flutter
+
+    at Object.throw_ [as throw] (errors.dart:274:3)
+    at Provider._inheritedElementOf (provider.dart:377:7)
+    at Provider.of (provider.dart:327:30)
+    at Object.ReadContext$124read [as ReadContext|read] (provider.dart:683:21)
+    at home_screen.dart:84:28
+    at async_patch.dart:623:19
+    at async_patch.dart:648:23
+    at async_patch.dart:594:19
+    at _RootZone.runUnary (zone.dart:962:54)
+    at dartDevEmbedder.defineLibrary.async._FutureListener.thenAwait.handleValue (future_impl.dart:222:18)
+    at handleValueCallback (future_impl.dart:948:44)
+    at _Future._propagateToListeners (future_impl.dart:977:13)
+    at [_completeWithValue] (future_impl.dart:720:5)
+    at future_impl.dart:804:7
+    at Object._microtaskLoop (schedule_microtask.dart:40:34)
+    at Object._startMicrotaskLoop (schedule_microtask.dart:49:5)
+    at tear (operations.dart:118:77)
+    at async_patch.dart:188:69

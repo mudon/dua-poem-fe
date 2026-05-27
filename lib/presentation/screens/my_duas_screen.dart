@@ -8,6 +8,18 @@ import '../blocs/home_bloc/home_event.dart';
 import '../blocs/home_bloc/home_state.dart';
 import '../widgets/common/dua_card.dart';
 import '../../app/dependency_injection.dart';
+import '../widgets/forms/create_dua_sheet.dart';
+
+void _showCreateDuaSheet(BuildContext context) {
+  final homeBloc = context.read<HomeBloc>();
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (_) => CreateDuaSheet(
+      onCreated: () => homeBloc.add(FetchLatestDuas()),
+    ),
+  );
+}
 
 class MyDuasScreen extends StatelessWidget {
   const MyDuasScreen({super.key});
@@ -48,7 +60,12 @@ class MyDuasScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const Icon(Icons.add_circle_outline, color: AppTheme.sage, size: 26),
+                        IconButton(
+                          icon: const Icon(Icons.add_circle_outline, color: AppTheme.sage, size: 26),
+                          onPressed: () => _showCreateDuaSheet(context),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 16),

@@ -36,6 +36,11 @@ class PoemService {
 
   Future<void> toggleLike(String poemId) async {}
 
+  Future<PoemModel> createPoem(Map<String, dynamic> data) async {
+    final response = await _dioClient.dio.post('/poems', data: data);
+    return PoemModel.fromApiJson(response.data as Map<String, dynamic>);
+  }
+
   Future<void> reportPoem(String poemId, String reason, String description) async {
     await _dioClient.dio.post('/poems/$poemId/reports', data: {
       'reason': reason,
