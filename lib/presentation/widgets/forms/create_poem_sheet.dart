@@ -91,10 +91,11 @@ class _CreatePoemSheetState extends State<CreatePoemSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final bottom = MediaQuery.of(context).viewInsets.bottom;
-    return Padding(
-      padding: EdgeInsets.only(bottom: bottom),
-      child: Container(
+    return DraggableScrollableSheet(
+      initialChildSize: 0.75,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      builder: (context, scrollController) => Container(
         decoration: const BoxDecoration(
           color: Color(0xFFF4F0E8),
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -105,20 +106,19 @@ class _CreatePoemSheetState extends State<CreatePoemSheet> {
             children: [
               _buildHeader(),
               Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                  child: Column(
-                    children: [
-                      _buildSection('Title *', _titleCtrl, required: true),
-                      _buildSection('Content *', _contentCtrl, required: true, maxLines: 6),
-                      _buildSection('Transliteration', _transliterationCtrl),
-                      _buildSection('Translation', _translationCtrl, maxLines: 3),
-                      _buildSection('Description', _descriptionCtrl, maxLines: 3),
-                      _buildSection('Author', _authorCtrl),
-                      _buildCategoryDropdown(),
-                      _buildTagsSection(),
-                    ],
-                  ),
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                  children: [
+                    _buildSection('Title *', _titleCtrl, required: true),
+                    _buildSection('Content *', _contentCtrl, required: true, maxLines: 6),
+                    _buildSection('Transliteration', _transliterationCtrl),
+                    _buildSection('Translation', _translationCtrl, maxLines: 3),
+                    _buildSection('Description', _descriptionCtrl, maxLines: 3),
+                    _buildSection('Author', _authorCtrl),
+                    _buildCategoryDropdown(),
+                    _buildTagsSection(),
+                  ],
                 ),
               ),
               _buildSubmitButton(),

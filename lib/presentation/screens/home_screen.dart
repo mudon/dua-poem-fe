@@ -77,9 +77,10 @@ class HomeScreen extends StatelessWidget {
 }
 
 void _showCreatePicker(BuildContext context) async {
-  final type = await showModalBottomSheet<String>(
+  final type = await   showModalBottomSheet<String>(
     context: context,
     isScrollControlled: true,
+    backgroundColor: Colors.transparent,
     builder: (_) => const CreatePickerSheet(),
   );
   if (type == null || !context.mounted) return;
@@ -88,6 +89,7 @@ void _showCreatePicker(BuildContext context) async {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (_) => CreateDuaSheet(
         onCreated: () {
           homeBloc.add(FetchLatestDuas());
@@ -99,6 +101,7 @@ void _showCreatePicker(BuildContext context) async {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (_) => CreatePoemSheet(
         onCreated: () {
           homeBloc.add(FetchLatestDuas());

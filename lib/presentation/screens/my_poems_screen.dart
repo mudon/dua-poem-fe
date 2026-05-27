@@ -15,6 +15,7 @@ void _showCreatePoemSheet(BuildContext context) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
+    backgroundColor: Colors.transparent,
     builder: (_) => CreatePoemSheet(
       onCreated: () => homeBloc.add(FetchLatestPoems()),
     ),

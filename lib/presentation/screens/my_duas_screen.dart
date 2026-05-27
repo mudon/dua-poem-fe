@@ -15,6 +15,7 @@ void _showCreateDuaSheet(BuildContext context) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
+    backgroundColor: Colors.transparent,
     builder: (_) => CreateDuaSheet(
       onCreated: () => homeBloc.add(FetchLatestDuas()),
     ),
