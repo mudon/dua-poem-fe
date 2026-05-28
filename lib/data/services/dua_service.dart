@@ -43,12 +43,11 @@ class DuaService {
   }
 
   Future<List<DuaModel>> getFavorites() async {
-    final response = await _dioClient.dio.get('/favorites');
-    return (response.data as List).map((e) {
-      final json = Map<String, dynamic>.from(e);
-      json['id'] = json['duaId'];
-      return DuaModel.fromApiJson(json);
-    }).toList();
+    final response = await _dioClient.dio.get('/duas');
+    return (response.data as List)
+        .map((e) => DuaModel.fromApiJson(e as Map<String, dynamic>))
+        .where((d) => d.isFavorited)
+        .toList();
   }
 
   Future<DuaModel> createDua(Map<String, dynamic> data) async {

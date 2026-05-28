@@ -43,12 +43,11 @@ class PoemService {
   }
 
   Future<List<PoemModel>> getPoemFavorites() async {
-    final response = await _dioClient.dio.get('/poems/favorites');
-    return (response.data as List).map((e) {
-      final json = Map<String, dynamic>.from(e);
-      json['id'] = json['poemId'];
-      return PoemModel.fromApiJson(json);
-    }).toList();
+    final response = await _dioClient.dio.get('/poems');
+    return (response.data as List)
+        .map((e) => PoemModel.fromApiJson(e as Map<String, dynamic>))
+        .where((p) => p.isFavorited)
+        .toList();
   }
 
   Future<PoemModel> createPoem(Map<String, dynamic> data) async {
