@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/user_model.dart';
 import '../../data/models/poem_model.dart';
 import '../../core/themes/app_theme.dart';
 import '../../data/repositories/poem_repository.dart';
+import '../blocs/poem_bloc/poem_bloc.dart';
+import '../blocs/poem_bloc/poem_event.dart';
+import '../blocs/poem_bloc/poem_state.dart';
 import '../../app/dependency_injection.dart';
 
 class PoemDetailScreen extends StatefulWidget {
@@ -18,10 +22,18 @@ class PoemDetailScreen extends StatefulWidget {
 class _PoemDetailScreenState extends State<PoemDetailScreen> {
   PoemModel? _poem;
   bool _loading = true;
+  late bool _isLiked;
+  late int _likeCount;
+  late bool _isBookmarked;
+  late int _bookmarkCount;
 
   @override
   void initState() {
     super.initState();
+    _isLiked = false;
+    _likeCount = 0;
+    _isBookmarked = false;
+    _bookmarkCount = 0;
     _loadPoem();
   }
 
@@ -31,6 +43,10 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
     if (mounted) {
       setState(() {
         _poem = result.data;
+        _isLiked = result.data?.isLiked ?? false;
+        _likeCount = result.data?.likeCount ?? 0;
+        _isBookmarked = result.data?.isFavorited ?? false;
+        _bookmarkCount = result.data?.bookmarkCount ?? 0;
         _loading = false;
       });
     }
@@ -45,7 +61,26 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
             ? const Center(child: CircularProgressIndicator())
             : _poem == null
                 ? const Center(child: Text('Poem not found'))
-                : SingleChildScrollView(
+                : BlocProvider(
+                    create: (_) => getIt<PoemBloc>(),
+                    child: BlocListener<PoemBloc, PoemState>(
+                      listener: (context, state) {
+                        if (state.error != null) {
+                          setState(() {
+                            if (state.actionType == 'like') {
+                              _isLiked = !_isLiked;
+                              _likeCount += _isLiked ? 1 : -1;
+                            } else if (state.actionType == 'bookmark') {
+                              _isBookmarked = !_isBookmarked;
+                              _bookmarkCount += _isBookmarked ? 1 : -1;
+                            }
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(state.error!)),
+                          );
+                        }
+                      },
+                      child: SingleChildScrollView(
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,10 +142,93 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                                   children: _poem!.tags.map((t) => _TagPill(label: t)).toList(),
                                 ),
                               ],
+                              const SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _isLiked = !_isLiked;
+                                        _likeCount += _isLiked ? 1 : -1;
+                                      });
+                                      context.read<PoemBloc>().add(ToggleLike(_poem!.id, _isLiked));
+                                    },
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          _isLiked ? Icons.favorite : Icons.favorite_border,
+                                          color: const Color(0xFFD6B17E),
+                                          size: 22,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text('$_likeCount',
+                                          style: const TextStyle(color: Color(0xFFD6B17E), fontWeight: FontWeight.w500, fontSize: 14)),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 24),
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _isBookmarked = !_isBookmarked;
+                                        _bookmarkCount += _isBookmarked ? 1 : -1;
+                                      });
+                                      context.read<PoemBloc>().add(ToggleBookmark(_poem!.id, _isBookmarked));
+                                    },
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                                          color: const Color(0xFFAB9F8E),
+                                          size: 22,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text('$_bookmarkCount',
+                                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFFAB9F8E))),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    final reasons = ['wrong_transliteration', 'wrong_translation', 'wrong_author', 'inappropriate', 'duplicate', 'copyright_violation', 'other'];
+                                    showModalBottomSheet(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      backgroundColor: Colors.transparent,
+                                      builder: (ctx) => _PoemDetailReportSheet(
+                                        title: _poem!.title,
+                                        reasons: reasons,
+                                        onSubmit: (reason, desc) {
+                                          context.read<PoemBloc>().add(ReportPoem(_poem!.id, reason, desc));
+                                          Navigator.pop(ctx);
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(content: Text('Report submitted')),
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.flag_outlined, size: 16),
+                                  label: const Text('Report this content', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFFEF1EC),
+                                    foregroundColor: const Color(0xFFC25A3F),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ),
                       ],
+                    ),
+                  ),
                     ),
                   ),
       ),
@@ -152,6 +270,128 @@ class _TagPill extends StatelessWidget {
       child: Text(
         label,
         style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: Color(0xFF5D6F4A)),
+      ),
+    );
+  }
+}
+
+class _PoemDetailReportSheet extends StatefulWidget {
+  final String title;
+  final List<String> reasons;
+  final Function(String reason, String description) onSubmit;
+
+  const _PoemDetailReportSheet({required this.title, required this.reasons, required this.onSubmit});
+
+  @override
+  State<_PoemDetailReportSheet> createState() => _PoemDetailReportSheetState();
+}
+
+class _PoemDetailReportSheetState extends State<_PoemDetailReportSheet> {
+  final _descCtrl = TextEditingController();
+  int _selectedIndex = 0;
+
+  @override
+  void dispose() {
+    _descCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
+      decoration: const BoxDecoration(
+        color: Color(0xFFFEFCF5),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 20, offset: Offset(0, -6))],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(
+              color: Color(0xFFFEFAF2),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              border: Border(bottom: BorderSide(color: Color(0xFFEFE8DE))),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.flag_outlined, size: 18, color: Color(0xFF7C9A6E)),
+                    SizedBox(width: 8),
+                    Text('Report: ${widget.title}',
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                  ],
+                ),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: const Icon(Icons.close, color: Color(0xFFA18E76)),
+                ),
+              ],
+            ),
+          ),
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Column(
+                children: List.generate(widget.reasons.length, (i) {
+                  final r = widget.reasons[i];
+                  final label = r.replaceAll('_', ' ').split(' ').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' ');
+                  final isSelected = _selectedIndex == i;
+                  return GestureDetector(
+                    onTap: () => setState(() => _selectedIndex = i),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                            color: isSelected ? AppTheme.sage : const Color(0xFFAB9F8E),
+                            size: 22,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(label, style: const TextStyle(fontSize: 14)),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: TextField(
+              controller: _descCtrl,
+              decoration: const InputDecoration(
+                hintText: 'Description (optional)',
+                filled: true,
+                fillColor: Color(0xFFF7F3ED),
+                border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(16))),
+                contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              ),
+              maxLines: 2,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => widget.onSubmit(widget.reasons[_selectedIndex], _descCtrl.text),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFEF1EC),
+                  foregroundColor: const Color(0xFFC25A3F),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
+                  padding: const EdgeInsets.symmetric(vertical: 14)),
+                child: const Text('Submit Report', style: TextStyle(fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

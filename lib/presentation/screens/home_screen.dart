@@ -6,14 +6,13 @@ import '../blocs/auth_bloc/auth_state.dart';
 import '../blocs/home_bloc/home_bloc.dart';
 import '../blocs/home_bloc/home_event.dart';
 import '../blocs/home_bloc/home_state.dart';
-import '../blocs/dua_bloc/dua_bloc.dart';
 import '../widgets/common/dua_card.dart';
 import '../widgets/common/poem_card.dart';
 import '../widgets/common/home_tab_bar.dart';
 import '../widgets/forms/create_flow_sheet.dart';
 import '../../data/repositories/dua_repository.dart';
 import '../../data/repositories/poem_repository.dart';
-import '../../app/dependency_injection.dart';
+
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -36,9 +35,7 @@ class HomeScreen extends StatelessWidget {
             child: const Icon(Icons.add, color: Colors.white),
           ),
           body: SafeArea(
-            child: BlocProvider(
-              create: (context) => getIt<DuaBloc>(),
-              child: Column(
+            child: Column(
                 children: [
                   _HeaderBar(user: user),
                   Expanded(
@@ -67,7 +64,6 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
             ),
-          ),
         ),
       ),
     );

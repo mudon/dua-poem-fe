@@ -26,15 +26,30 @@ class DuaService {
     return DuaModel.fromApiJson(response.data as Map<String, dynamic>);
   }
 
-  Future<void> toggleBookmark(String duaId) async {
-    try {
-      await _dioClient.dio.post('/duas/$duaId/favorite');
-    } catch (_) {
+  Future<void> toggleBookmark(String duaId, bool currentlyFavorited) async {
+    if (currentlyFavorited) {
       await _dioClient.dio.delete('/duas/$duaId/favorite');
+    } else {
+      await _dioClient.dio.post('/duas/$duaId/favorite');
     }
   }
 
-  Future<void> toggleLike(String duaId) async {}
+  Future<void> toggleLike(String duaId, bool currentlyLiked) async {
+    if (currentlyLiked) {
+      await _dioClient.dio.delete('/duas/$duaId/like');
+    } else {
+      await _dioClient.dio.post('/duas/$duaId/like');
+    }
+  }
+
+  Future<List<DuaModel>> getFavorites() async {
+    final response = await _dioClient.dio.get('/favorites');
+    return (response.data as List).map((e) {
+      final json = Map<String, dynamic>.from(e);
+      json['id'] = json['duaId'];
+      return DuaModel.fromApiJson(json);
+    }).toList();
+  }
 
   Future<DuaModel> createDua(Map<String, dynamic> data) async {
     final response = await _dioClient.dio.post('/duas', data: data);

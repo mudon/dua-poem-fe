@@ -34,18 +34,36 @@ class PoemRepository {
     }
   }
 
-  Future<ApiResult<void>> toggleBookmark(String poemId) async {
+  Future<ApiResult<void>> toggleBookmark(String poemId, bool currentlyFavorited) async {
     try {
-      await _poemService.toggleBookmark(poemId);
+      await _poemService.toggleBookmark(poemId, currentlyFavorited);
       return ApiResult.success(null);
     } catch (e) {
       return ApiResult.failure(e.toString());
     }
   }
 
-  Future<ApiResult<void>> toggleLike(String poemId) async {
+  Future<ApiResult<void>> toggleLike(String poemId, bool currentlyLiked) async {
     try {
-      await _poemService.toggleLike(poemId);
+      await _poemService.toggleLike(poemId, currentlyLiked);
+      return ApiResult.success(null);
+    } catch (e) {
+      return ApiResult.failure(e.toString());
+    }
+  }
+
+  Future<ApiResult<List<PoemModel>>> getPoemFavorites() async {
+    try {
+      final poems = await _poemService.getPoemFavorites();
+      return ApiResult.success(poems);
+    } catch (e) {
+      return ApiResult.failure(e.toString());
+    }
+  }
+
+  Future<ApiResult<void>> reportPoem(String poemId, String reason, String description) async {
+    try {
+      await _poemService.reportPoem(poemId, reason, description);
       return ApiResult.success(null);
     } catch (e) {
       return ApiResult.failure(e.toString());

@@ -34,19 +34,28 @@ class DuaRepository {
     }
   }
 
-  Future<ApiResult<void>> toggleBookmark(String duaId) async {
+  Future<ApiResult<void>> toggleBookmark(String duaId, bool currentlyFavorited) async {
     try {
-      await _duaService.toggleBookmark(duaId);
+      await _duaService.toggleBookmark(duaId, currentlyFavorited);
       return ApiResult.success(null);
     } catch (e) {
       return ApiResult.failure(e.toString());
     }
   }
 
-  Future<ApiResult<void>> toggleLike(String duaId) async {
+  Future<ApiResult<void>> toggleLike(String duaId, bool currentlyLiked) async {
     try {
-      await _duaService.toggleLike(duaId);
+      await _duaService.toggleLike(duaId, currentlyLiked);
       return ApiResult.success(null);
+    } catch (e) {
+      return ApiResult.failure(e.toString());
+    }
+  }
+
+  Future<ApiResult<List<DuaModel>>> getFavorites() async {
+    try {
+      final duas = await _duaService.getFavorites();
+      return ApiResult.success(duas);
     } catch (e) {
       return ApiResult.failure(e.toString());
     }

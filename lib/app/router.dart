@@ -9,6 +9,7 @@ import '../presentation/screens/my_duas_screen.dart';
 import '../presentation/screens/my_poems_screen.dart';
 import '../presentation/screens/profile_screen.dart';
 import '../presentation/screens/main_shell.dart';
+import '../presentation/screens/favorites_screen.dart';
 import '../presentation/screens/dua_detail_screen.dart';
 import '../presentation/screens/poem_detail_screen.dart';
 import '../presentation/screens/user_detail_screen.dart';
@@ -95,6 +96,18 @@ class AppRouter {
               GoRoute(
                 path: '/profile',
                 builder: (_, _) => const ProfileScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/favorites',
+                builder: (_, state) {
+                  final authState = authBloc.state;
+                  final user = authState is Authenticated ? authState.user : null;
+                  return FavoritesScreen(currentUser: user);
+                },
               ),
             ],
           ),

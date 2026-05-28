@@ -26,15 +26,30 @@ class PoemService {
     return PoemModel.fromApiJson(response.data as Map<String, dynamic>);
   }
 
-  Future<void> toggleBookmark(String poemId) async {
-    try {
-      await _dioClient.dio.post('/poems/$poemId/favorite');
-    } catch (_) {
+  Future<void> toggleBookmark(String poemId, bool currentlyFavorited) async {
+    if (currentlyFavorited) {
       await _dioClient.dio.delete('/poems/$poemId/favorite');
+    } else {
+      await _dioClient.dio.post('/poems/$poemId/favorite');
     }
   }
 
-  Future<void> toggleLike(String poemId) async {}
+  Future<void> toggleLike(String poemId, bool currentlyLiked) async {
+    if (currentlyLiked) {
+      await _dioClient.dio.delete('/poems/$poemId/like');
+    } else {
+      await _dioClient.dio.post('/poems/$poemId/like');
+    }
+  }
+
+  Future<List<PoemModel>> getPoemFavorites() async {
+    final response = await _dioClient.dio.get('/poems/favorites');
+    return (response.data as List).map((e) {
+      final json = Map<String, dynamic>.from(e);
+      json['id'] = json['poemId'];
+      return PoemModel.fromApiJson(json);
+    }).toList();
+  }
 
   Future<PoemModel> createPoem(Map<String, dynamic> data) async {
     final response = await _dioClient.dio.post('/poems', data: data);

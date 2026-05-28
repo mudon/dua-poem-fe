@@ -17,6 +17,8 @@ class PoemModel {
   final int bookmarkCount;
   final int likeCount;
   final int reportCount;
+  final bool isLiked;
+  final bool isFavorited;
   final String? createdAt;
   final String? updatedAt;
 
@@ -39,6 +41,8 @@ class PoemModel {
     required this.bookmarkCount,
     required this.likeCount,
     this.reportCount = 0,
+    this.isLiked = false,
+    this.isFavorited = false,
     this.createdAt,
     this.updatedAt,
   });
@@ -86,8 +90,10 @@ class PoemModel {
         userName: '',
         userAvatar: '',
         views: (json['viewsCount'] ?? 0).toString(),
-        bookmarkCount: 0,
+        bookmarkCount: json['bookmarkCount'] ?? json['favoritesCount'] ?? 0,
         likeCount: json['likesCount'] ?? 0,
+        isLiked: json['isLiked'] ?? false,
+        isFavorited: json['isFavorited'] ?? false,
         reportCount: 0,
         createdAt: json['createdAt'],
         updatedAt: json['updatedAt'],
@@ -99,6 +105,8 @@ class PoemModel {
     String? views,
     int? bookmarkCount,
     int? likeCount,
+    bool? isLiked,
+    bool? isFavorited,
     String? description,
     String? author,
     String? transliteration,
@@ -121,6 +129,8 @@ class PoemModel {
       views: views ?? this.views,
       bookmarkCount: bookmarkCount ?? this.bookmarkCount,
       likeCount: likeCount ?? this.likeCount,
+      isLiked: isLiked ?? this.isLiked,
+      isFavorited: isFavorited ?? this.isFavorited,
       reportCount: reportCount,
       createdAt: createdAt,
       updatedAt: updatedAt,

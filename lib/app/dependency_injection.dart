@@ -17,6 +17,7 @@ import '../data/repositories/tag_repository.dart';
 import '../presentation/blocs/auth_bloc/auth_bloc.dart';
 import '../presentation/blocs/home_bloc/home_bloc.dart';
 import '../presentation/blocs/dua_bloc/dua_bloc.dart';
+import '../presentation/blocs/poem_bloc/poem_bloc.dart';
 import '../presentation/blocs/category_bloc/category_bloc.dart';
 import '../presentation/blocs/tag_bloc/tag_bloc.dart';
 
@@ -50,6 +51,7 @@ Future<void> setupDependencies() async {
   getIt.registerFactory(() => AuthBloc(getIt<AuthRepository>(), getIt<UserService>()));
   getIt.registerFactory(() => HomeBloc(getIt<DuaRepository>(), getIt<PoemRepository>()));
   getIt.registerFactory(() => DuaBloc(getIt<DuaRepository>()));
+  getIt.registerFactory(() => PoemBloc(getIt<PoemRepository>()));
   getIt.registerFactory(() => CategoryBloc(getIt<CategoryRepository>()));
   getIt.registerFactory(() => TagBloc(getIt<TagRepository>()));
 }

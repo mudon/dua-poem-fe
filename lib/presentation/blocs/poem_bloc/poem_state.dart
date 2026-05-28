@@ -1,11 +1,11 @@
-class DuaState {
+class PoemState {
   final bool isProcessing;
   final String? error;
   final String? actionType;
   final Map<String, bool> likedStates;
   final Map<String, bool> favoritedStates;
 
-  DuaState({
+  PoemState({
     this.isProcessing = false,
     this.error,
     this.actionType,
@@ -13,14 +13,14 @@ class DuaState {
     this.favoritedStates = const {},
   });
 
-  DuaState copyWith({
+  PoemState copyWith({
     bool? isProcessing,
     String? error,
     String? actionType,
     Map<String, bool>? likedStates,
     Map<String, bool>? favoritedStates,
   }) {
-    return DuaState(
+    return PoemState(
       isProcessing: isProcessing ?? this.isProcessing,
       error: error ?? this.error,
       actionType: actionType ?? this.actionType,

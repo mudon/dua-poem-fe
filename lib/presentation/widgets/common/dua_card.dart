@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../data/models/dua_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../core/themes/app_theme.dart';
 import '../../../data/services/dua_service.dart';
+import '../../blocs/dua_bloc/dua_bloc.dart';
+import '../../blocs/dua_bloc/dua_event.dart';
+import '../../blocs/dua_bloc/dua_state.dart';
 import '../../../app/dependency_injection.dart';
 
 class DuaCard extends StatefulWidget {
@@ -26,16 +30,57 @@ class _DuaCardState extends State<DuaCard> {
   @override
   void initState() {
     super.initState();
-    _isLiked = false;
+    final blocState = context.read<DuaBloc>().state;
+    _isLiked = blocState.likedStates[widget.dua.id] ?? widget.dua.isLiked;
     _likeCount = widget.dua.likeCount;
-    _isBookmarked = false;
+    _isBookmarked = blocState.favoritedStates[widget.dua.id] ?? widget.dua.isFavorited;
     _bookmarkCount = widget.dua.bookmarkCount;
     _reportCount = widget.dua.reportCount;
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return BlocListener<DuaBloc, DuaState>(
+      listener: (context, state) {
+        if (state.actionType == 'like') {
+          if (state.error != null) {
+            setState(() {
+              _isLiked = !_isLiked;
+              _likeCount += _isLiked ? 1 : -1;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.error!)),
+            );
+          } else {
+            final synced = state.likedStates[widget.dua.id];
+            if (synced != null && synced != _isLiked) {
+              setState(() {
+                _isLiked = synced;
+                _likeCount += synced ? 1 : -1;
+              });
+            }
+          }
+        } else if (state.actionType == 'bookmark') {
+          if (state.error != null) {
+            setState(() {
+              _isBookmarked = !_isBookmarked;
+              _bookmarkCount += _isBookmarked ? 1 : -1;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.error!)),
+            );
+          } else {
+            final synced = state.favoritedStates[widget.dua.id];
+            if (synced != null && synced != _isBookmarked) {
+              setState(() {
+                _isBookmarked = synced;
+                _bookmarkCount += synced ? 1 : -1;
+              });
+            }
+          }
+        }
+      },
+      child: GestureDetector(
       onTap: () => context.push('/dua/${widget.dua.id}', extra: widget.currentUser),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -215,21 +260,26 @@ class _DuaCardState extends State<DuaCard> {
           ],
         ),
       ),
+      ),
     );
   }
 
   void _toggleLike() {
+    final wasLiked = _isLiked;
     setState(() {
-      _isLiked = !_isLiked;
+      _isLiked = !wasLiked;
       _likeCount += _isLiked ? 1 : -1;
     });
+    context.read<DuaBloc>().add(ToggleLike(widget.dua.id, wasLiked));
   }
 
   void _toggleBookmark() {
+    final wasBookmarked = _isBookmarked;
     setState(() {
-      _isBookmarked = !_isBookmarked;
+      _isBookmarked = !wasBookmarked;
       _bookmarkCount += _isBookmarked ? 1 : -1;
     });
+    context.read<DuaBloc>().add(ToggleBookmark(widget.dua.id, wasBookmarked));
   }
 
   void _showReportPopout() {

@@ -6,6 +6,7 @@ import '../../core/themes/app_theme.dart';
 import '../../data/repositories/dua_repository.dart';
 import '../blocs/dua_bloc/dua_bloc.dart';
 import '../blocs/dua_bloc/dua_event.dart';
+import '../blocs/dua_bloc/dua_state.dart';
 import '../../app/dependency_injection.dart';
 
 class DuaDetailScreen extends StatefulWidget {
@@ -21,10 +22,18 @@ class DuaDetailScreen extends StatefulWidget {
 class _DuaDetailScreenState extends State<DuaDetailScreen> {
   DuaModel? _dua;
   bool _loading = true;
+  late bool _isLiked;
+  late int _likeCount;
+  late bool _isBookmarked;
+  late int _bookmarkCount;
 
   @override
   void initState() {
     super.initState();
+    _isLiked = false;
+    _likeCount = 0;
+    _isBookmarked = false;
+    _bookmarkCount = 0;
     _loadDua();
   }
 
@@ -34,6 +43,10 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
     if (mounted) {
       setState(() {
         _dua = result.data;
+        _isLiked = result.data?.isLiked ?? false;
+        _likeCount = result.data?.likeCount ?? 0;
+        _isBookmarked = result.data?.isFavorited ?? false;
+        _bookmarkCount = result.data?.bookmarkCount ?? 0;
         _loading = false;
       });
     }
@@ -50,7 +63,24 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                 ? const Center(child: Text('Dua not found'))
                 : BlocProvider(
                     create: (_) => getIt<DuaBloc>(),
-                    child: SingleChildScrollView(
+                    child: BlocListener<DuaBloc, DuaState>(
+                      listener: (context, state) {
+                        if (state.error != null) {
+                          setState(() {
+                            if (state.actionType == 'like') {
+                              _isLiked = !_isLiked;
+                              _likeCount += _isLiked ? 1 : -1;
+                            } else if (state.actionType == 'bookmark') {
+                              _isBookmarked = !_isBookmarked;
+                              _bookmarkCount += _isBookmarked ? 1 : -1;
+                            }
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(state.error!)),
+                          );
+                        }
+                      },
+                      child: SingleChildScrollView(
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -128,6 +158,54 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                                     children: _dua!.tags.map((t) => _TagPill(label: t)).toList(),
                                   ),
                                 ],
+                                const SizedBox(height: 16),
+                                Row(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          _isLiked = !_isLiked;
+                                          _likeCount += _isLiked ? 1 : -1;
+                                        });
+                                        context.read<DuaBloc>().add(ToggleLike(_dua!.id, _isLiked));
+                                      },
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            _isLiked ? Icons.favorite : Icons.favorite_border,
+                                            color: const Color(0xFFD6B17E),
+                                            size: 22,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text('$_likeCount',
+                                            style: const TextStyle(color: Color(0xFFD6B17E), fontWeight: FontWeight.w500, fontSize: 14)),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 24),
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          _isBookmarked = !_isBookmarked;
+                                          _bookmarkCount += _isBookmarked ? 1 : -1;
+                                        });
+                                        context.read<DuaBloc>().add(ToggleBookmark(_dua!.id, _isBookmarked));
+                                      },
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                                            color: const Color(0xFFAB9F8E),
+                                            size: 22,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text('$_bookmarkCount',
+                                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFFAB9F8E))),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                                 const SizedBox(height: 24),
                                 SizedBox(
                                   width: double.infinity,
@@ -166,6 +244,7 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                           ),
                         ],
                       ),
+                    ),
                     ),
                   ),
       ),
