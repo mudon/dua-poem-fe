@@ -3,8 +3,12 @@ class PoemModel {
   final String title;
   final bool verified;
   final String? content;
+  final String? transliteration;
   final String translation;
+  final String? description;
+  final String? author;
   final String category;
+  final int? categoryId;
   final List<String> tags;
   final String userId;
   final String userName;
@@ -13,14 +17,20 @@ class PoemModel {
   final int bookmarkCount;
   final int likeCount;
   final int reportCount;
+  final String? createdAt;
+  final String? updatedAt;
 
   PoemModel({
     required this.id,
     required this.title,
     required this.verified,
     this.content,
+    this.transliteration,
     required this.translation,
+    this.description,
+    this.author,
     required this.category,
+    this.categoryId,
     required this.tags,
     required this.userId,
     required this.userName,
@@ -29,6 +39,8 @@ class PoemModel {
     required this.bookmarkCount,
     required this.likeCount,
     this.reportCount = 0,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory PoemModel.fromJson(Map<String, dynamic> json) => PoemModel(
@@ -36,8 +48,12 @@ class PoemModel {
         title: json['title'],
         verified: json['verified'],
         content: json['content'],
+        transliteration: json['transliteration'],
         translation: json['translation'],
+        description: json['description'],
+        author: json['author'],
         category: json['category'],
+        categoryId: json['categoryId'],
         tags: List<String>.from(json['tags']),
         userId: json['userId'].toString(),
         userName: json['userName'],
@@ -46,6 +62,8 @@ class PoemModel {
         bookmarkCount: json['bookmarkCount'],
         likeCount: json['likeCount'],
         reportCount: json['reportCount'] ?? 0,
+        createdAt: json['createdAt'],
+        updatedAt: json['updatedAt'],
       );
 
   factory PoemModel.fromApiJson(Map<String, dynamic> json) => PoemModel(
@@ -53,8 +71,12 @@ class PoemModel {
         title: json['title'] ?? '',
         verified: json['isVerified'] ?? false,
         content: json['content'],
+        transliteration: json['transliteration'],
         translation: json['translation'] ?? '',
+        description: json['description'],
+        author: json['author'],
         category: json['categoryName'] ?? '',
+        categoryId: json['categoryId'],
         tags: (json['tags'] as List<dynamic>?)
                 ?.map((t) => t['name']?.toString() ?? '')
                 .where((n) => n.isNotEmpty)
@@ -63,10 +85,12 @@ class PoemModel {
         userId: json['createdBy']?.toString() ?? '',
         userName: '',
         userAvatar: '',
-        views: '0',
+        views: (json['viewsCount'] ?? 0).toString(),
         bookmarkCount: 0,
-        likeCount: 0,
+        likeCount: json['likesCount'] ?? 0,
         reportCount: 0,
+        createdAt: json['createdAt'],
+        updatedAt: json['updatedAt'],
       );
 
   PoemModel copyWith({
@@ -75,14 +99,21 @@ class PoemModel {
     String? views,
     int? bookmarkCount,
     int? likeCount,
+    String? description,
+    String? author,
+    String? transliteration,
   }) {
     return PoemModel(
       id: id,
       title: title,
       verified: verified,
       content: content,
+      transliteration: transliteration ?? this.transliteration,
       translation: translation,
+      description: description ?? this.description,
+      author: author ?? this.author,
       category: category,
+      categoryId: categoryId,
       tags: tags,
       userId: userId,
       userName: userName ?? this.userName,
@@ -91,6 +122,8 @@ class PoemModel {
       bookmarkCount: bookmarkCount ?? this.bookmarkCount,
       likeCount: likeCount ?? this.likeCount,
       reportCount: reportCount,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
     );
   }
 }

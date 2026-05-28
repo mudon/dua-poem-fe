@@ -13,3 +13,8 @@ class SignupRequested extends AuthEvent {
 class LogoutRequested extends AuthEvent {}
 
 class CheckAuthStatus extends AuthEvent {}
+
+class UpdateProfileRequested extends AuthEvent {
+  final String name;
+  UpdateProfileRequested(this.name);
+}

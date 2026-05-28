@@ -49,6 +49,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  void _showEditNameDialog(UserModel user) {
+    final controller = TextEditingController(text: user.name);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Edit name'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'Enter your name',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              final newName = controller.text.trim();
+              if (newName.isNotEmpty) {
+                Navigator.pop(ctx);
+                context.read<AuthBloc>().add(UpdateProfileRequested(newName));
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = (context.read<AuthBloc>().state as Authenticated).user;
@@ -82,7 +117,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(user.name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(user.name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
+                              ),
+                              GestureDetector(
+                                onTap: () => _showEditNameDialog(user),
+                                child: const Icon(Icons.edit, size: 18, color: Color(0xFF9A8C79)),
+                              ),
+                            ],
+                          ),
                           const SizedBox(height: 4),
                           Text(user.email, style: const TextStyle(fontSize: 13, color: Color(0xFF6E6558))),
                           Padding(

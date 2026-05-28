@@ -2,18 +2,21 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/repositories/auth_repository.dart';
+import '../../../data/services/user_service.dart';
 import '../../../data/models/user_model.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepo;
+  final UserService _userService;
 
-  AuthBloc(this._authRepo) : super(AuthInitial()) {
+  AuthBloc(this._authRepo, this._userService) : super(AuthInitial()) {
     on<LoginRequested>(_onLogin);
     on<SignupRequested>(_onSignup);
     on<LogoutRequested>(_onLogout);
     on<CheckAuthStatus>(_onCheck);
+    on<UpdateProfileRequested>(_onUpdateProfile);
   }
 
   Future<void> _onLogin(LoginRequested event, Emitter<AuthState> emit) async {
@@ -63,6 +66,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
     } else {
       emit(Unauthenticated());
+    }
+  }
+
+  Future<void> _onUpdateProfile(UpdateProfileRequested event, Emitter<AuthState> emit) async {
+    final current = state;
+    if (current is! Authenticated) return;
+
+    try {
+      final data = await _userService.updateProfile(event.name);
+      final user = UserModel.fromJson(data);
+      await _saveUser(user);
+      emit(Authenticated(user));
+    } catch (_) {
+      emit(AuthError('Failed to update profile'));
     }
   }
 

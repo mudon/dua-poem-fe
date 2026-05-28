@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../data/models/user_model.dart';
 import '../../data/models/dua_model.dart';
 import '../../data/models/poem_model.dart';
+import '../../data/services/user_service.dart';
 import '../../data/services/dua_service.dart';
 import '../../data/services/poem_service.dart';
 import '../../core/themes/app_theme.dart';
@@ -23,6 +24,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
   int _selectedTab = 0;
   List<DuaModel> _userDuas = [];
   List<PoemModel> _userPoems = [];
+  UserModel? _profile;
   bool _loading = true;
 
   @override
@@ -33,17 +35,22 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
 
   Future<void> _loadData() async {
     try {
+      final userData = await getIt<UserService>().getUserById(widget.userId);
+      final profile = UserModel.fromJson(userData);
+
       final duas = await getIt<DuaService>().getUserDuas(widget.userId);
       final poems = await getIt<PoemService>().getUserPoems(widget.userId);
+
       if (mounted) {
         setState(() {
+          _profile = profile;
           _userDuas = duas.map((d) => d.copyWith(
-            userName: widget.userName,
-            userAvatar: widget.userName.isNotEmpty ? widget.userName[0].toUpperCase() : '?',
+            userName: profile.name,
+            userAvatar: profile.name.isNotEmpty ? profile.name[0].toUpperCase() : '?',
           )).toList();
           _userPoems = poems.map((p) => p.copyWith(
-            userName: widget.userName,
-            userAvatar: widget.userName.isNotEmpty ? widget.userName[0].toUpperCase() : '?',
+            userName: profile.name,
+            userAvatar: profile.name.isNotEmpty ? profile.name[0].toUpperCase() : '?',
           )).toList();
           _loading = false;
         });
@@ -55,6 +62,8 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final name = _profile?.name ?? widget.userName;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF4F0E8),
       body: SafeArea(
@@ -90,7 +99,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                           radius: 35,
                           backgroundColor: const Color(0xFFDCE8D3),
                           child: Text(
-                            widget.userName.isNotEmpty ? widget.userName[0].toUpperCase() : '?',
+                            name.isNotEmpty ? name[0].toUpperCase() : '?',
                             style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: Color(0xFF4A5B3E)),
                           ),
                         ),
@@ -99,7 +108,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(widget.userName, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
+                              Text(name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
                             ],
                           ),
                         ),
@@ -145,7 +154,9 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
       children: [
         _UserDetailField(label: 'About', value: 'No bio'),
         const SizedBox(height: 12),
-        _UserDetailField(label: 'Member since', value: 'Unknown'),
+        _UserDetailField(label: 'Role', value: _profile?.role ?? 'user'),
+        const SizedBox(height: 12),
+        _UserDetailField(label: 'Member since', value: _profile?.joinedDate ?? 'Unknown'),
         const SizedBox(height: 12),
         _UserDetailField(label: 'Total contributions', value: '${_userDuas.length + _userPoems.length} posts'),
       ],
@@ -177,6 +188,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
   }
 
   UserModel _toUserModel() {
+    if (_profile != null) return _profile!;
     return UserModel(
       id: widget.userId,
       name: widget.userName,

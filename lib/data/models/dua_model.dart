@@ -5,7 +5,12 @@ class DuaModel {
   final String? arabicText;
   final String? transliteration;
   final String translation;
+  final String? description;
+  final String? whenToRecite;
+  final String? occasion;
+  final int? repetitionCount;
   final String category;
+  final int? categoryId;
   final List<String> tags;
   final String userId;
   final String userName;
@@ -14,6 +19,8 @@ class DuaModel {
   final int bookmarkCount;
   final int likeCount;
   final int reportCount;
+  final String? createdAt;
+  final String? updatedAt;
 
   DuaModel({
     required this.id,
@@ -22,7 +29,12 @@ class DuaModel {
     this.arabicText,
     this.transliteration,
     required this.translation,
+    this.description,
+    this.whenToRecite,
+    this.occasion,
+    this.repetitionCount,
     required this.category,
+    this.categoryId,
     required this.tags,
     required this.userId,
     required this.userName,
@@ -31,6 +43,8 @@ class DuaModel {
     required this.bookmarkCount,
     required this.likeCount,
     this.reportCount = 0,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory DuaModel.fromJson(Map<String, dynamic> json) => DuaModel(
@@ -40,7 +54,12 @@ class DuaModel {
         arabicText: json['arabicText'],
         transliteration: json['transliteration'],
         translation: json['translation'],
+        description: json['description'],
+        whenToRecite: json['whenToRecite'],
+        occasion: json['occasion'],
+        repetitionCount: json['repetitionCount'],
         category: json['category'],
+        categoryId: json['categoryId'],
         tags: List<String>.from(json['tags']),
         userId: json['userId'].toString(),
         userName: json['userName'],
@@ -49,6 +68,8 @@ class DuaModel {
         bookmarkCount: json['bookmarkCount'],
         likeCount: json['likeCount'],
         reportCount: json['reportCount'] ?? 0,
+        createdAt: json['createdAt'],
+        updatedAt: json['updatedAt'],
       );
 
   factory DuaModel.fromApiJson(Map<String, dynamic> json) => DuaModel(
@@ -58,7 +79,12 @@ class DuaModel {
         arabicText: json['arabicText'],
         transliteration: json['transliteration'],
         translation: json['translation'] ?? '',
+        description: json['description'],
+        whenToRecite: json['whenToRecite'],
+        occasion: json['occasion'],
+        repetitionCount: json['repetitionCount'],
         category: json['categoryName'] ?? '',
+        categoryId: json['categoryId'],
         tags: (json['tags'] as List<dynamic>?)
                 ?.map((t) => t['name']?.toString() ?? '')
                 .where((n) => n.isNotEmpty)
@@ -67,10 +93,12 @@ class DuaModel {
         userId: json['createdBy']?.toString() ?? '',
         userName: '',
         userAvatar: '',
-        views: '0',
+        views: (json['viewsCount'] ?? 0).toString(),
         bookmarkCount: 0,
-        likeCount: 0,
+        likeCount: json['likesCount'] ?? 0,
         reportCount: 0,
+        createdAt: json['createdAt'],
+        updatedAt: json['updatedAt'],
       );
 
   DuaModel copyWith({
@@ -79,6 +107,10 @@ class DuaModel {
     String? views,
     int? bookmarkCount,
     int? likeCount,
+    String? description,
+    String? whenToRecite,
+    String? occasion,
+    int? repetitionCount,
   }) {
     return DuaModel(
       id: id,
@@ -87,7 +119,12 @@ class DuaModel {
       arabicText: arabicText,
       transliteration: transliteration,
       translation: translation,
+      description: description ?? this.description,
+      whenToRecite: whenToRecite ?? this.whenToRecite,
+      occasion: occasion ?? this.occasion,
+      repetitionCount: repetitionCount ?? this.repetitionCount,
       category: category,
+      categoryId: categoryId,
       tags: tags,
       userId: userId,
       userName: userName ?? this.userName,
@@ -96,6 +133,8 @@ class DuaModel {
       bookmarkCount: bookmarkCount ?? this.bookmarkCount,
       likeCount: likeCount ?? this.likeCount,
       reportCount: reportCount,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
     );
   }
 }
