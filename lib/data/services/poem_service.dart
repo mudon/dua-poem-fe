@@ -69,6 +69,10 @@ class PoemService {
         .toList();
   }
 
+  Future<void> recordView(String poemId) async {
+    await _dioClient.dio.post('/poems/$poemId/view');
+  }
+
   Future<PoemModel> createPoem(Map<String, dynamic> data) async {
     final response = await _dioClient.dio.post('/poems', data: data);
     return PoemModel.fromApiJson(response.data as Map<String, dynamic>);

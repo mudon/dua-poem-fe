@@ -69,6 +69,10 @@ class DuaService {
         .toList();
   }
 
+  Future<void> recordView(String duaId) async {
+    await _dioClient.dio.post('/duas/$duaId/view');
+  }
+
   Future<DuaModel> createDua(Map<String, dynamic> data) async {
     final response = await _dioClient.dio.post('/duas', data: data);
     return DuaModel.fromApiJson(response.data as Map<String, dynamic>);

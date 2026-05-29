@@ -88,6 +88,15 @@ class DuaRepository {
     }
   }
 
+  Future<ApiResult<void>> recordView(String duaId) async {
+    try {
+      await _duaService.recordView(duaId);
+      return ApiResult.success(null);
+    } catch (e) {
+      return ApiResult.failure(e.toString());
+    }
+  }
+
   Future<ApiResult<void>> reportDua(String duaId, String reason, String description) async {
     try {
       await _duaService.reportDua(duaId, reason, description);

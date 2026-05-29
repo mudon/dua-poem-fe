@@ -88,6 +88,15 @@ class PoemRepository {
     }
   }
 
+  Future<ApiResult<void>> recordView(String poemId) async {
+    try {
+      await _poemService.recordView(poemId);
+      return ApiResult.success(null);
+    } catch (e) {
+      return ApiResult.failure(e.toString());
+    }
+  }
+
   Future<ApiResult<void>> reportPoem(String poemId, String reason, String description) async {
     try {
       await _poemService.reportPoem(poemId, reason, description);
