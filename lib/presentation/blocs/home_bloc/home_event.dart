@@ -25,3 +25,33 @@ class FetchMyPoems extends HomeEvent {
   final String userId;
   FetchMyPoems(this.userId);
 }
+
+class UpdateDua extends HomeEvent {
+  final String duaId;
+  final bool? isLiked;
+  final int? likeCount;
+  final bool? isFavorited;
+  final int? bookmarkCount;
+  UpdateDua({
+    required this.duaId,
+    this.isLiked,
+    this.likeCount,
+    this.isFavorited,
+    this.bookmarkCount,
+  });
+}
+
+class UpdatePoem extends HomeEvent {
+  final String poemId;
+  final bool? isLiked;
+  final int? likeCount;
+  final bool? isFavorited;
+  final int? bookmarkCount;
+  UpdatePoem({
+    required this.poemId,
+    this.isLiked,
+    this.likeCount,
+    this.isFavorited,
+    this.bookmarkCount,
+  });
+}

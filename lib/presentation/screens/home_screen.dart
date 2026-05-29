@@ -3,9 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/themes/app_theme.dart';
 import '../blocs/auth_bloc/auth_bloc.dart';
 import '../blocs/auth_bloc/auth_state.dart';
+import '../blocs/dua_bloc/dua_bloc.dart';
+import '../blocs/dua_bloc/dua_state.dart';
 import '../blocs/home_bloc/home_bloc.dart';
 import '../blocs/home_bloc/home_event.dart';
 import '../blocs/home_bloc/home_state.dart';
+import '../blocs/poem_bloc/poem_bloc.dart';
+import '../blocs/poem_bloc/poem_state.dart';
 import '../widgets/common/dua_card.dart';
 import '../widgets/common/poem_card.dart';
 import '../widgets/common/home_tab_bar.dart';
@@ -41,47 +45,109 @@ class HomeScreen extends StatelessWidget {
                   Expanded(
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
-                      child: Column(
-                        children: [
-                          const HomeTabBar(),
-                          BlocBuilder<HomeBloc, HomeState>(
-                            builder: (context, state) {
-                              if (state.isLoading && !state.isSearching) return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
-                              if (state.error != null && !state.isSearching && !state.isLoading) return Center(child: Text(state.error!));
-
-                              if (state.isSearching) {
-                                if (state.isSearching && state.searchQuery.isNotEmpty && state.searchDuas.isEmpty && state.searchPoems.isEmpty) {
-                                  return const Center(child: CircularProgressIndicator());
-                                }
-                                if (state.searchQuery.isNotEmpty && state.showDuasTab && state.searchDuas.isEmpty) {
-                                  return const Padding(
-                                    padding: EdgeInsets.all(32),
-                                    child: Center(child: Text('No results found')),
-                                  );
-                                }
-                                if (state.searchQuery.isNotEmpty && !state.showDuasTab && state.searchPoems.isEmpty) {
-                                  return const Padding(
-                                    padding: EdgeInsets.all(32),
-                                    child: Center(child: Text('No results found')),
-                                  );
-                                }
-                                return Column(
-                                  children: state.showDuasTab
-                                      ? state.searchDuas.map((d) => DuaCard(dua: d, currentUser: user)).toList()
-                                      : state.searchPoems.map((p) => PoemCard(poem: p, currentUser: user)).toList(),
-                                );
+                      child: MultiBlocListener(
+                        listeners: [
+                          BlocListener<DuaBloc, DuaState>(
+                            listener: (context, state) {
+                              if (state.error != null) return;
+                              final id = state.lastToggledDuaId;
+                              if (id == null) return;
+                              final homeState = context.read<HomeBloc>().state;
+                              if (state.actionType == 'like') {
+                                final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
+                                if (idx == -1) return;
+                                final dua = homeState.latestDuas[idx];
+                                final isNowLiked = state.likedStates[id] ?? false;
+                                context.read<HomeBloc>().add(UpdateDua(
+                                  duaId: id,
+                                  isLiked: isNowLiked,
+                                  likeCount: dua.likeCount + (isNowLiked ? 1 : -1),
+                                ));
+                              } else if (state.actionType == 'bookmark') {
+                                final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
+                                if (idx == -1) return;
+                                final dua = homeState.latestDuas[idx];
+                                final isNowFav = state.favoritedStates[id] ?? false;
+                                context.read<HomeBloc>().add(UpdateDua(
+                                  duaId: id,
+                                  isFavorited: isNowFav,
+                                  bookmarkCount: dua.bookmarkCount + (isNowFav ? 1 : -1),
+                                ));
                               }
-
-                              return state.showDuasTab
-                                  ? Column(
-                                      children: state.latestDuas.map((d) => DuaCard(dua: d, currentUser: user)).toList(),
-                                    )
-                                  : Column(
-                                      children: state.latestPoems.map((p) => PoemCard(poem: p, currentUser: user)).toList(),
-                                    );
+                            },
+                          ),
+                          BlocListener<PoemBloc, PoemState>(
+                            listener: (context, state) {
+                              if (state.error != null) return;
+                              final id = state.lastToggledPoemId;
+                              if (id == null) return;
+                              final homeState = context.read<HomeBloc>().state;
+                              if (state.actionType == 'like') {
+                                final idx = homeState.latestPoems.indexWhere((p) => p.id == id);
+                                if (idx == -1) return;
+                                final poem = homeState.latestPoems[idx];
+                                final isNowLiked = state.likedStates[id] ?? false;
+                                context.read<HomeBloc>().add(UpdatePoem(
+                                  poemId: id,
+                                  isLiked: isNowLiked,
+                                  likeCount: poem.likeCount + (isNowLiked ? 1 : -1),
+                                ));
+                              } else if (state.actionType == 'bookmark') {
+                                final idx = homeState.latestPoems.indexWhere((p) => p.id == id);
+                                if (idx == -1) return;
+                                final poem = homeState.latestPoems[idx];
+                                final isNowFav = state.favoritedStates[id] ?? false;
+                                context.read<HomeBloc>().add(UpdatePoem(
+                                  poemId: id,
+                                  isFavorited: isNowFav,
+                                  bookmarkCount: poem.bookmarkCount + (isNowFav ? 1 : -1),
+                                ));
+                              }
                             },
                           ),
                         ],
+                        child: Column(
+                          children: [
+                            const HomeTabBar(),
+                            BlocBuilder<HomeBloc, HomeState>(
+                              builder: (context, state) {
+                                if (state.isLoading && !state.isSearching) return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
+                                if (state.error != null && !state.isSearching && !state.isLoading) return Center(child: Text(state.error!));
+
+                                if (state.isSearching) {
+                                  if (state.isSearching && state.searchQuery.isNotEmpty && state.searchDuas.isEmpty && state.searchPoems.isEmpty) {
+                                    return const Center(child: CircularProgressIndicator());
+                                  }
+                                  if (state.searchQuery.isNotEmpty && state.showDuasTab && state.searchDuas.isEmpty) {
+                                    return const Padding(
+                                      padding: EdgeInsets.all(32),
+                                      child: Center(child: Text('No results found')),
+                                    );
+                                  }
+                                  if (state.searchQuery.isNotEmpty && !state.showDuasTab && state.searchPoems.isEmpty) {
+                                    return const Padding(
+                                      padding: EdgeInsets.all(32),
+                                      child: Center(child: Text('No results found')),
+                                    );
+                                  }
+                                  return Column(
+                                    children: state.showDuasTab
+                                        ? state.searchDuas.map((d) => DuaCard(dua: d, currentUser: user)).toList()
+                                        : state.searchPoems.map((p) => PoemCard(poem: p, currentUser: user)).toList(),
+                                  );
+                                }
+
+                                return state.showDuasTab
+                                    ? Column(
+                                        children: state.latestDuas.map((d) => DuaCard(dua: d, currentUser: user)).toList(),
+                                      )
+                                    : Column(
+                                        children: state.latestPoems.map((p) => PoemCard(poem: p, currentUser: user)).toList(),
+                                      );
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

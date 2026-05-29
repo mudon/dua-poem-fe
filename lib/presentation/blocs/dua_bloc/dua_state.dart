@@ -4,6 +4,7 @@ class DuaState {
   final String? actionType;
   final Map<String, bool> likedStates;
   final Map<String, bool> favoritedStates;
+  final String? lastToggledDuaId;
 
   DuaState({
     this.isProcessing = false,
@@ -11,6 +12,7 @@ class DuaState {
     this.actionType,
     this.likedStates = const {},
     this.favoritedStates = const {},
+    this.lastToggledDuaId,
   });
 
   DuaState copyWith({
@@ -19,6 +21,7 @@ class DuaState {
     String? actionType,
     Map<String, bool>? likedStates,
     Map<String, bool>? favoritedStates,
+    String? lastToggledDuaId,
   }) {
     return DuaState(
       isProcessing: isProcessing ?? this.isProcessing,
@@ -26,6 +29,7 @@ class DuaState {
       actionType: actionType ?? this.actionType,
       likedStates: likedStates ?? this.likedStates,
       favoritedStates: favoritedStates ?? this.favoritedStates,
+      lastToggledDuaId: lastToggledDuaId ?? this.lastToggledDuaId,
     );
   }
 }

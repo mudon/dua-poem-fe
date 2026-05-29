@@ -9,7 +9,9 @@ import '../../data/repositories/dua_repository.dart';
 import '../../data/repositories/poem_repository.dart';
 import '../../core/themes/app_theme.dart';
 import '../blocs/dua_bloc/dua_bloc.dart';
+import '../blocs/dua_bloc/dua_state.dart';
 import '../blocs/poem_bloc/poem_bloc.dart';
+import '../blocs/poem_bloc/poem_state.dart';
 import '../blocs/auth_bloc/auth_bloc.dart';
 import '../blocs/auth_bloc/auth_state.dart';
 import '../widgets/common/dua_card.dart';
@@ -79,7 +81,64 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
         BlocProvider(create: (_) => getIt<DuaBloc>()),
         BlocProvider(create: (_) => getIt<PoemBloc>()),
       ],
-      child: Scaffold(
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<DuaBloc, DuaState>(
+            listener: (context, state) {
+              if (state.error != null) return;
+              final id = state.lastToggledDuaId;
+              if (id == null) return;
+              final idx = _userDuas.indexWhere((d) => d.id == id);
+              if (idx == -1) return;
+              final d = _userDuas[idx];
+              if (state.actionType == 'like') {
+                final isNowLiked = state.likedStates[id] ?? false;
+                setState(() {
+                  _userDuas[idx] = d.copyWith(
+                    isLiked: isNowLiked,
+                    likeCount: d.likeCount + (isNowLiked ? 1 : -1),
+                  );
+                });
+              } else if (state.actionType == 'bookmark') {
+                final isNowFav = state.favoritedStates[id] ?? false;
+                setState(() {
+                  _userDuas[idx] = d.copyWith(
+                    isFavorited: isNowFav,
+                    bookmarkCount: d.bookmarkCount + (isNowFav ? 1 : -1),
+                  );
+                });
+              }
+            },
+          ),
+          BlocListener<PoemBloc, PoemState>(
+            listener: (context, state) {
+              if (state.error != null) return;
+              final id = state.lastToggledPoemId;
+              if (id == null) return;
+              final idx = _userPoems.indexWhere((p) => p.id == id);
+              if (idx == -1) return;
+              final p = _userPoems[idx];
+              if (state.actionType == 'like') {
+                final isNowLiked = state.likedStates[id] ?? false;
+                setState(() {
+                  _userPoems[idx] = p.copyWith(
+                    isLiked: isNowLiked,
+                    likeCount: p.likeCount + (isNowLiked ? 1 : -1),
+                  );
+                });
+              } else if (state.actionType == 'bookmark') {
+                final isNowFav = state.favoritedStates[id] ?? false;
+                setState(() {
+                  _userPoems[idx] = p.copyWith(
+                    isFavorited: isNowFav,
+                    bookmarkCount: p.bookmarkCount + (isNowFav ? 1 : -1),
+                  );
+                });
+              }
+            },
+          ),
+        ],
+        child: Scaffold(
         backgroundColor: const Color(0xFFF4F0E8),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -159,6 +218,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
               ],
             ),
           ),
+        ),
         ),
       ),
     );

@@ -19,7 +19,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     if (result.isSuccess) {
       newLiked[event.duaId] = !event.currentlyLiked;
     }
-    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'like', likedStates: newLiked));
+    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'like', likedStates: newLiked, lastToggledDuaId: event.duaId));
   }
 
   Future<void> _onToggleBookmark(ToggleBookmark event, Emitter<DuaState> emit) async {
@@ -29,7 +29,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     if (result.isSuccess) {
       newFavorited[event.duaId] = !event.currentlyFavorited;
     }
-    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'bookmark', favoritedStates: newFavorited));
+    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'bookmark', favoritedStates: newFavorited, lastToggledDuaId: event.duaId));
   }
 
   Future<void> _onReport(ReportDua event, Emitter<DuaState> emit) async {

@@ -16,6 +16,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<ClearSearch>((event, emit) => emit(state.copyWith(isSearching: false, searchQuery: '', searchDuas: [], searchPoems: [])));
     on<FetchMyDuas>(_fetchMyDuas);
     on<FetchMyPoems>(_fetchMyPoems);
+    on<UpdateDua>(_onUpdateDua);
+    on<UpdatePoem>(_onUpdatePoem);
   }
 
   Future<void> _fetchDuas(FetchLatestDuas event, Emitter<HomeState> emit) async {
@@ -56,6 +58,50 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       myPoems: result.isSuccess ? result.data! : [],
       error: !result.isSuccess ? result.error : null,
     ));
+  }
+
+  void _onUpdateDua(UpdateDua event, Emitter<HomeState> emit) {
+    final updatedLatest = state.latestDuas.map((d) {
+      if (d.id != event.duaId) return d;
+      return d.copyWith(
+        isLiked: event.isLiked,
+        likeCount: event.likeCount,
+        isFavorited: event.isFavorited,
+        bookmarkCount: event.bookmarkCount,
+      );
+    }).toList();
+    final updatedMy = state.myDuas.map((d) {
+      if (d.id != event.duaId) return d;
+      return d.copyWith(
+        isLiked: event.isLiked,
+        likeCount: event.likeCount,
+        isFavorited: event.isFavorited,
+        bookmarkCount: event.bookmarkCount,
+      );
+    }).toList();
+    emit(state.copyWith(latestDuas: updatedLatest, myDuas: updatedMy));
+  }
+
+  void _onUpdatePoem(UpdatePoem event, Emitter<HomeState> emit) {
+    final updatedLatest = state.latestPoems.map((p) {
+      if (p.id != event.poemId) return p;
+      return p.copyWith(
+        isLiked: event.isLiked,
+        likeCount: event.likeCount,
+        isFavorited: event.isFavorited,
+        bookmarkCount: event.bookmarkCount,
+      );
+    }).toList();
+    final updatedMy = state.myPoems.map((p) {
+      if (p.id != event.poemId) return p;
+      return p.copyWith(
+        isLiked: event.isLiked,
+        likeCount: event.likeCount,
+        isFavorited: event.isFavorited,
+        bookmarkCount: event.bookmarkCount,
+      );
+    }).toList();
+    emit(state.copyWith(latestPoems: updatedLatest, myPoems: updatedMy));
   }
 
   Future<void> _search(SearchRequested event, Emitter<HomeState> emit) async {

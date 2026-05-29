@@ -4,6 +4,7 @@ class PoemState {
   final String? actionType;
   final Map<String, bool> likedStates;
   final Map<String, bool> favoritedStates;
+  final String? lastToggledPoemId;
 
   PoemState({
     this.isProcessing = false,
@@ -11,6 +12,7 @@ class PoemState {
     this.actionType,
     this.likedStates = const {},
     this.favoritedStates = const {},
+    this.lastToggledPoemId,
   });
 
   PoemState copyWith({
@@ -19,6 +21,7 @@ class PoemState {
     String? actionType,
     Map<String, bool>? likedStates,
     Map<String, bool>? favoritedStates,
+    String? lastToggledPoemId,
   }) {
     return PoemState(
       isProcessing: isProcessing ?? this.isProcessing,
@@ -26,6 +29,7 @@ class PoemState {
       actionType: actionType ?? this.actionType,
       likedStates: likedStates ?? this.likedStates,
       favoritedStates: favoritedStates ?? this.favoritedStates,
+      lastToggledPoemId: lastToggledPoemId ?? this.lastToggledPoemId,
     );
   }
 }

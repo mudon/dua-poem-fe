@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/themes/app_theme.dart';
 import '../blocs/auth_bloc/auth_bloc.dart';
 import '../blocs/auth_bloc/auth_state.dart';
+import '../blocs/dua_bloc/dua_bloc.dart';
+import '../blocs/dua_bloc/dua_state.dart';
 import '../blocs/home_bloc/home_bloc.dart';
 import '../blocs/home_bloc/home_event.dart';
 import '../blocs/home_bloc/home_state.dart';
@@ -34,7 +36,35 @@ class MyDuasScreen extends StatelessWidget {
       body: SafeArea(
         child: BlocProvider(
           create: (_) => getIt<HomeBloc>()..add(FetchMyDuas(user.id)),
-          child: BlocBuilder<HomeBloc, HomeState>(
+          child: BlocListener<DuaBloc, DuaState>(
+            listener: (ctx, state) {
+              if (state.error != null) return;
+              final id = state.lastToggledDuaId;
+              if (id == null) return;
+              final homeState = ctx.read<HomeBloc>().state;
+              if (state.actionType == 'like') {
+                final idx = homeState.myDuas.indexWhere((d) => d.id == id);
+                if (idx == -1) return;
+                final dua = homeState.myDuas[idx];
+                final isNowLiked = state.likedStates[id] ?? false;
+                ctx.read<HomeBloc>().add(UpdateDua(
+                  duaId: id,
+                  isLiked: isNowLiked,
+                  likeCount: dua.likeCount + (isNowLiked ? 1 : -1),
+                ));
+              } else if (state.actionType == 'bookmark') {
+                final idx = homeState.myDuas.indexWhere((d) => d.id == id);
+                if (idx == -1) return;
+                final dua = homeState.myDuas[idx];
+                final isNowFav = state.favoritedStates[id] ?? false;
+                ctx.read<HomeBloc>().add(UpdateDua(
+                  duaId: id,
+                  isFavorited: isNowFav,
+                  bookmarkCount: dua.bookmarkCount + (isNowFav ? 1 : -1),
+                ));
+              }
+            },
+            child: BlocBuilder<HomeBloc, HomeState>(
             builder: (context, state) {
               final duas = state.myDuas;
               final loading = state.myDuasLoading;
@@ -88,6 +118,8 @@ class MyDuasScreen extends StatelessWidget {
           ),
         ),
       ),
+      ),
     );
   }
 }
+

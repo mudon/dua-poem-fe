@@ -6,6 +6,8 @@ import '../blocs/auth_bloc/auth_state.dart';
 import '../blocs/home_bloc/home_bloc.dart';
 import '../blocs/home_bloc/home_event.dart';
 import '../blocs/home_bloc/home_state.dart';
+import '../blocs/poem_bloc/poem_bloc.dart';
+import '../blocs/poem_bloc/poem_state.dart';
 import '../widgets/common/poem_card.dart';
 import '../../app/dependency_injection.dart';
 import '../widgets/forms/create_poem_sheet.dart';
@@ -34,7 +36,35 @@ class MyPoemsScreen extends StatelessWidget {
       body: SafeArea(
         child: BlocProvider(
           create: (_) => getIt<HomeBloc>()..add(FetchMyPoems(user.id)),
-          child: BlocBuilder<HomeBloc, HomeState>(
+          child: BlocListener<PoemBloc, PoemState>(
+            listener: (ctx, state) {
+              if (state.error != null) return;
+              final id = state.lastToggledPoemId;
+              if (id == null) return;
+              final homeState = ctx.read<HomeBloc>().state;
+              if (state.actionType == 'like') {
+                final idx = homeState.myPoems.indexWhere((p) => p.id == id);
+                if (idx == -1) return;
+                final poem = homeState.myPoems[idx];
+                final isNowLiked = state.likedStates[id] ?? false;
+                ctx.read<HomeBloc>().add(UpdatePoem(
+                  poemId: id,
+                  isLiked: isNowLiked,
+                  likeCount: poem.likeCount + (isNowLiked ? 1 : -1),
+                ));
+              } else if (state.actionType == 'bookmark') {
+                final idx = homeState.myPoems.indexWhere((p) => p.id == id);
+                if (idx == -1) return;
+                final poem = homeState.myPoems[idx];
+                final isNowFav = state.favoritedStates[id] ?? false;
+                ctx.read<HomeBloc>().add(UpdatePoem(
+                  poemId: id,
+                  isFavorited: isNowFav,
+                  bookmarkCount: poem.bookmarkCount + (isNowFav ? 1 : -1),
+                ));
+              }
+            },
+            child: BlocBuilder<HomeBloc, HomeState>(
             builder: (context, state) {
               final poems = state.myPoems;
               final loading = state.myPoemsLoading;
@@ -88,6 +118,8 @@ class MyPoemsScreen extends StatelessWidget {
           ),
         ),
       ),
+      ),
     );
   }
 }
+

@@ -19,7 +19,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     if (result.isSuccess) {
       newLiked[event.poemId] = !event.currentlyLiked;
     }
-    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'like', likedStates: newLiked));
+    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'like', likedStates: newLiked, lastToggledPoemId: event.poemId));
   }
 
   Future<void> _onToggleBookmark(ToggleBookmark event, Emitter<PoemState> emit) async {
@@ -29,7 +29,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     if (result.isSuccess) {
       newFavorited[event.poemId] = !event.currentlyFavorited;
     }
-    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'bookmark', favoritedStates: newFavorited));
+    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'bookmark', favoritedStates: newFavorited, lastToggledPoemId: event.poemId));
   }
 
   Future<void> _onReport(ReportPoem event, Emitter<PoemState> emit) async {
