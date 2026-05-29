@@ -17,7 +17,7 @@ void _showCreatePoemSheet(BuildContext context) {
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (_) => CreatePoemSheet(
-      onCreated: () => homeBloc.add(FetchLatestPoems()),
+      onCreated: () => homeBloc.add(FetchMyPoems((context.read<AuthBloc>().state as Authenticated).user.id)),
     ),
   );
 }
@@ -33,10 +33,11 @@ class MyPoemsScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFF4F0E8),
       body: SafeArea(
         child: BlocProvider(
-          create: (_) => getIt<HomeBloc>()..add(FetchLatestPoems()),
+          create: (_) => getIt<HomeBloc>()..add(FetchMyPoems(user.id)),
           child: BlocBuilder<HomeBloc, HomeState>(
             builder: (context, state) {
-              final poems = state.latestPoems.where((p) => p.userId.toString() == user.id).toList();
+              final poems = state.myPoems;
+              final loading = state.myPoemsLoading;
               return Padding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
                 child: Column(
@@ -71,7 +72,7 @@ class MyPoemsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Expanded(
-                      child: state.isLoading
+                      child: loading
                           ? const Center(child: CircularProgressIndicator())
                           : poems.isEmpty
                               ? const Center(child: Text('No poems yet', style: TextStyle(color: Color(0xFF9A8C79))))

@@ -14,6 +14,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<ToggleHomeTab>((event, emit) => emit(state.copyWith(showDuasTab: event.showDuas)));
     on<SearchRequested>(_search);
     on<ClearSearch>((event, emit) => emit(state.copyWith(isSearching: false, searchQuery: '', searchDuas: [], searchPoems: [])));
+    on<FetchMyDuas>(_fetchMyDuas);
+    on<FetchMyPoems>(_fetchMyPoems);
   }
 
   Future<void> _fetchDuas(FetchLatestDuas event, Emitter<HomeState> emit) async {
@@ -34,6 +36,26 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     } else {
       emit(state.copyWith(isLoading: false, error: result.error));
     }
+  }
+
+  Future<void> _fetchMyDuas(FetchMyDuas event, Emitter<HomeState> emit) async {
+    emit(state.copyWith(myDuasLoading: true));
+    final result = await _duaRepo.getUserDuas(event.userId);
+    emit(state.copyWith(
+      myDuasLoading: false,
+      myDuas: result.isSuccess ? result.data! : [],
+      error: !result.isSuccess ? result.error : null,
+    ));
+  }
+
+  Future<void> _fetchMyPoems(FetchMyPoems event, Emitter<HomeState> emit) async {
+    emit(state.copyWith(myPoemsLoading: true));
+    final result = await _poemRepo.getUserPoems(event.userId);
+    emit(state.copyWith(
+      myPoemsLoading: false,
+      myPoems: result.isSuccess ? result.data! : [],
+      error: !result.isSuccess ? result.error : null,
+    ));
   }
 
   Future<void> _search(SearchRequested event, Emitter<HomeState> emit) async {

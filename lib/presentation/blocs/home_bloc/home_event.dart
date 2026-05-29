@@ -15,3 +15,13 @@ class SearchRequested extends HomeEvent {
 }
 
 class ClearSearch extends HomeEvent {}
+
+class FetchMyDuas extends HomeEvent {
+  final String userId;
+  FetchMyDuas(this.userId);
+}
+
+class FetchMyPoems extends HomeEvent {
+  final String userId;
+  FetchMyPoems(this.userId);
+}

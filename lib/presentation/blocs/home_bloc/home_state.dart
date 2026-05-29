@@ -11,6 +11,10 @@ class HomeState {
   final String searchQuery;
   final List<DuaModel> searchDuas;
   final List<PoemModel> searchPoems;
+  final List<DuaModel> myDuas;
+  final bool myDuasLoading;
+  final List<PoemModel> myPoems;
+  final bool myPoemsLoading;
 
   HomeState({
     this.isLoading = false,
@@ -22,6 +26,10 @@ class HomeState {
     this.searchQuery = '',
     this.searchDuas = const [],
     this.searchPoems = const [],
+    this.myDuas = const [],
+    this.myDuasLoading = false,
+    this.myPoems = const [],
+    this.myPoemsLoading = false,
   });
 
   HomeState copyWith({
@@ -34,6 +42,10 @@ class HomeState {
     String? searchQuery,
     List<DuaModel>? searchDuas,
     List<PoemModel>? searchPoems,
+    List<DuaModel>? myDuas,
+    bool? myDuasLoading,
+    List<PoemModel>? myPoems,
+    bool? myPoemsLoading,
   }) {
     return HomeState(
       isLoading: isLoading ?? this.isLoading,
@@ -45,6 +57,10 @@ class HomeState {
       searchQuery: searchQuery ?? this.searchQuery,
       searchDuas: searchDuas ?? this.searchDuas,
       searchPoems: searchPoems ?? this.searchPoems,
+      myDuas: myDuas ?? this.myDuas,
+      myDuasLoading: myDuasLoading ?? this.myDuasLoading,
+      myPoems: myPoems ?? this.myPoems,
+      myPoemsLoading: myPoemsLoading ?? this.myPoemsLoading,
     );
   }
 }

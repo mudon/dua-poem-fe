@@ -17,7 +17,7 @@ void _showCreateDuaSheet(BuildContext context) {
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (_) => CreateDuaSheet(
-      onCreated: () => homeBloc.add(FetchLatestDuas()),
+      onCreated: () => homeBloc.add(FetchMyDuas((context.read<AuthBloc>().state as Authenticated).user.id)),
     ),
   );
 }
@@ -33,10 +33,11 @@ class MyDuasScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFF4F0E8),
       body: SafeArea(
         child: BlocProvider(
-          create: (_) => getIt<HomeBloc>()..add(FetchLatestDuas()),
+          create: (_) => getIt<HomeBloc>()..add(FetchMyDuas(user.id)),
           child: BlocBuilder<HomeBloc, HomeState>(
             builder: (context, state) {
-              final duas = state.latestDuas.where((d) => d.userId.toString() == user.id).toList();
+              final duas = state.myDuas;
+              final loading = state.myDuasLoading;
               return Padding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
                 child: Column(
@@ -71,7 +72,7 @@ class MyDuasScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Expanded(
-                      child: state.isLoading
+                      child: loading
                           ? const Center(child: CircularProgressIndicator())
                           : duas.isEmpty
                               ? const Center(child: Text('No duas yet', style: TextStyle(color: Color(0xFF9A8C79))))
