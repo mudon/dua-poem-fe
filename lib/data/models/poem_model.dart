@@ -87,8 +87,8 @@ class PoemModel {
                 .toList() ??
             [],
         userId: json['createdBy']?.toString() ?? '',
-        userName: '',
-        userAvatar: '',
+        userName: json['createdByName'] ?? '',
+        userAvatar: _firstLetter(json['createdByName']),
         views: (json['viewsCount'] ?? 0).toString(),
         bookmarkCount: json['bookmarkCount'] ?? json['favoritesCount'] ?? 0,
         likeCount: json['likesCount'] ?? 0,
@@ -98,6 +98,11 @@ class PoemModel {
         createdAt: json['createdAt'],
         updatedAt: json['updatedAt'],
       );
+
+  static String _firstLetter(dynamic name) {
+    if (name is String && name.isNotEmpty) return name[0].toUpperCase();
+    return '';
+  }
 
   PoemModel copyWith({
     String? userName,

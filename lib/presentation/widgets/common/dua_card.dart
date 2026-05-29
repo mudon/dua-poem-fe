@@ -191,7 +191,12 @@ class _DuaCardState extends State<DuaCard> {
                       CircleAvatar(
                         radius: 16,
                         backgroundColor: const Color(0xFFDCE8D3),
-                        child: Text(widget.dua.userAvatar, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF4A5B3E))),
+                        child: Text(
+                          widget.dua.userAvatar.isNotEmpty
+                              ? widget.dua.userAvatar
+                              : (widget.dua.userName.isNotEmpty ? widget.dua.userName[0].toUpperCase() : '?'),
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF4A5B3E)),
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Column(
