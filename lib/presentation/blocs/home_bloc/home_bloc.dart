@@ -12,6 +12,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<FetchLatestDuas>(_fetchDuas);
     on<FetchLatestPoems>(_fetchPoems);
     on<ToggleHomeTab>((event, emit) => emit(state.copyWith(showDuasTab: event.showDuas)));
+    on<SearchRequested>(_search);
+    on<ClearSearch>((event, emit) => emit(state.copyWith(isSearching: false, searchQuery: '', searchDuas: [], searchPoems: [])));
   }
 
   Future<void> _fetchDuas(FetchLatestDuas event, Emitter<HomeState> emit) async {
@@ -32,5 +34,24 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     } else {
       emit(state.copyWith(isLoading: false, error: result.error));
     }
+  }
+
+  Future<void> _search(SearchRequested event, Emitter<HomeState> emit) async {
+    if (event.query.trim().isEmpty) {
+      emit(state.copyWith(isSearching: false, searchQuery: '', searchDuas: [], searchPoems: []));
+      return;
+    }
+
+    emit(state.copyWith(searchQuery: event.query, isSearching: true, error: null));
+
+    final duasResult = await _duaRepo.search(event.query);
+    final poemsResult = await _poemRepo.search(event.query);
+
+    emit(state.copyWith(
+      isSearching: false,
+      searchDuas: duasResult.isSuccess ? duasResult.data! : [],
+      searchPoems: poemsResult.isSuccess ? poemsResult.data! : [],
+      error: (!duasResult.isSuccess || !poemsResult.isSuccess) ? 'Search failed for some results' : null,
+    ));
   }
 }

@@ -46,8 +46,32 @@ class HomeScreen extends StatelessWidget {
                           const HomeTabBar(),
                           BlocBuilder<HomeBloc, HomeState>(
                             builder: (context, state) {
-                              if (state.isLoading) return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
-                              if (state.error != null) return Center(child: Text(state.error!));
+                              if (state.isLoading && !state.isSearching) return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
+                              if (state.error != null && !state.isSearching && !state.isLoading) return Center(child: Text(state.error!));
+
+                              if (state.isSearching) {
+                                if (state.isSearching && state.searchQuery.isNotEmpty && state.searchDuas.isEmpty && state.searchPoems.isEmpty) {
+                                  return const Center(child: CircularProgressIndicator());
+                                }
+                                if (state.searchQuery.isNotEmpty && state.showDuasTab && state.searchDuas.isEmpty) {
+                                  return const Padding(
+                                    padding: EdgeInsets.all(32),
+                                    child: Center(child: Text('No results found')),
+                                  );
+                                }
+                                if (state.searchQuery.isNotEmpty && !state.showDuasTab && state.searchPoems.isEmpty) {
+                                  return const Padding(
+                                    padding: EdgeInsets.all(32),
+                                    child: Center(child: Text('No results found')),
+                                  );
+                                }
+                                return Column(
+                                  children: state.showDuasTab
+                                      ? state.searchDuas.map((d) => DuaCard(dua: d, currentUser: user)).toList()
+                                      : state.searchPoems.map((p) => PoemCard(poem: p, currentUser: user)).toList(),
+                                );
+                              }
+
                               return state.showDuasTab
                                   ? Column(
                                       children: state.latestDuas.map((d) => DuaCard(dua: d, currentUser: user)).toList(),
@@ -87,6 +111,73 @@ void _showCreatePicker(BuildContext context) {
       },
     ),
   );
+}
+
+class _SearchBar extends StatefulWidget {
+  @override
+  State<_SearchBar> createState() => _SearchBarState();
+}
+
+class _SearchBarState extends State<_SearchBar> {
+  final _controller = TextEditingController();
+  bool _isActive = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(44),
+        border: Border.all(color: const Color(0xFFEBE3D5)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.search, size: 18, color: Color(0xFFB9AA97)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              controller: _controller,
+              onTap: () => setState(() => _isActive = true),
+              onSubmitted: (value) {
+                context.read<HomeBloc>().add(SearchRequested(value));
+              },
+              onChanged: (value) {
+                if (value.isEmpty && _isActive) {
+                  context.read<HomeBloc>().add(ClearSearch());
+                }
+              },
+              decoration: const InputDecoration(
+                hintText: 'Search...',
+                hintStyle: TextStyle(fontSize: 14, color: Color(0xFFB9AA97)),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
+              style: const TextStyle(fontSize: 14, color: Color(0xFF3C4F34)),
+            ),
+          ),
+          if (_isActive)
+            GestureDetector(
+              onTap: () {
+                _controller.clear();
+                context.read<HomeBloc>().add(ClearSearch());
+                setState(() => _isActive = false);
+              },
+              child: const Icon(Icons.close, size: 18, color: Color(0xFFB9AA97)),
+            )
+          else
+            const Icon(Icons.tune, size: 18, color: Color(0xFFB9AA97)),
+        ],
+      ),
+    );
+  }
 }
 
 class _HeaderBar extends StatelessWidget {
@@ -137,22 +228,7 @@ class _HeaderBar extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(44),
-              border: Border.all(color: const Color(0xFFEBE3D5)),
-            ),
-            child: const Row(
-              children: [
-                Icon(Icons.search, size: 18, color: Color(0xFFB9AA97)),
-                SizedBox(width: 8),
-                Expanded(child: Text('Search...', style: TextStyle(fontSize: 14, color: Color(0xFFB9AA97)))),
-                Icon(Icons.tune, size: 18, color: Color(0xFFB9AA97)),
-              ],
-            ),
-          ),
+          _SearchBar(),
         ],
       ),
     );

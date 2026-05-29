@@ -61,6 +61,33 @@ class DuaRepository {
     }
   }
 
+  Future<ApiResult<List<DuaModel>>> getByCategory(int categoryId) async {
+    try {
+      final results = await _duaService.getByCategory(categoryId);
+      return ApiResult.success(results);
+    } catch (e) {
+      return ApiResult.failure(e.toString());
+    }
+  }
+
+  Future<ApiResult<List<DuaModel>>> getByTag(int tagId) async {
+    try {
+      final results = await _duaService.getByTag(tagId);
+      return ApiResult.success(results);
+    } catch (e) {
+      return ApiResult.failure(e.toString());
+    }
+  }
+
+  Future<ApiResult<List<DuaModel>>> search(String query) async {
+    try {
+      final results = await _duaService.search(query);
+      return ApiResult.success(results);
+    } catch (e) {
+      return ApiResult.failure(e.toString());
+    }
+  }
+
   Future<ApiResult<void>> reportDua(String duaId, String reason, String description) async {
     try {
       await _duaService.reportDua(duaId, reason, description);

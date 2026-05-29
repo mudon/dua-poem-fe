@@ -14,11 +14,10 @@ class DuaService {
   }
 
   Future<List<DuaModel>> getUserDuas(String userId) async {
-    final response = await _dioClient.dio.get('/duas');
-    final all = (response.data as List)
+    final response = await _dioClient.dio.get('/duas/user/$userId');
+    return (response.data as List)
         .map((e) => DuaModel.fromApiJson(e as Map<String, dynamic>))
         .toList();
-    return all.where((d) => d.userId == userId).toList();
   }
 
   Future<DuaModel> getDuaDetail(String id) async {
@@ -43,10 +42,30 @@ class DuaService {
   }
 
   Future<List<DuaModel>> getFavorites() async {
-    final response = await _dioClient.dio.get('/duas');
+    final response = await _dioClient.dio.get('/favorites');
     return (response.data as List)
         .map((e) => DuaModel.fromApiJson(e as Map<String, dynamic>))
-        .where((d) => d.isFavorited)
+        .toList();
+  }
+
+  Future<List<DuaModel>> getByCategory(int categoryId) async {
+    final response = await _dioClient.dio.get('/duas/by-category/$categoryId');
+    return (response.data as List)
+        .map((e) => DuaModel.fromApiJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<DuaModel>> getByTag(int tagId) async {
+    final response = await _dioClient.dio.get('/duas/by-tag/$tagId');
+    return (response.data as List)
+        .map((e) => DuaModel.fromApiJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<DuaModel>> search(String query) async {
+    final response = await _dioClient.dio.get('/duas/search', queryParameters: {'q': query});
+    return (response.data as List)
+        .map((e) => DuaModel.fromApiJson(e as Map<String, dynamic>))
         .toList();
   }
 

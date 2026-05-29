@@ -7,6 +7,10 @@ class HomeState {
   final List<DuaModel> latestDuas;
   final List<PoemModel> latestPoems;
   final bool showDuasTab;
+  final bool isSearching;
+  final String searchQuery;
+  final List<DuaModel> searchDuas;
+  final List<PoemModel> searchPoems;
 
   HomeState({
     this.isLoading = false,
@@ -14,6 +18,10 @@ class HomeState {
     this.latestDuas = const [],
     this.latestPoems = const [],
     this.showDuasTab = true,
+    this.isSearching = false,
+    this.searchQuery = '',
+    this.searchDuas = const [],
+    this.searchPoems = const [],
   });
 
   HomeState copyWith({
@@ -22,6 +30,10 @@ class HomeState {
     List<DuaModel>? latestDuas,
     List<PoemModel>? latestPoems,
     bool? showDuasTab,
+    bool? isSearching,
+    String? searchQuery,
+    List<DuaModel>? searchDuas,
+    List<PoemModel>? searchPoems,
   }) {
     return HomeState(
       isLoading: isLoading ?? this.isLoading,
@@ -29,6 +41,10 @@ class HomeState {
       latestDuas: latestDuas ?? this.latestDuas,
       latestPoems: latestPoems ?? this.latestPoems,
       showDuasTab: showDuasTab ?? this.showDuasTab,
+      isSearching: isSearching ?? this.isSearching,
+      searchQuery: searchQuery ?? this.searchQuery,
+      searchDuas: searchDuas ?? this.searchDuas,
+      searchPoems: searchPoems ?? this.searchPoems,
     );
   }
 }

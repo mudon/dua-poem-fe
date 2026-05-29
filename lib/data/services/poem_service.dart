@@ -14,11 +14,10 @@ class PoemService {
   }
 
   Future<List<PoemModel>> getUserPoems(String userId) async {
-    final response = await _dioClient.dio.get('/poems');
-    final all = (response.data as List)
+    final response = await _dioClient.dio.get('/poems/user/$userId');
+    return (response.data as List)
         .map((e) => PoemModel.fromApiJson(e as Map<String, dynamic>))
         .toList();
-    return all.where((p) => p.userId == userId).toList();
   }
 
   Future<PoemModel> getPoemDetail(String id) async {
@@ -43,10 +42,30 @@ class PoemService {
   }
 
   Future<List<PoemModel>> getPoemFavorites() async {
-    final response = await _dioClient.dio.get('/poems');
+    final response = await _dioClient.dio.get('/poems/favorites');
     return (response.data as List)
         .map((e) => PoemModel.fromApiJson(e as Map<String, dynamic>))
-        .where((p) => p.isFavorited)
+        .toList();
+  }
+
+  Future<List<PoemModel>> getByCategory(int categoryId) async {
+    final response = await _dioClient.dio.get('/poems/by-category/$categoryId');
+    return (response.data as List)
+        .map((e) => PoemModel.fromApiJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<PoemModel>> getByTag(int tagId) async {
+    final response = await _dioClient.dio.get('/poems/by-tag/$tagId');
+    return (response.data as List)
+        .map((e) => PoemModel.fromApiJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<PoemModel>> search(String query) async {
+    final response = await _dioClient.dio.get('/poems/search', queryParameters: {'q': query});
+    return (response.data as List)
+        .map((e) => PoemModel.fromApiJson(e as Map<String, dynamic>))
         .toList();
   }
 

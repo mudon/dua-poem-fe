@@ -61,6 +61,33 @@ class PoemRepository {
     }
   }
 
+  Future<ApiResult<List<PoemModel>>> getByCategory(int categoryId) async {
+    try {
+      final results = await _poemService.getByCategory(categoryId);
+      return ApiResult.success(results);
+    } catch (e) {
+      return ApiResult.failure(e.toString());
+    }
+  }
+
+  Future<ApiResult<List<PoemModel>>> getByTag(int tagId) async {
+    try {
+      final results = await _poemService.getByTag(tagId);
+      return ApiResult.success(results);
+    } catch (e) {
+      return ApiResult.failure(e.toString());
+    }
+  }
+
+  Future<ApiResult<List<PoemModel>>> search(String query) async {
+    try {
+      final results = await _poemService.search(query);
+      return ApiResult.success(results);
+    } catch (e) {
+      return ApiResult.failure(e.toString());
+    }
+  }
+
   Future<ApiResult<void>> reportPoem(String poemId, String reason, String description) async {
     try {
       await _poemService.reportPoem(poemId, reason, description);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../data/models/user_model.dart';
 import '../../data/models/dua_model.dart';
 import '../../data/models/poem_model.dart';
+import '../../data/models/user_stats_model.dart';
 import '../../data/services/user_service.dart';
 import '../../data/services/dua_service.dart';
 import '../../data/services/poem_service.dart';
@@ -25,6 +26,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
   List<DuaModel> _userDuas = [];
   List<PoemModel> _userPoems = [];
   UserModel? _profile;
+  UserStatsModel? _stats;
   bool _loading = true;
 
   @override
@@ -37,6 +39,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
     try {
       final userData = await getIt<UserService>().getUserById(widget.userId);
       final profile = UserModel.fromJson(userData);
+      final stats = await getIt<UserService>().getStats(widget.userId);
 
       final duas = await getIt<DuaService>().getUserDuas(widget.userId);
       final poems = await getIt<PoemService>().getUserPoems(widget.userId);
@@ -44,6 +47,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
       if (mounted) {
         setState(() {
           _profile = profile;
+          _stats = stats;
           _userDuas = duas.map((d) => d.copyWith(
             userName: profile.name,
             userAvatar: profile.name.isNotEmpty ? profile.name[0].toUpperCase() : '?',
@@ -149,6 +153,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
   }
 
   Widget _buildDetails() {
+    final stats = _stats;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -158,7 +163,26 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
         const SizedBox(height: 12),
         _UserDetailField(label: 'Member since', value: _profile?.joinedDate ?? 'Unknown'),
         const SizedBox(height: 12),
-        _UserDetailField(label: 'Total contributions', value: '${_userDuas.length + _userPoems.length} posts'),
+        _UserDetailField(label: 'Duas created', value: '${stats?.duasCreated ?? _userDuas.length}'),
+        const SizedBox(height: 12),
+        _UserDetailField(label: 'Poems created', value: '${stats?.poemsCreated ?? _userPoems.length}'),
+        if (stats != null && stats.badges.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          const Text('Badges', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF9A8C79))),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: stats.badges.map((b) => Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFDCE8D3),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(b.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFF4A5B3E))),
+            )).toList(),
+          ),
+        ],
       ],
     );
   }
