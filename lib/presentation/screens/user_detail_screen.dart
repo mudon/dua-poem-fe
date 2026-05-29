@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/user_model.dart';
 import '../../data/models/dua_model.dart';
 import '../../data/models/poem_model.dart';
 import '../../data/models/user_stats_model.dart';
 import '../../data/services/user_service.dart';
-import '../../data/services/dua_service.dart';
-import '../../data/services/poem_service.dart';
+import '../../data/repositories/dua_repository.dart';
+import '../../data/repositories/poem_repository.dart';
 import '../../core/themes/app_theme.dart';
+import '../blocs/dua_bloc/dua_bloc.dart';
+import '../blocs/poem_bloc/poem_bloc.dart';
+import '../blocs/auth_bloc/auth_bloc.dart';
+import '../blocs/auth_bloc/auth_state.dart';
 import '../widgets/common/dua_card.dart';
 import '../widgets/common/poem_card.dart';
 import '../../app/dependency_injection.dart';
@@ -41,18 +46,18 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
       final profile = UserModel.fromJson(userData);
       final stats = await getIt<UserService>().getStats(widget.userId);
 
-      final duas = await getIt<DuaService>().getUserDuas(widget.userId);
-      final poems = await getIt<PoemService>().getUserPoems(widget.userId);
+      final duasResult = await getIt<DuaRepository>().getUserDuas(widget.userId);
+      final poemsResult = await getIt<PoemRepository>().getUserPoems(widget.userId);
 
       if (mounted) {
         setState(() {
           _profile = profile;
           _stats = stats;
-          _userDuas = duas.map((d) => d.copyWith(
+          _userDuas = (duasResult.isSuccess ? duasResult.data! : <DuaModel>[]).map((d) => d.copyWith(
             userName: profile.name,
             userAvatar: profile.name.isNotEmpty ? profile.name[0].toUpperCase() : '?',
           )).toList();
-          _userPoems = poems.map((p) => p.copyWith(
+          _userPoems = (poemsResult.isSuccess ? poemsResult.data! : <PoemModel>[]).map((p) => p.copyWith(
             userName: profile.name,
             userAvatar: profile.name.isNotEmpty ? profile.name[0].toUpperCase() : '?',
           )).toList();
@@ -67,85 +72,92 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final name = _profile?.name ?? widget.userName;
+    final currentUser = (context.read<AuthBloc>().state as Authenticated).user;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F0E8),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: const Row(
-                  children: [
-                    Icon(Icons.arrow_back, color: AppTheme.sage, size: 20),
-                    SizedBox(width: 8),
-                    Text('Back', style: TextStyle(color: AppTheme.sage, fontWeight: FontWeight.w500, fontSize: 15)),
-                  ],
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => getIt<DuaBloc>()),
+        BlocProvider(create: (_) => getIt<PoemBloc>()),
+      ],
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF4F0E8),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.arrow_back, color: AppTheme.sage, size: 20),
+                      SizedBox(width: 8),
+                      Text('Back', style: TextStyle(color: AppTheme.sage, fontWeight: FontWeight.w500, fontSize: 15)),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(28),
-                ),
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 35,
-                          backgroundColor: const Color(0xFFDCE8D3),
-                          child: Text(
-                            name.isNotEmpty ? name[0].toUpperCase() : '?',
-                            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: Color(0xFF4A5B3E)),
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(28),
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 35,
+                            backgroundColor: const Color(0xFFDCE8D3),
+                            child: Text(
+                              name.isNotEmpty ? name[0].toUpperCase() : '?',
+                              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: Color(0xFF4A5B3E)),
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
-                            ],
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Container(height: 1, color: const Color(0xFFF0EAE0)),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        _UserTab(label: 'Details', isActive: _selectedTab == 0, onTap: () => setState(() => _selectedTab = 0)),
-                        const SizedBox(width: 16),
-                        _UserTab(label: 'Duas (${_userDuas.length})', isActive: _selectedTab == 1, onTap: () => setState(() => _selectedTab = 1)),
-                        const SizedBox(width: 16),
-                        _UserTab(label: 'Poems (${_userPoems.length})', isActive: _selectedTab == 2, onTap: () => setState(() => _selectedTab = 2)),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    if (_loading)
-                      const Center(child: Padding(
-                        padding: EdgeInsets.all(32),
-                        child: CircularProgressIndicator(),
-                      ))
-                    else if (_selectedTab == 0)
-                      _buildDetails()
-                    else if (_selectedTab == 1)
-                      _buildDuas()
-                    else
-                      _buildPoems(),
-                  ],
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Container(height: 1, color: const Color(0xFFF0EAE0)),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          _UserTab(label: 'Details', isActive: _selectedTab == 0, onTap: () => setState(() => _selectedTab = 0)),
+                          const SizedBox(width: 16),
+                          _UserTab(label: 'Duas (${_userDuas.length})', isActive: _selectedTab == 1, onTap: () => setState(() => _selectedTab = 1)),
+                          const SizedBox(width: 16),
+                          _UserTab(label: 'Poems (${_userPoems.length})', isActive: _selectedTab == 2, onTap: () => setState(() => _selectedTab = 2)),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      if (_loading)
+                        const Center(child: Padding(
+                          padding: EdgeInsets.all(32),
+                          child: CircularProgressIndicator(),
+                        ))
+                      else if (_selectedTab == 0)
+                        _buildDetails()
+                      else if (_selectedTab == 1)
+                        _buildDuas(currentUser)
+                      else
+                        _buildPoems(currentUser),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -187,7 +199,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
     );
   }
 
-  Widget _buildDuas() {
+  Widget _buildDuas(UserModel currentUser) {
     if (_userDuas.isEmpty) {
       return const Center(child: Padding(
         padding: EdgeInsets.all(32),
@@ -195,11 +207,11 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
       ));
     }
     return Column(
-      children: _userDuas.map((d) => DuaCard(dua: d, currentUser: _toUserModel())).toList(),
+      children: _userDuas.map((d) => DuaCard(dua: d, currentUser: currentUser)).toList(),
     );
   }
 
-  Widget _buildPoems() {
+  Widget _buildPoems(UserModel currentUser) {
     if (_userPoems.isEmpty) {
       return const Center(child: Padding(
         padding: EdgeInsets.all(32),
@@ -207,17 +219,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
       ));
     }
     return Column(
-      children: _userPoems.map((p) => PoemCard(poem: p, currentUser: _toUserModel())).toList(),
-    );
-  }
-
-  UserModel _toUserModel() {
-    if (_profile != null) return _profile!;
-    return UserModel(
-      id: widget.userId,
-      name: widget.userName,
-      email: '',
-      createdAt: DateTime.now(),
+      children: _userPoems.map((p) => PoemCard(poem: p, currentUser: currentUser)).toList(),
     );
   }
 }
