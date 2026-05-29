@@ -7,9 +7,9 @@ class PoemRepository {
 
   PoemRepository(this._poemService);
 
-  Future<ApiResult<List<PoemModel>>> getLatestPoems() async {
+  Future<ApiResult<List<PoemModel>>> getLatestPoems({int? limit, int? offset}) async {
     try {
-      final poems = await _poemService.getLatestPoems();
+      final poems = await _poemService.getLatestPoems(limit: limit, offset: offset);
       return ApiResult.success(poems);
     } catch (e) {
       return ApiResult.failure(e.toString());

@@ -4,8 +4,8 @@ import '../../data/models/user_model.dart';
 import '../../data/models/dua_model.dart';
 import '../../data/models/poem_model.dart';
 import '../../data/models/user_stats_model.dart';
-import '../../data/services/dua_service.dart';
-import '../../data/services/poem_service.dart';
+import '../../data/repositories/dua_repository.dart';
+import '../../data/repositories/poem_repository.dart';
 import '../../data/services/user_service.dart';
 import '../../core/themes/app_theme.dart';
 import '../blocs/auth_bloc/auth_bloc.dart';
@@ -39,8 +39,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final user = (context.read<AuthBloc>().state as Authenticated).user;
     try {
       final stats = await getIt<UserService>().getStats(user.id);
-      final duas = await getIt<DuaService>().getUserDuas(user.id);
-      final poems = await getIt<PoemService>().getUserPoems(user.id);
+      final duasResult = await getIt<DuaRepository>().getUserDuas(user.id);
+      final duas = duasResult.isSuccess ? duasResult.data! : <DuaModel>[];
+      final poemsResult = await getIt<PoemRepository>().getUserPoems(user.id);
+      final poems = poemsResult.isSuccess ? poemsResult.data! : <PoemModel>[];
       if (mounted) {
         setState(() {
           _stats = stats;

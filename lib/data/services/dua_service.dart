@@ -6,8 +6,11 @@ class DuaService {
 
   DuaService(this._dioClient);
 
-  Future<List<DuaModel>> getLatestDuas() async {
-    final response = await _dioClient.dio.get('/duas');
+  Future<List<DuaModel>> getLatestDuas({int? limit, int? offset}) async {
+    final queryParams = <String, dynamic>{};
+    if (limit != null) queryParams['limit'] = limit;
+    if (offset != null) queryParams['offset'] = offset;
+    final response = await _dioClient.dio.get('/duas', queryParameters: queryParams.isNotEmpty ? queryParams : null);
     return (response.data as List)
         .map((e) => DuaModel.fromApiJson(e as Map<String, dynamic>))
         .toList();

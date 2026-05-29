@@ -1,8 +1,28 @@
 abstract class HomeEvent {}
 
-class FetchLatestDuas extends HomeEvent {}
+class FetchLatestDuas extends HomeEvent {
+  final int limit;
+  final int offset;
+  FetchLatestDuas({this.limit = 20, this.offset = 0});
+}
 
-class FetchLatestPoems extends HomeEvent {}
+class FetchLatestPoems extends HomeEvent {
+  final int limit;
+  final int offset;
+  FetchLatestPoems({this.limit = 20, this.offset = 0});
+}
+
+class FetchMoreDuas extends HomeEvent {
+  final int limit;
+  final int offset;
+  FetchMoreDuas({required this.limit, required this.offset});
+}
+
+class FetchMorePoems extends HomeEvent {
+  final int limit;
+  final int offset;
+  FetchMorePoems({required this.limit, required this.offset});
+}
 
 class ToggleHomeTab extends HomeEvent {
   final bool showDuas;

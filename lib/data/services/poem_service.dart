@@ -6,8 +6,11 @@ class PoemService {
 
   PoemService(this._dioClient);
 
-  Future<List<PoemModel>> getLatestPoems() async {
-    final response = await _dioClient.dio.get('/poems');
+  Future<List<PoemModel>> getLatestPoems({int? limit, int? offset}) async {
+    final queryParams = <String, dynamic>{};
+    if (limit != null) queryParams['limit'] = limit;
+    if (offset != null) queryParams['offset'] = offset;
+    final response = await _dioClient.dio.get('/poems', queryParameters: queryParams.isNotEmpty ? queryParams : null);
     return (response.data as List)
         .map((e) => PoemModel.fromApiJson(e as Map<String, dynamic>))
         .toList();

@@ -15,6 +15,12 @@ class HomeState {
   final bool myDuasLoading;
   final List<PoemModel> myPoems;
   final bool myPoemsLoading;
+  final int duaOffset;
+  final int poemOffset;
+  final bool hasMoreDuas;
+  final bool hasMorePoems;
+  final bool loadingMoreDuas;
+  final bool loadingMorePoems;
 
   HomeState({
     this.isLoading = false,
@@ -30,6 +36,12 @@ class HomeState {
     this.myDuasLoading = false,
     this.myPoems = const [],
     this.myPoemsLoading = false,
+    this.duaOffset = 0,
+    this.poemOffset = 0,
+    this.hasMoreDuas = true,
+    this.hasMorePoems = true,
+    this.loadingMoreDuas = false,
+    this.loadingMorePoems = false,
   });
 
   HomeState copyWith({
@@ -46,6 +58,12 @@ class HomeState {
     bool? myDuasLoading,
     List<PoemModel>? myPoems,
     bool? myPoemsLoading,
+    int? duaOffset,
+    int? poemOffset,
+    bool? hasMoreDuas,
+    bool? hasMorePoems,
+    bool? loadingMoreDuas,
+    bool? loadingMorePoems,
   }) {
     return HomeState(
       isLoading: isLoading ?? this.isLoading,
@@ -61,6 +79,12 @@ class HomeState {
       myDuasLoading: myDuasLoading ?? this.myDuasLoading,
       myPoems: myPoems ?? this.myPoems,
       myPoemsLoading: myPoemsLoading ?? this.myPoemsLoading,
+      duaOffset: duaOffset ?? this.duaOffset,
+      poemOffset: poemOffset ?? this.poemOffset,
+      hasMoreDuas: hasMoreDuas ?? this.hasMoreDuas,
+      hasMorePoems: hasMorePoems ?? this.hasMorePoems,
+      loadingMoreDuas: loadingMoreDuas ?? this.loadingMoreDuas,
+      loadingMorePoems: loadingMorePoems ?? this.loadingMorePoems,
     );
   }
 }

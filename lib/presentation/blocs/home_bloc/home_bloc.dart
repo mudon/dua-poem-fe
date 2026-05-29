@@ -11,6 +11,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   HomeBloc(this._duaRepo, this._poemRepo) : super(HomeState()) {
     on<FetchLatestDuas>(_fetchDuas);
     on<FetchLatestPoems>(_fetchPoems);
+    on<FetchMoreDuas>(_fetchMoreDuas);
+    on<FetchMorePoems>(_fetchMorePoems);
     on<ToggleHomeTab>((event, emit) => emit(state.copyWith(showDuasTab: event.showDuas)));
     on<SearchRequested>(_search);
     on<ClearSearch>((event, emit) => emit(state.copyWith(isSearching: false, searchQuery: '', searchDuas: [], searchPoems: [])));
@@ -21,22 +23,64 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   Future<void> _fetchDuas(FetchLatestDuas event, Emitter<HomeState> emit) async {
-    emit(state.copyWith(isLoading: true));
-    final result = await _duaRepo.getLatestDuas();
+    emit(state.copyWith(isLoading: true, duaOffset: event.offset));
+    final result = await _duaRepo.getLatestDuas(limit: event.limit, offset: event.offset);
     if (result.isSuccess) {
-      emit(state.copyWith(isLoading: false, latestDuas: result.data!));
+      emit(state.copyWith(
+        isLoading: false,
+        latestDuas: result.data!,
+        hasMoreDuas: result.data!.length >= event.limit,
+      ));
     } else {
       emit(state.copyWith(isLoading: false, error: result.error));
     }
   }
 
   Future<void> _fetchPoems(FetchLatestPoems event, Emitter<HomeState> emit) async {
-    emit(state.copyWith(isLoading: true));
-    final result = await _poemRepo.getLatestPoems();
+    emit(state.copyWith(isLoading: true, poemOffset: event.offset));
+    final result = await _poemRepo.getLatestPoems(limit: event.limit, offset: event.offset);
     if (result.isSuccess) {
-      emit(state.copyWith(isLoading: false, latestPoems: result.data!));
+      emit(state.copyWith(
+        isLoading: false,
+        latestPoems: result.data!,
+        hasMorePoems: result.data!.length >= event.limit,
+      ));
     } else {
       emit(state.copyWith(isLoading: false, error: result.error));
+    }
+  }
+
+  Future<void> _fetchMoreDuas(FetchMoreDuas event, Emitter<HomeState> emit) async {
+    if (state.loadingMoreDuas || !state.hasMoreDuas) return;
+    emit(state.copyWith(loadingMoreDuas: true));
+    final result = await _duaRepo.getLatestDuas(limit: event.limit, offset: event.offset);
+    if (result.isSuccess) {
+      final items = result.data!;
+      emit(state.copyWith(
+        loadingMoreDuas: false,
+        latestDuas: [...state.latestDuas, ...items],
+        duaOffset: event.offset + items.length,
+        hasMoreDuas: items.length >= event.limit,
+      ));
+    } else {
+      emit(state.copyWith(loadingMoreDuas: false, error: result.error));
+    }
+  }
+
+  Future<void> _fetchMorePoems(FetchMorePoems event, Emitter<HomeState> emit) async {
+    if (state.loadingMorePoems || !state.hasMorePoems) return;
+    emit(state.copyWith(loadingMorePoems: true));
+    final result = await _poemRepo.getLatestPoems(limit: event.limit, offset: event.offset);
+    if (result.isSuccess) {
+      final items = result.data!;
+      emit(state.copyWith(
+        loadingMorePoems: false,
+        latestPoems: [...state.latestPoems, ...items],
+        poemOffset: event.offset + items.length,
+        hasMorePoems: items.length >= event.limit,
+      ));
+    } else {
+      emit(state.copyWith(loadingMorePoems: false, error: result.error));
     }
   }
 

@@ -40,121 +40,193 @@ class HomeScreen extends StatelessWidget {
           ),
           body: SafeArea(
             child: Column(
-                children: [
-                  _HeaderBar(user: user),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
-                      child: MultiBlocListener(
-                        listeners: [
-                          BlocListener<DuaBloc, DuaState>(
-                            listener: (context, state) {
-                              if (state.error != null) return;
-                              final id = state.lastToggledDuaId;
-                              if (id == null) return;
-                              final homeState = context.read<HomeBloc>().state;
-                              if (state.actionType == 'like') {
-                                final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
-                                if (idx == -1) return;
-                                final dua = homeState.latestDuas[idx];
-                                final isNowLiked = state.likedStates[id] ?? false;
-                                context.read<HomeBloc>().add(UpdateDua(
-                                  duaId: id,
-                                  isLiked: isNowLiked,
-                                  likeCount: dua.likeCount + (isNowLiked ? 1 : -1),
-                                ));
-                              } else if (state.actionType == 'bookmark') {
-                                final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
-                                if (idx == -1) return;
-                                final dua = homeState.latestDuas[idx];
-                                final isNowFav = state.favoritedStates[id] ?? false;
-                                context.read<HomeBloc>().add(UpdateDua(
-                                  duaId: id,
-                                  isFavorited: isNowFav,
-                                  bookmarkCount: dua.bookmarkCount + (isNowFav ? 1 : -1),
-                                ));
-                              }
-                            },
-                          ),
-                          BlocListener<PoemBloc, PoemState>(
-                            listener: (context, state) {
-                              if (state.error != null) return;
-                              final id = state.lastToggledPoemId;
-                              if (id == null) return;
-                              final homeState = context.read<HomeBloc>().state;
-                              if (state.actionType == 'like') {
-                                final idx = homeState.latestPoems.indexWhere((p) => p.id == id);
-                                if (idx == -1) return;
-                                final poem = homeState.latestPoems[idx];
-                                final isNowLiked = state.likedStates[id] ?? false;
-                                context.read<HomeBloc>().add(UpdatePoem(
-                                  poemId: id,
-                                  isLiked: isNowLiked,
-                                  likeCount: poem.likeCount + (isNowLiked ? 1 : -1),
-                                ));
-                              } else if (state.actionType == 'bookmark') {
-                                final idx = homeState.latestPoems.indexWhere((p) => p.id == id);
-                                if (idx == -1) return;
-                                final poem = homeState.latestPoems[idx];
-                                final isNowFav = state.favoritedStates[id] ?? false;
-                                context.read<HomeBloc>().add(UpdatePoem(
-                                  poemId: id,
-                                  isFavorited: isNowFav,
-                                  bookmarkCount: poem.bookmarkCount + (isNowFav ? 1 : -1),
-                                ));
-                              }
-                            },
-                          ),
-                        ],
-                        child: Column(
-                          children: [
-                            const HomeTabBar(),
-                            BlocBuilder<HomeBloc, HomeState>(
-                              builder: (context, state) {
-                                if (state.isLoading && !state.isSearching) return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
-                                if (state.error != null && !state.isSearching && !state.isLoading) return Center(child: Text(state.error!));
-
-                                if (state.isSearching) {
-                                  if (state.isSearching && state.searchQuery.isNotEmpty && state.searchDuas.isEmpty && state.searchPoems.isEmpty) {
-                                    return const Center(child: CircularProgressIndicator());
-                                  }
-                                  if (state.searchQuery.isNotEmpty && state.showDuasTab && state.searchDuas.isEmpty) {
-                                    return const Padding(
-                                      padding: EdgeInsets.all(32),
-                                      child: Center(child: Text('No results found')),
-                                    );
-                                  }
-                                  if (state.searchQuery.isNotEmpty && !state.showDuasTab && state.searchPoems.isEmpty) {
-                                    return const Padding(
-                                      padding: EdgeInsets.all(32),
-                                      child: Center(child: Text('No results found')),
-                                    );
-                                  }
-                                  return Column(
-                                    children: state.showDuasTab
-                                        ? state.searchDuas.map((d) => DuaCard(dua: d, currentUser: user)).toList()
-                                        : state.searchPoems.map((p) => PoemCard(poem: p, currentUser: user)).toList(),
-                                  );
-                                }
-
-                                return state.showDuasTab
-                                    ? Column(
-                                        children: state.latestDuas.map((d) => DuaCard(dua: d, currentUser: user)).toList(),
-                                      )
-                                    : Column(
-                                        children: state.latestPoems.map((p) => PoemCard(poem: p, currentUser: user)).toList(),
-                                      );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              children: [
+                _HeaderBar(user: user),
+                const HomeTabBar(),
+                const Expanded(child: _HomeFeed()),
+              ],
             ),
+          ),
         ),
+      ),
+    );
+  }
+}
+
+class _HomeFeed extends StatefulWidget {
+  const _HomeFeed();
+
+  @override
+  State<_HomeFeed> createState() => _HomeFeedState();
+}
+
+class _HomeFeedState extends State<_HomeFeed> {
+  final _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels < _scrollController.position.maxScrollExtent - 300) return;
+    final homeBloc = context.read<HomeBloc>();
+    final s = homeBloc.state;
+    if (s.isSearching) return;
+    if (s.showDuasTab && s.hasMoreDuas && !s.loadingMoreDuas) {
+      homeBloc.add(FetchMoreDuas(limit: 20, offset: s.latestDuas.length));
+    } else if (!s.showDuasTab && s.hasMorePoems && !s.loadingMorePoems) {
+      homeBloc.add(FetchMorePoems(limit: 20, offset: s.latestPoems.length));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<DuaBloc, DuaState>(
+          listener: (context, state) {
+            if (state.error != null) return;
+            final id = state.lastToggledDuaId;
+            if (id == null) return;
+            final homeState = context.read<HomeBloc>().state;
+            if (state.actionType == 'like') {
+              final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
+              if (idx == -1) return;
+              final dua = homeState.latestDuas[idx];
+              final isNowLiked = state.likedStates[id] ?? false;
+              context.read<HomeBloc>().add(UpdateDua(
+                duaId: id,
+                isLiked: isNowLiked,
+                likeCount: dua.likeCount + (isNowLiked ? 1 : -1),
+              ));
+            } else if (state.actionType == 'bookmark') {
+              final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
+              if (idx == -1) return;
+              final dua = homeState.latestDuas[idx];
+              final isNowFav = state.favoritedStates[id] ?? false;
+              context.read<HomeBloc>().add(UpdateDua(
+                duaId: id,
+                isFavorited: isNowFav,
+                bookmarkCount: dua.bookmarkCount + (isNowFav ? 1 : -1),
+              ));
+            }
+          },
+        ),
+        BlocListener<PoemBloc, PoemState>(
+          listener: (context, state) {
+            if (state.error != null) return;
+            final id = state.lastToggledPoemId;
+            if (id == null) return;
+            final homeState = context.read<HomeBloc>().state;
+            if (state.actionType == 'like') {
+              final idx = homeState.latestPoems.indexWhere((p) => p.id == id);
+              if (idx == -1) return;
+              final poem = homeState.latestPoems[idx];
+              final isNowLiked = state.likedStates[id] ?? false;
+              context.read<HomeBloc>().add(UpdatePoem(
+                poemId: id,
+                isLiked: isNowLiked,
+                likeCount: poem.likeCount + (isNowLiked ? 1 : -1),
+              ));
+            } else if (state.actionType == 'bookmark') {
+              final idx = homeState.latestPoems.indexWhere((p) => p.id == id);
+              if (idx == -1) return;
+              final poem = homeState.latestPoems[idx];
+              final isNowFav = state.favoritedStates[id] ?? false;
+              context.read<HomeBloc>().add(UpdatePoem(
+                poemId: id,
+                isFavorited: isNowFav,
+                bookmarkCount: poem.bookmarkCount + (isNowFav ? 1 : -1),
+              ));
+            }
+          },
+        ),
+      ],
+      child: BlocBuilder<HomeBloc, HomeState>(
+        builder: (context, state) {
+          if (state.isLoading && !state.isSearching) {
+            return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
+          }
+          if (state.error != null && !state.isSearching && !state.isLoading) {
+            return Center(child: Text(state.error!));
+          }
+
+          if (state.isSearching) {
+            if (state.isSearching && state.searchQuery.isNotEmpty && state.searchDuas.isEmpty && state.searchPoems.isEmpty) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (state.searchQuery.isNotEmpty && state.showDuasTab && state.searchDuas.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.all(32),
+                child: Center(child: Text('No results found')),
+              );
+            }
+            if (state.searchQuery.isNotEmpty && !state.showDuasTab && state.searchPoems.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.all(32),
+                child: Center(child: Text('No results found')),
+              );
+            }
+            if (state.showDuasTab) {
+              return ListView.builder(
+                controller: _scrollController,
+                itemCount: state.searchDuas.length,
+                itemBuilder: (context, index) {
+                  final user = (context.read<AuthBloc>().state as Authenticated).user;
+                  return DuaCard(dua: state.searchDuas[index], currentUser: user);
+                },
+              );
+            }
+            return ListView.builder(
+              controller: _scrollController,
+              itemCount: state.searchPoems.length,
+              itemBuilder: (context, index) {
+                final user = (context.read<AuthBloc>().state as Authenticated).user;
+                return PoemCard(poem: state.searchPoems[index], currentUser: user);
+              },
+            );
+          }
+
+          if (state.showDuasTab) {
+            return ListView.builder(
+              controller: _scrollController,
+              itemCount: state.latestDuas.length + (state.loadingMoreDuas ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == state.latestDuas.length) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                final user = (context.read<AuthBloc>().state as Authenticated).user;
+                return DuaCard(dua: state.latestDuas[index], currentUser: user);
+              },
+            );
+          }
+          return ListView.builder(
+            controller: _scrollController,
+            itemCount: state.latestPoems.length + (state.loadingMorePoems ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index == state.latestPoems.length) {
+                return const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              final user = (context.read<AuthBloc>().state as Authenticated).user;
+              return PoemCard(poem: state.latestPoems[index], currentUser: user);
+            },
+          );
+        },
       ),
     );
   }

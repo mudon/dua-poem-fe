@@ -7,9 +7,9 @@ class DuaRepository {
 
   DuaRepository(this._duaService);
 
-  Future<ApiResult<List<DuaModel>>> getLatestDuas() async {
+  Future<ApiResult<List<DuaModel>>> getLatestDuas({int? limit, int? offset}) async {
     try {
-      final duas = await _duaService.getLatestDuas();
+      final duas = await _duaService.getLatestDuas(limit: limit, offset: offset);
       return ApiResult.success(duas);
     } catch (e) {
       return ApiResult.failure(e.toString());
