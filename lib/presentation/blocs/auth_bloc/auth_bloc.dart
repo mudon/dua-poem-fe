@@ -32,7 +32,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onSignup(SignupRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
-    final result = await _authRepo.signup(event.name, event.email, event.password);
+    final result = await _authRepo.signup(event.firstName, event.lastName, event.email, event.password);
     if (result.isSuccess) {
       await _saveUser(result.data!);
       emit(Authenticated(result.data!));
@@ -59,7 +59,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       } else {
         emit(Authenticated(UserModel(
           id: '',
-          name: '',
+          firstName: '',
+          lastName: '',
           email: '',
           createdAt: DateTime.now(),
         )));
@@ -74,7 +75,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     if (current is! Authenticated) return;
 
     try {
-      final data = await _userService.updateProfile(event.name);
+      final data = await _userService.updateProfile(event.firstName, event.lastName, event.bio);
       final user = UserModel.fromJson(data);
       await _saveUser(user);
       emit(Authenticated(user));
@@ -87,7 +88,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     const storage = FlutterSecureStorage();
     await storage.write(key: 'cached_user', value: jsonEncode({
       'id': user.id,
-      'name': user.name,
+      'firstName': user.firstName,
+      'lastName': user.lastName,
       'email': user.email,
       'role': user.role,
       'createdAt': user.createdAt.toIso8601String(),

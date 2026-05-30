@@ -76,40 +76,44 @@ class DuaModel {
         updatedAt: json['updatedAt'],
       );
 
-  factory DuaModel.fromApiJson(Map<String, dynamic> json) => DuaModel(
-        id: json['id'].toString(),
-        title: json['title'] ?? '',
-        verified: json['isVerified'] ?? false,
-        arabicText: json['arabicText'],
-        transliteration: json['transliteration'],
-        translation: json['translation'] ?? '',
-        description: json['description'],
-        whenToRecite: json['whenToRecite'],
-        occasion: json['occasion'],
-        repetitionCount: json['repetitionCount'],
-        category: json['categoryName'] ?? '',
-        categoryId: json['categoryId'],
-        tags: (json['tags'] as List<dynamic>?)
-                ?.map((t) => t['name']?.toString() ?? '')
-                .where((n) => n.isNotEmpty)
-                .toList() ??
-            [],
-        userId: json['createdBy']?.toString() ?? '',
-        userName: json['createdByName'] ?? '',
-        userAvatar: _firstLetter(json['createdByName']),
-        views: (json['viewsCount'] ?? 0).toString(),
-        bookmarkCount: json['bookmarkCount'] ?? json['favoritesCount'] ?? 0,
-        likeCount: json['likesCount'] ?? 0,
-        isLiked: json['isLiked'] ?? false,
-        isFavorited: json['isFavorited'] ?? false,
-        reportCount: 0,
-        createdAt: json['createdAt'],
-        updatedAt: json['updatedAt'],
-      );
-
-  static String _firstLetter(dynamic name) {
-    if (name is String && name.isNotEmpty) return name[0].toUpperCase();
-    return '';
+  factory DuaModel.fromApiJson(Map<String, dynamic> json) {
+    final firstName = json['createdByFirstName'] as String? ?? '';
+    final lastName = json['createdByLastName'] as String? ?? '';
+    final userName = firstName.isNotEmpty
+        ? '$firstName $lastName'
+        : (json['createdByName'] as String? ?? '');
+    return DuaModel(
+      id: json['id'].toString(),
+      title: json['title'] ?? '',
+      verified: json['isVerified'] ?? false,
+      arabicText: json['arabicText'],
+      transliteration: json['transliteration'],
+      translation: json['translation'] ?? '',
+      description: json['description'],
+      whenToRecite: json['whenToRecite'],
+      occasion: json['occasion'],
+      repetitionCount: json['repetitionCount'],
+      category: json['categoryName'] ?? '',
+      categoryId: json['categoryId'],
+      tags: (json['tags'] as List<dynamic>?)
+              ?.map((t) => t['name']?.toString() ?? '')
+              .where((n) => n.isNotEmpty)
+              .toList() ??
+          [],
+      userId: json['createdBy']?.toString() ?? '',
+      userName: userName,
+      userAvatar: firstName.isNotEmpty
+          ? firstName[0].toUpperCase()
+          : (userName.isNotEmpty ? userName[0].toUpperCase() : '?'),
+      views: (json['viewsCount'] ?? 0).toString(),
+      bookmarkCount: json['bookmarkCount'] ?? json['favoritesCount'] ?? 0,
+      likeCount: json['likesCount'] ?? 0,
+      isLiked: json['isLiked'] ?? false,
+      isFavorited: json['isFavorited'] ?? false,
+      reportCount: 0,
+      createdAt: json['createdAt'],
+      updatedAt: json['updatedAt'],
+    );
   }
 
   DuaModel copyWith({

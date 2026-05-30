@@ -6,8 +6,8 @@ class LoginRequested extends AuthEvent {
 }
 
 class SignupRequested extends AuthEvent {
-  final String name, email, password;
-  SignupRequested(this.name, this.email, this.password);
+  final String firstName, lastName, email, password;
+  SignupRequested(this.firstName, this.lastName, this.email, this.password);
 }
 
 class LogoutRequested extends AuthEvent {}
@@ -15,6 +15,8 @@ class LogoutRequested extends AuthEvent {}
 class CheckAuthStatus extends AuthEvent {}
 
 class UpdateProfileRequested extends AuthEvent {
-  final String name;
-  UpdateProfileRequested(this.name);
+  final String firstName;
+  final String lastName;
+  final String? bio;
+  UpdateProfileRequested(this.firstName, this.lastName, {this.bio});
 }

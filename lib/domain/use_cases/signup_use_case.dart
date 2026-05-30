@@ -7,7 +7,7 @@ class SignupUseCase {
 
   SignupUseCase(this.repository);
 
-  Future<ApiResult<UserModel>> call(String name, String email, String password) {
-    return repository.signup(name, email, password);
+  Future<ApiResult<UserModel>> call(String firstName, String lastName, String email, String password) {
+    return repository.signup(firstName, lastName, email, password);
   }
 }

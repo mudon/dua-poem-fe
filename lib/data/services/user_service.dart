@@ -21,8 +21,12 @@ class UserService {
     return UserStatsModel.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<Map<String, dynamic>> updateProfile(String name) async {
-    final response = await _dioClient.dio.put('/users/me', data: {'name': name});
+  Future<Map<String, dynamic>> updateProfile(String firstName, String lastName, String? bio) async {
+    final response = await _dioClient.dio.put('/users/me', data: {
+      'firstName': firstName,
+      'lastName': lastName,
+      'bio': bio ?? '',
+    });
     return response.data as Map<String, dynamic>;
   }
 }

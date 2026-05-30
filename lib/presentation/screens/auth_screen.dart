@@ -21,7 +21,8 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _nameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _isLoginMode = true;
   bool _termsAccepted = false;
@@ -30,7 +31,8 @@ class _AuthScreenState extends State<AuthScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    _nameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
@@ -46,7 +48,7 @@ class _AuthScreenState extends State<AuthScreen> {
             listener: (context, state) {
               if (state is Authenticated) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Welcome, ${state.user.name}!')),
+                  SnackBar(content: Text('Welcome, ${state.user.firstName}!')),
                 );
               }
             },
@@ -159,9 +161,17 @@ class _AuthScreenState extends State<AuthScreen> {
                             ),
                           ] else ...[
                             TextField(
-                              controller: _nameController,
+                              controller: _firstNameController,
                               decoration: const InputDecoration(
-                                hintText: AppStrings.fullName,
+                                hintText: AppStrings.firstName,
+                                prefixIcon: Icon(Icons.person_outline),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            TextField(
+                              controller: _lastNameController,
+                              decoration: const InputDecoration(
+                                hintText: AppStrings.lastName,
                                 prefixIcon: Icon(Icons.person_outline),
                               ),
                             ),
@@ -208,7 +218,8 @@ class _AuthScreenState extends State<AuthScreen> {
                                 if (_termsAccepted) {
                                   context.read<AuthBloc>().add(
                                     SignupRequested(
-                                      _nameController.text.trim(),
+                                      _firstNameController.text.trim(),
+                                      _lastNameController.text.trim(),
                                       _emailController.text.trim(),
                                       _passwordController.text,
                                     ),

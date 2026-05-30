@@ -26,14 +26,18 @@ class UserBadgeModel {
 
 class UserStatsModel {
   final String userId;
-  final String name;
+  final String firstName;
+  final String lastName;
   final int duasCreated;
   final int poemsCreated;
   final List<UserBadgeModel> badges;
 
+  String get fullName => '$firstName $lastName';
+
   UserStatsModel({
     required this.userId,
-    required this.name,
+    required this.firstName,
+    required this.lastName,
     required this.duasCreated,
     required this.poemsCreated,
     required this.badges,
@@ -42,7 +46,8 @@ class UserStatsModel {
   factory UserStatsModel.fromJson(Map<String, dynamic> json) {
     return UserStatsModel(
       userId: json['userId'] as String? ?? '',
-      name: json['name'] as String? ?? '',
+      firstName: json['firstName'] as String? ?? json['name'] as String? ?? '',
+      lastName: json['lastName'] as String? ?? '',
       duasCreated: json['duasCreated'] as int? ?? 0,
       poemsCreated: json['poemsCreated'] as int? ?? 0,
       badges: (json['badges'] as List<dynamic>?)

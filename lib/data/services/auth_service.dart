@@ -13,9 +13,10 @@ class AuthService {
     return response.data as Map<String, dynamic>;
   }
 
-  Future<Map<String, dynamic>> signup(String name, String email, String password) async {
+  Future<Map<String, dynamic>> signup(String firstName, String lastName, String email, String password) async {
     await _dioClient.dio.post('/auth/register', data: {
-      'name': name,
+      'firstName': firstName,
+      'lastName': lastName,
       'email': email,
       'password': password,
     });

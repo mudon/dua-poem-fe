@@ -22,7 +22,7 @@ class FavoritesScreen extends StatefulWidget {
   State<FavoritesScreen> createState() => _FavoritesScreenState();
 }
 
-UserModel _emptyUser = UserModel(id: '', name: '', email: '', createdAt: DateTime.now());
+UserModel _emptyUser = UserModel(id: '', firstName: '', lastName: '', email: '', createdAt: DateTime.now());
 
 class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;

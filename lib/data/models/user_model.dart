@@ -1,6 +1,7 @@
 class UserModel {
   final String id;
-  final String name;
+  final String firstName;
+  final String lastName;
   final String email;
   final String role;
   final DateTime createdAt;
@@ -8,9 +9,12 @@ class UserModel {
   final String? bio;
   final String joinedDate;
 
+  String get fullName => '$firstName $lastName';
+
   UserModel({
     required this.id,
-    required this.name,
+    required this.firstName,
+    required this.lastName,
     required this.email,
     this.role = 'user',
     required this.createdAt,
@@ -23,7 +27,8 @@ class UserModel {
     final createdAt = DateTime.parse(json['createdAt']);
     return UserModel(
       id: json['id'].toString(),
-      name: json['name'] ?? '',
+      firstName: json['firstName'] ?? '',
+      lastName: json['lastName'] ?? '',
       email: json['email'] ?? '',
       role: json['role'] ?? 'user',
       createdAt: createdAt,

@@ -56,20 +56,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  void _showEditNameDialog(UserModel user) {
-    final controller = TextEditingController(text: user.name);
+  void _showEditProfileDialog(UserModel user) {
+    final firstNameCtrl = TextEditingController(text: user.firstName);
+    final lastNameCtrl = TextEditingController(text: user.lastName);
+    final bioCtrl = TextEditingController(text: user.bio ?? '');
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Edit name'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(
-            hintText: 'Enter your name',
-            border: OutlineInputBorder(),
-          ),
+        title: const Text('Edit profile'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: firstNameCtrl,
+              autofocus: true,
+              decoration: const InputDecoration(
+                labelText: 'First name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: lastNameCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Last name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: bioCtrl,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                labelText: 'Bio',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -78,10 +102,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           TextButton(
             onPressed: () {
-              final newName = controller.text.trim();
-              if (newName.isNotEmpty) {
+              final fName = firstNameCtrl.text.trim();
+              final lName = lastNameCtrl.text.trim();
+              if (fName.isNotEmpty) {
                 Navigator.pop(ctx);
-                context.read<AuthBloc>().add(UpdateProfileRequested(newName));
+                context.read<AuthBloc>().add(UpdateProfileRequested(fName, lName, bio: bioCtrl.text.trim()));
               }
             },
             child: const Text('Save'),
@@ -115,7 +140,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       radius: 35,
                       backgroundColor: const Color(0xFFDCE8D3),
                       child: Text(
-                        user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
+                        user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : '?',
                         style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: Color(0xFF4A5B3E)),
                       ),
                     ),
@@ -127,10 +152,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Row(
                             children: [
                               Expanded(
-                                child: Text(user.name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
+                                child: Text(user.fullName, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
                               ),
                               GestureDetector(
-                                onTap: () => _showEditNameDialog(user),
+                                onTap: () => _showEditProfileDialog(user),
                                 child: const Icon(Icons.edit, size: 18, color: Color(0xFF9A8C79)),
                               ),
                             ],
@@ -206,7 +231,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _DetailField(label: 'About', value: 'No bio yet'),
+        _DetailField(label: 'About', value: user.bio?.isNotEmpty == true ? user.bio! : 'No bio yet'),
         const SizedBox(height: 12),
         _DetailField(label: 'Email', value: user.email),
         const SizedBox(height: 12),

@@ -56,12 +56,12 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
           _profile = profile;
           _stats = stats;
           _userDuas = (duasResult.isSuccess ? duasResult.data! : <DuaModel>[]).map((d) => d.copyWith(
-            userName: profile.name,
-            userAvatar: profile.name.isNotEmpty ? profile.name[0].toUpperCase() : '?',
+            userName: profile.fullName,
+            userAvatar: profile.firstName.isNotEmpty ? profile.firstName[0].toUpperCase() : '?',
           )).toList();
           _userPoems = (poemsResult.isSuccess ? poemsResult.data! : <PoemModel>[]).map((p) => p.copyWith(
-            userName: profile.name,
-            userAvatar: profile.name.isNotEmpty ? profile.name[0].toUpperCase() : '?',
+            userName: profile.fullName,
+            userAvatar: profile.firstName.isNotEmpty ? profile.firstName[0].toUpperCase() : '?',
           )).toList();
           _loading = false;
         });
@@ -73,7 +73,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final name = _profile?.name ?? widget.userName;
+    final name = _profile?.fullName ?? widget.userName;
     final currentUser = (context.read<AuthBloc>().state as Authenticated).user;
 
     return MultiBlocProvider(
@@ -229,7 +229,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _UserDetailField(label: 'About', value: 'No bio'),
+        _UserDetailField(label: 'About', value: _profile?.bio?.isNotEmpty == true ? _profile!.bio! : 'No bio'),
         const SizedBox(height: 12),
         _UserDetailField(label: 'Role', value: _profile?.role ?? 'user'),
         const SizedBox(height: 12),

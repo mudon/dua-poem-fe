@@ -22,9 +22,9 @@ class AuthRepository {
     }
   }
 
-  Future<ApiResult<UserModel>> signup(String name, String email, String password) async {
+  Future<ApiResult<UserModel>> signup(String firstName, String lastName, String email, String password) async {
     try {
-      final data = await _authService.signup(name, email, password);
+      final data = await _authService.signup(firstName, lastName, email, password);
       await _secureStorage.write(key: DioClient.accessTokenKey, value: data['accessToken']);
       await _secureStorage.write(key: DioClient.refreshTokenKey, value: data['refreshToken']);
       final user = UserModel.fromJson(data['user']);

@@ -5,7 +5,8 @@ class AppStrings {
   static const String signup = 'Sign up';
   static const String email = 'Email address';
   static const String password = 'Password';
-  static const String fullName = 'Full name';
+  static const String firstName = 'First name';
+  static const String lastName = 'Last name';
   static const String confirmPassword = 'Confirm password';
   static const String rememberMe = 'Remember me';
   static const String forgotPassword = 'Forgot password?';
