@@ -62,7 +62,9 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
             ? const Center(child: CircularProgressIndicator())
             : _poem == null
                 ? const Center(child: Text('Poem not found'))
-                : BlocListener<PoemBloc, PoemState>(
+                : BlocProvider.value(
+                    value: getIt<PoemBloc>(),
+                    child: BlocListener<PoemBloc, PoemState>(
                       listener: (context, state) {
                         if (state.error != null) {
                           setState(() {
@@ -232,6 +234,7 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                       ],
                     ),
                     ),
+                  ),
                   ),
       ),
     );

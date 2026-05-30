@@ -50,8 +50,8 @@ Future<void> setupDependencies() async {
   // BLoCs
   getIt.registerFactory(() => AuthBloc(getIt<AuthRepository>(), getIt<UserService>()));
   getIt.registerFactory(() => HomeBloc(getIt<DuaRepository>(), getIt<PoemRepository>()));
-  getIt.registerFactory(() => DuaBloc(getIt<DuaRepository>()));
-  getIt.registerFactory(() => PoemBloc(getIt<PoemRepository>()));
+  getIt.registerLazySingleton(() => DuaBloc(getIt<DuaRepository>()));
+  getIt.registerLazySingleton(() => PoemBloc(getIt<PoemRepository>()));
   getIt.registerFactory(() => CategoryBloc(getIt<CategoryRepository>()));
   getIt.registerFactory(() => TagBloc(getIt<TagRepository>()));
 }

@@ -62,7 +62,9 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
             ? const Center(child: CircularProgressIndicator())
             : _dua == null
                 ? const Center(child: Text('Dua not found'))
-                : BlocListener<DuaBloc, DuaState>(
+                : BlocProvider.value(
+                    value: getIt<DuaBloc>(),
+                    child: BlocListener<DuaBloc, DuaState>(
                       listener: (context, state) {
                         if (state.error != null) {
                           setState(() {
@@ -248,6 +250,7 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                         ],
                       ),
                     ),
+                  ),
                   ),
       ),
     );
