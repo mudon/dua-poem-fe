@@ -52,12 +52,14 @@ class UpdateDua extends HomeEvent {
   final int? likeCount;
   final bool? isFavorited;
   final int? bookmarkCount;
+  final int? views;
   UpdateDua({
     required this.duaId,
     this.isLiked,
     this.likeCount,
     this.isFavorited,
     this.bookmarkCount,
+    this.views,
   });
 }
 
@@ -67,11 +69,13 @@ class UpdatePoem extends HomeEvent {
   final int? likeCount;
   final bool? isFavorited;
   final int? bookmarkCount;
+  final int? views;
   UpdatePoem({
     required this.poemId,
     this.isLiked,
     this.likeCount,
     this.isFavorited,
     this.bookmarkCount,
+    this.views,
   });
 }

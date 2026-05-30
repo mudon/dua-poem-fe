@@ -6,6 +6,7 @@ class PoemState {
   final Map<String, bool> favoritedStates;
   final Map<String, int> likeCounts;
   final Map<String, int> bookmarkCounts;
+  final Map<String, int> viewCounts;
   final String? lastToggledPoemId;
 
   PoemState({
@@ -16,6 +17,7 @@ class PoemState {
     this.favoritedStates = const {},
     this.likeCounts = const {},
     this.bookmarkCounts = const {},
+    this.viewCounts = const {},
     this.lastToggledPoemId,
   });
 
@@ -27,6 +29,7 @@ class PoemState {
     Map<String, bool>? favoritedStates,
     Map<String, int>? likeCounts,
     Map<String, int>? bookmarkCounts,
+    Map<String, int>? viewCounts,
     String? lastToggledPoemId,
   }) {
     return PoemState(
@@ -37,6 +40,7 @@ class PoemState {
       favoritedStates: favoritedStates ?? this.favoritedStates,
       likeCounts: likeCounts ?? this.likeCounts,
       bookmarkCounts: bookmarkCounts ?? this.bookmarkCounts,
+      viewCounts: viewCounts ?? this.viewCounts,
       lastToggledPoemId: lastToggledPoemId ?? this.lastToggledPoemId,
     );
   }

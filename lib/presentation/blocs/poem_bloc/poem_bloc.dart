@@ -9,6 +9,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
   PoemBloc(this._poemRepo) : super(PoemState()) {
     on<ToggleLike>(_onToggleLike);
     on<ToggleBookmark>(_onToggleBookmark);
+    on<RecordView>(_onRecordView);
     on<ReportPoem>(_onReport);
   }
 
@@ -34,6 +35,12 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
       newBookmarkCounts[event.poemId] = event.currentCount + (event.currentlyFavorited ? -1 : 1);
     }
     emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'bookmark', favoritedStates: newFavorited, bookmarkCounts: newBookmarkCounts, lastToggledPoemId: event.poemId));
+  }
+
+  void _onRecordView(RecordView event, Emitter<PoemState> emit) {
+    final newViewCounts = Map<String, int>.from(state.viewCounts);
+    newViewCounts[event.poemId] = event.viewCount;
+    emit(state.copyWith(actionType: 'view', viewCounts: newViewCounts, lastToggledPoemId: event.poemId));
   }
 
   Future<void> _onReport(ReportPoem event, Emitter<PoemState> emit) async {

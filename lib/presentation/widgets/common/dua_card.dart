@@ -26,6 +26,7 @@ class _DuaCardState extends State<DuaCard> {
   late bool _isBookmarked;
   late int _bookmarkCount;
   late int _reportCount;
+  late int _viewCount;
 
   @override
   void initState() {
@@ -35,6 +36,7 @@ class _DuaCardState extends State<DuaCard> {
     _likeCount = blocState.likeCounts[widget.dua.id] ?? widget.dua.likeCount;
     _isBookmarked = blocState.favoritedStates[widget.dua.id] ?? widget.dua.isFavorited;
     _bookmarkCount = blocState.bookmarkCounts[widget.dua.id] ?? widget.dua.bookmarkCount;
+      _viewCount = blocState.viewCounts[widget.dua.id] ?? widget.dua.views;
     _reportCount = widget.dua.reportCount;
   }
 
@@ -49,6 +51,7 @@ class _DuaCardState extends State<DuaCard> {
       final blocState = context.read<DuaBloc>().state;
       _isLiked = blocState.likedStates[widget.dua.id] ?? widget.dua.isLiked;
       _isBookmarked = blocState.favoritedStates[widget.dua.id] ?? widget.dua.isFavorited;
+    _viewCount = blocState.viewCounts[widget.dua.id] ?? widget.dua.views;
     }
   }
 
@@ -93,6 +96,11 @@ class _DuaCardState extends State<DuaCard> {
                 _bookmarkCount = count;
               });
             }
+          }
+        } else if (state.actionType == 'view') {
+          final count = state.viewCounts[widget.dua.id];
+          if (count != null) {
+            setState(() => _viewCount = count);
           }
         }
       },
@@ -224,7 +232,7 @@ class _DuaCardState extends State<DuaCard> {
                             children: [
                               const Icon(Icons.visibility, size: 12, color: Color(0xFF9A8C79)),
                               const SizedBox(width: 2),
-                              Text(widget.dua.views, style: const TextStyle(fontSize: 10, color: Color(0xFF9A8C79))),
+                              Text(_viewCount.toString(), style: const TextStyle(fontSize: 10, color: Color(0xFF9A8C79))),
                               const Text(' views', style: TextStyle(fontSize: 10, color: Color(0xFF9A8C79))),
                             ],
                           ),

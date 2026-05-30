@@ -9,6 +9,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
   DuaBloc(this._duaRepo) : super(DuaState()) {
     on<ToggleLike>(_onToggleLike);
     on<ToggleBookmark>(_onToggleBookmark);
+    on<RecordView>(_onRecordView);
     on<ReportDua>(_onReport);
   }
 
@@ -34,6 +35,12 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
       newBookmarkCounts[event.duaId] = event.currentCount + (event.currentlyFavorited ? -1 : 1);
     }
     emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'bookmark', favoritedStates: newFavorited, bookmarkCounts: newBookmarkCounts, lastToggledDuaId: event.duaId));
+  }
+
+  void _onRecordView(RecordView event, Emitter<DuaState> emit) {
+    final newViewCounts = Map<String, int>.from(state.viewCounts);
+    newViewCounts[event.duaId] = event.viewCount;
+    emit(state.copyWith(actionType: 'view', viewCounts: newViewCounts, lastToggledDuaId: event.duaId));
   }
 
   Future<void> _onReport(ReportDua event, Emitter<DuaState> emit) async {

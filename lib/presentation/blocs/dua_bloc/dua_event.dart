@@ -14,6 +14,12 @@ class ToggleBookmark extends DuaEvent {
   ToggleBookmark(this.duaId, this.currentlyFavorited, this.currentCount);
 }
 
+class RecordView extends DuaEvent {
+  final String duaId;
+  final int viewCount;
+  RecordView(this.duaId, this.viewCount);
+}
+
 class ReportDua extends DuaEvent {
   final String duaId;
   final String reason;

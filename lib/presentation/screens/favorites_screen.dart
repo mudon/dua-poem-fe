@@ -128,6 +128,14 @@ class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProv
                     setState(() => _favoriteDuas.removeAt(idx));
                   }
                 }
+              } else if (state.actionType == 'view') {
+                if (idx == -1) return;
+                final newViews = state.viewCounts[id];
+                if (newViews != null) {
+                  setState(() {
+                    _favoriteDuas[idx] = _favoriteDuas[idx].copyWith(views: newViews);
+                  });
+                }
               }
             },
           ),
@@ -166,6 +174,14 @@ class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProv
                   if (idx != -1) {
                     setState(() => _favoritePoems.removeAt(idx));
                   }
+                }
+              } else if (state.actionType == 'view') {
+                if (idx == -1) return;
+                final newViews = state.viewCounts[id];
+                if (newViews != null) {
+                  setState(() {
+                    _favoritePoems[idx] = _favoritePoems[idx].copyWith(views: newViews);
+                  });
                 }
               }
             },

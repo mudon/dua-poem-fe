@@ -40,7 +40,12 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
   Future<void> _loadPoem() async {
     final repo = getIt<PoemRepository>();
     final result = await repo.getPoemDetail(widget.poemId);
-    repo.recordView(widget.poemId);
+    repo.recordView(widget.poemId).then((_) {
+      if (mounted) {
+        final currentViews = _poem?.views ?? 0;
+        getIt<PoemBloc>().add(RecordView(widget.poemId, currentViews + 1));
+      }
+    });
     if (mounted) {
       setState(() {
         _poem = result.data;

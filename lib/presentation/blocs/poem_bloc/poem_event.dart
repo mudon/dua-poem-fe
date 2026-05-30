@@ -14,6 +14,12 @@ class ToggleBookmark extends PoemEvent {
   ToggleBookmark(this.poemId, this.currentlyFavorited, this.currentCount);
 }
 
+class RecordView extends PoemEvent {
+  final String poemId;
+  final int viewCount;
+  RecordView(this.poemId, this.viewCount);
+}
+
 class ReportPoem extends PoemEvent {
   final String poemId;
   final String reason;

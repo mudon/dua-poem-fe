@@ -62,6 +62,13 @@ class MyPoemsScreen extends StatelessWidget {
                   isFavorited: isNowFav,
                   bookmarkCount: newCount,
                 ));
+              } else if (state.actionType == 'view') {
+                final idx = homeState.myPoems.indexWhere((p) => p.id == id);
+                if (idx == -1) return;
+                final newViews = state.viewCounts[id];
+                if (newViews != null) {
+                  ctx.read<HomeBloc>().add(UpdatePoem(poemId: id, views: newViews));
+                }
               }
             },
             child: BlocBuilder<HomeBloc, HomeState>(

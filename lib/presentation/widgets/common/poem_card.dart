@@ -23,6 +23,7 @@ class _PoemCardState extends State<PoemCard> {
   late int _likeCount;
   late bool _isBookmarked;
   late int _bookmarkCount;
+  late int _viewCount;
 
   @override
   void initState() {
@@ -32,6 +33,7 @@ class _PoemCardState extends State<PoemCard> {
     _likeCount = blocState.likeCounts[widget.poem.id] ?? widget.poem.likeCount;
     _isBookmarked = blocState.favoritedStates[widget.poem.id] ?? widget.poem.isFavorited;
     _bookmarkCount = blocState.bookmarkCounts[widget.poem.id] ?? widget.poem.bookmarkCount;
+      _viewCount = blocState.viewCounts[widget.poem.id] ?? widget.poem.views;
   }
 
   @override
@@ -45,6 +47,7 @@ class _PoemCardState extends State<PoemCard> {
       final blocState = context.read<PoemBloc>().state;
       _isLiked = blocState.likedStates[widget.poem.id] ?? widget.poem.isLiked;
       _isBookmarked = blocState.favoritedStates[widget.poem.id] ?? widget.poem.isFavorited;
+    _viewCount = blocState.viewCounts[widget.poem.id] ?? widget.poem.views;
     }
   }
 
@@ -89,6 +92,11 @@ class _PoemCardState extends State<PoemCard> {
                 _bookmarkCount = count;
               });
             }
+          }
+        } else if (state.actionType == 'view') {
+          final count = state.viewCounts[widget.poem.id];
+          if (count != null) {
+            setState(() => _viewCount = count);
           }
         }
       },
@@ -210,7 +218,7 @@ class _PoemCardState extends State<PoemCard> {
                             children: [
                               const Icon(Icons.visibility, size: 12, color: Color(0xFF9A8C79)),
                               const SizedBox(width: 2),
-                              Text(widget.poem.views, style: const TextStyle(fontSize: 10, color: Color(0xFF9A8C79))),
+                              Text(_viewCount.toString(), style: const TextStyle(fontSize: 10, color: Color(0xFF9A8C79))),
                               const Text(' views', style: TextStyle(fontSize: 10, color: Color(0xFF9A8C79))),
                             ],
                           ),

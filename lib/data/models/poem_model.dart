@@ -13,7 +13,7 @@ class PoemModel {
   final String userId;
   final String userName;
   final String userAvatar;
-  final String views;
+  final int views;
   final int bookmarkCount;
   final int likeCount;
   final int reportCount;
@@ -74,7 +74,7 @@ class PoemModel {
       userAvatar: firstName.isNotEmpty
           ? firstName[0].toUpperCase()
           : (userName.isNotEmpty ? userName[0].toUpperCase() : '?'),
-      views: (json['viewsCount'] ?? 0).toString(),
+      views: json['viewsCount'] ?? 0,
       bookmarkCount: json['bookmarkCount'] ?? json['favoritesCount'] ?? 0,
       likeCount: json['likesCount'] ?? 0,
       isLiked: json['isLiked'] ?? false,
@@ -88,7 +88,7 @@ class PoemModel {
   PoemModel copyWith({
     String? userName,
     String? userAvatar,
-    String? views,
+    int? views,
     int? bookmarkCount,
     int? likeCount,
     bool? isLiked,
