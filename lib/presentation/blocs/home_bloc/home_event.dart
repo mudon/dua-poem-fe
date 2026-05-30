@@ -53,6 +53,7 @@ class UpdateDua extends HomeEvent {
   final bool? isFavorited;
   final int? bookmarkCount;
   final int? views;
+  final int? reportCount;
   UpdateDua({
     required this.duaId,
     this.isLiked,
@@ -60,6 +61,7 @@ class UpdateDua extends HomeEvent {
     this.isFavorited,
     this.bookmarkCount,
     this.views,
+    this.reportCount,
   });
 }
 
@@ -70,6 +72,7 @@ class UpdatePoem extends HomeEvent {
   final bool? isFavorited;
   final int? bookmarkCount;
   final int? views;
+  final int? reportCount;
   UpdatePoem({
     required this.poemId,
     this.isLiked,
@@ -77,5 +80,6 @@ class UpdatePoem extends HomeEvent {
     this.isFavorited,
     this.bookmarkCount,
     this.views,
+    this.reportCount,
   });
 }

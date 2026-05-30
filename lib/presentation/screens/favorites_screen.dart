@@ -136,6 +136,14 @@ class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProv
                     _favoriteDuas[idx] = _favoriteDuas[idx].copyWith(views: newViews);
                   });
                 }
+              } else if (state.actionType == 'report') {
+                if (idx == -1) return;
+                final newCount = state.reportCounts[id];
+                if (newCount != null) {
+                  setState(() {
+                    _favoriteDuas[idx] = _favoriteDuas[idx].copyWith(reportCount: newCount);
+                  });
+                }
               }
             },
           ),
@@ -181,6 +189,14 @@ class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProv
                 if (newViews != null) {
                   setState(() {
                     _favoritePoems[idx] = _favoritePoems[idx].copyWith(views: newViews);
+                  });
+                }
+              } else if (state.actionType == 'report') {
+                if (idx == -1) return;
+                final newCount = state.reportCounts[id];
+                if (newCount != null) {
+                  setState(() {
+                    _favoritePoems[idx] = _favoritePoems[idx].copyWith(reportCount: newCount);
                   });
                 }
               }

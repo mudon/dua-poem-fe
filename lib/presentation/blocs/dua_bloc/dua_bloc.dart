@@ -46,6 +46,17 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
   Future<void> _onReport(ReportDua event, Emitter<DuaState> emit) async {
     emit(state.copyWith(isProcessing: true));
     final result = await _duaRepo.reportDua(event.duaId, event.reason, event.description);
-    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'report'));
+    final newReportCounts = Map<String, int>.from(state.reportCounts);
+    if (result.isSuccess) {
+      final current = state.reportCounts[event.duaId] ?? 0;
+      newReportCounts[event.duaId] = current + 1;
+    }
+    emit(state.copyWith(
+      isProcessing: false,
+      error: result.isSuccess ? null : result.error,
+      actionType: 'report',
+      reportCounts: newReportCounts,
+      lastToggledDuaId: event.duaId,
+    ));
   }
 }

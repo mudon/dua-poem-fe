@@ -46,6 +46,17 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
   Future<void> _onReport(ReportPoem event, Emitter<PoemState> emit) async {
     emit(state.copyWith(isProcessing: true));
     final result = await _poemRepo.reportPoem(event.poemId, event.reason, event.description);
-    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'report'));
+    final newReportCounts = Map<String, int>.from(state.reportCounts);
+    if (result.isSuccess) {
+      final current = state.reportCounts[event.poemId] ?? 0;
+      newReportCounts[event.poemId] = current + 1;
+    }
+    emit(state.copyWith(
+      isProcessing: false,
+      error: result.isSuccess ? null : result.error,
+      actionType: 'report',
+      reportCounts: newReportCounts,
+      lastToggledPoemId: event.poemId,
+    ));
   }
 }

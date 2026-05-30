@@ -113,6 +113,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         isFavorited: event.isFavorited,
         bookmarkCount: event.bookmarkCount,
         views: event.views,
+        reportCount: event.reportCount,
       );
     }).toList();
     final updatedMy = state.myDuas.map((d) {
@@ -123,6 +124,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         isFavorited: event.isFavorited,
         bookmarkCount: event.bookmarkCount,
         views: event.views,
+        reportCount: event.reportCount,
       );
     }).toList();
     emit(state.copyWith(latestDuas: updatedLatest, myDuas: updatedMy));
@@ -137,6 +139,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         isFavorited: event.isFavorited,
         bookmarkCount: event.bookmarkCount,
         views: event.views,
+        reportCount: event.reportCount,
       );
     }).toList();
     final updatedMy = state.myPoems.map((p) {
@@ -147,6 +150,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         isFavorited: event.isFavorited,
         bookmarkCount: event.bookmarkCount,
         views: event.views,
+        reportCount: event.reportCount,
       );
     }).toList();
     emit(state.copyWith(latestPoems: updatedLatest, myPoems: updatedMy));

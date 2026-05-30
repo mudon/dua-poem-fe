@@ -205,7 +205,7 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                                 width: double.infinity,
                                 child: ElevatedButton.icon(
                                   onPressed: () {
-                                    final reasons = ['wrong_transliteration', 'wrong_translation', 'wrong_author', 'inappropriate', 'duplicate', 'copyright_violation', 'other'];
+                                    final reasons = ['wrong_transliteration', 'wrong_translation', 'wrong_author', 'inappropriate_content', 'duplicate_poem', 'copyright_violation', 'other'];
                                     showModalBottomSheet(
                                       context: context,
                                       isScrollControlled: true,

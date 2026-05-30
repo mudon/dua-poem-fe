@@ -4,11 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../../data/models/dua_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../core/themes/app_theme.dart';
-import '../../../data/services/dua_service.dart';
 import '../../blocs/dua_bloc/dua_bloc.dart';
 import '../../blocs/dua_bloc/dua_event.dart';
 import '../../blocs/dua_bloc/dua_state.dart';
-import '../../../app/dependency_injection.dart';
 
 class DuaCard extends StatefulWidget {
   final DuaModel dua;
@@ -51,7 +49,8 @@ class _DuaCardState extends State<DuaCard> {
       final blocState = context.read<DuaBloc>().state;
       _isLiked = blocState.likedStates[widget.dua.id] ?? widget.dua.isLiked;
       _isBookmarked = blocState.favoritedStates[widget.dua.id] ?? widget.dua.isFavorited;
-    _viewCount = blocState.viewCounts[widget.dua.id] ?? widget.dua.views;
+      _viewCount = blocState.viewCounts[widget.dua.id] ?? widget.dua.views;
+      _reportCount = blocState.reportCounts[widget.dua.id] ?? widget.dua.reportCount;
     }
   }
 
@@ -101,6 +100,18 @@ class _DuaCardState extends State<DuaCard> {
           final count = state.viewCounts[widget.dua.id];
           if (count != null) {
             setState(() => _viewCount = count);
+          }
+        } else if (state.actionType == 'report') {
+          if (state.error != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Report failed: ${state.error}')),
+            );
+          } else {
+            final count = state.reportCounts[widget.dua.id];
+            if (count != null) setState(() => _reportCount = count);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Report submitted')),
+            );
           }
         }
       },
@@ -314,20 +325,16 @@ class _DuaCardState extends State<DuaCard> {
   }
 
   void _showReportPopout() {
-    final reasons = ['wrong_translation', 'inappropriate', 'duplicate', 'spam', 'other'];
-    final scaffoldContext = ScaffoldMessenger.of(context);
+    final reasons = ['wrong_arabic_text', 'wrong_transliteration', 'wrong_translation', 'wrong_source', 'inappropriate_content', 'duplicate_dua', 'other'];
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => _ReportBottomSheet(
         reasons: reasons,
-        onSubmit: (reason, description) async {
-          await getIt<DuaService>().reportDua(widget.dua.id, reason, description);
-          if (ctx.mounted) Navigator.pop(ctx);
-          scaffoldContext.showSnackBar(
-            const SnackBar(content: Text('Report submitted')),
-          );
+        onSubmit: (reason, description) {
+          Navigator.pop(ctx);
+          context.read<DuaBloc>().add(ReportDua(widget.dua.id, reason, description));
         },
       ),
     );

@@ -69,6 +69,13 @@ class MyDuasScreen extends StatelessWidget {
                 if (newViews != null) {
                   ctx.read<HomeBloc>().add(UpdateDua(duaId: id, views: newViews));
                 }
+              } else if (state.actionType == 'report') {
+                final idx = homeState.myDuas.indexWhere((d) => d.id == id);
+                if (idx == -1) return;
+                final newCount = state.reportCounts[id];
+                if (newCount != null) {
+                  ctx.read<HomeBloc>().add(UpdateDua(duaId: id, reportCount: newCount));
+                }
               }
             },
             child: BlocBuilder<HomeBloc, HomeState>(

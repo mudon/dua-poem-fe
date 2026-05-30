@@ -221,7 +221,7 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                                   width: double.infinity,
                                   child: ElevatedButton.icon(
                                     onPressed: () {
-                                      final reasons = ['wrong_translation', 'inappropriate', 'duplicate', 'spam', 'other'];
+                                      final reasons = ['wrong_arabic_text', 'wrong_transliteration', 'wrong_translation', 'wrong_source', 'inappropriate_content', 'duplicate_dua', 'other'];
                                       showModalBottomSheet(
                                         context: context,
                                         isScrollControlled: true,

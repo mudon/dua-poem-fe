@@ -79,7 +79,7 @@ class PoemModel {
       likeCount: json['likesCount'] ?? 0,
       isLiked: json['isLiked'] ?? false,
       isFavorited: json['isFavorited'] ?? false,
-      reportCount: 0,
+      reportCount: json['reportCount'] ?? 0,
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
     );
@@ -96,6 +96,7 @@ class PoemModel {
     String? description,
     String? author,
     String? transliteration,
+    int? reportCount,
   }) {
     return PoemModel(
       id: id,
@@ -117,7 +118,7 @@ class PoemModel {
       likeCount: likeCount ?? this.likeCount,
       isLiked: isLiked ?? this.isLiked,
       isFavorited: isFavorited ?? this.isFavorited,
-      reportCount: reportCount,
+      reportCount: reportCount ?? this.reportCount,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );

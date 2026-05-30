@@ -23,6 +23,7 @@ class _PoemCardState extends State<PoemCard> {
   late int _likeCount;
   late bool _isBookmarked;
   late int _bookmarkCount;
+  late int _reportCount;
   late int _viewCount;
 
   @override
@@ -33,6 +34,7 @@ class _PoemCardState extends State<PoemCard> {
     _likeCount = blocState.likeCounts[widget.poem.id] ?? widget.poem.likeCount;
     _isBookmarked = blocState.favoritedStates[widget.poem.id] ?? widget.poem.isFavorited;
     _bookmarkCount = blocState.bookmarkCounts[widget.poem.id] ?? widget.poem.bookmarkCount;
+    _reportCount = blocState.reportCounts[widget.poem.id] ?? widget.poem.reportCount;
       _viewCount = blocState.viewCounts[widget.poem.id] ?? widget.poem.views;
   }
 
@@ -47,6 +49,7 @@ class _PoemCardState extends State<PoemCard> {
       final blocState = context.read<PoemBloc>().state;
       _isLiked = blocState.likedStates[widget.poem.id] ?? widget.poem.isLiked;
       _isBookmarked = blocState.favoritedStates[widget.poem.id] ?? widget.poem.isFavorited;
+      _reportCount = blocState.reportCounts[widget.poem.id] ?? widget.poem.reportCount;
     _viewCount = blocState.viewCounts[widget.poem.id] ?? widget.poem.views;
     }
   }
@@ -97,6 +100,18 @@ class _PoemCardState extends State<PoemCard> {
           final count = state.viewCounts[widget.poem.id];
           if (count != null) {
             setState(() => _viewCount = count);
+          }
+        } else if (state.actionType == 'report') {
+          if (state.error != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Report failed: ${state.error}')),
+            );
+          } else {
+            final count = state.reportCounts[widget.poem.id];
+            if (count != null) setState(() => _reportCount = count);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Report submitted')),
+            );
           }
         }
       },
@@ -252,6 +267,19 @@ class _PoemCardState extends State<PoemCard> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(Icons.flag_outlined, color: Color(0xFFAB9F8E), size: 18),
+                          if (_reportCount > 0)
+                            Container(
+                              margin: const EdgeInsets.only(left: 4),
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: AppTheme.errorRed,
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              child: Text(
+                                '$_reportCount',
+                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+                              ),
+                            ),
                         ],
                       ),
                     ),
@@ -287,20 +315,16 @@ class _PoemCardState extends State<PoemCard> {
   }
 
   void _showReportPopout() {
-    final reasons = ['wrong_transliteration', 'wrong_translation', 'wrong_author', 'inappropriate', 'duplicate', 'copyright_violation', 'other'];
-    final scaffoldContext = ScaffoldMessenger.of(context);
+    final reasons = ['wrong_transliteration', 'wrong_translation', 'wrong_author', 'inappropriate_content', 'duplicate_poem', 'copyright_violation', 'other'];
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => _PoemReportBottomSheet(
         reasons: reasons,
-        onSubmit: (reason, description) async {
+        onSubmit: (reason, description) {
+          Navigator.pop(ctx);
           context.read<PoemBloc>().add(ReportPoem(widget.poem.id, reason, description));
-          if (ctx.mounted) Navigator.pop(ctx);
-          scaffoldContext.showSnackBar(
-            const SnackBar(content: Text('Report submitted')),
-          );
         },
       ),
     );

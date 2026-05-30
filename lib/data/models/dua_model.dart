@@ -85,7 +85,7 @@ class DuaModel {
       likeCount: json['likesCount'] ?? 0,
       isLiked: json['isLiked'] ?? false,
       isFavorited: json['isFavorited'] ?? false,
-      reportCount: 0,
+      reportCount: json['reportCount'] ?? 0,
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
     );
@@ -103,6 +103,7 @@ class DuaModel {
     String? whenToRecite,
     String? occasion,
     int? repetitionCount,
+    int? reportCount,
   }) {
     return DuaModel(
       id: id,
@@ -126,7 +127,7 @@ class DuaModel {
       likeCount: likeCount ?? this.likeCount,
       isLiked: isLiked ?? this.isLiked,
       isFavorited: isFavorited ?? this.isFavorited,
-      reportCount: reportCount,
+      reportCount: reportCount ?? this.reportCount,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );
