@@ -45,22 +45,22 @@ class MyPoemsScreen extends StatelessWidget {
               if (state.actionType == 'like') {
                 final idx = homeState.myPoems.indexWhere((p) => p.id == id);
                 if (idx == -1) return;
-                final poem = homeState.myPoems[idx];
                 final isNowLiked = state.likedStates[id] ?? false;
+                final newCount = state.likeCounts[id] ?? homeState.myPoems[idx].likeCount;
                 ctx.read<HomeBloc>().add(UpdatePoem(
                   poemId: id,
                   isLiked: isNowLiked,
-                  likeCount: poem.likeCount + (isNowLiked ? 1 : -1),
+                  likeCount: newCount,
                 ));
               } else if (state.actionType == 'bookmark') {
                 final idx = homeState.myPoems.indexWhere((p) => p.id == id);
                 if (idx == -1) return;
-                final poem = homeState.myPoems[idx];
                 final isNowFav = state.favoritedStates[id] ?? false;
+                final newCount = state.bookmarkCounts[id] ?? homeState.myPoems[idx].bookmarkCount;
                 ctx.read<HomeBloc>().add(UpdatePoem(
                   poemId: id,
                   isFavorited: isNowFav,
-                  bookmarkCount: poem.bookmarkCount + (isNowFav ? 1 : -1),
+                  bookmarkCount: newCount,
                 ));
               }
             },
@@ -108,7 +108,7 @@ class MyPoemsScreen extends StatelessWidget {
                               ? const Center(child: Text('No poems yet', style: TextStyle(color: Color(0xFF9A8C79))))
                               : ListView.builder(
                                   itemCount: poems.length,
-                                  itemBuilder: (_, i) => PoemCard(poem: poems[i], currentUser: user),
+                                  itemBuilder: (_, i) => PoemCard(key: ValueKey(poems[i].id), poem: poems[i], currentUser: user),
                                 ),
                     ),
                   ],

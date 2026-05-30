@@ -3,13 +3,15 @@ abstract class DuaEvent {}
 class ToggleLike extends DuaEvent {
   final String duaId;
   final bool currentlyLiked;
-  ToggleLike(this.duaId, this.currentlyLiked);
+  final int currentCount;
+  ToggleLike(this.duaId, this.currentlyLiked, this.currentCount);
 }
 
 class ToggleBookmark extends DuaEvent {
   final String duaId;
   final bool currentlyFavorited;
-  ToggleBookmark(this.duaId, this.currentlyFavorited);
+  final int currentCount;
+  ToggleBookmark(this.duaId, this.currentlyFavorited, this.currentCount);
 }
 
 class ReportDua extends DuaEvent {

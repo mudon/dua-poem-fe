@@ -3,13 +3,15 @@ abstract class PoemEvent {}
 class ToggleLike extends PoemEvent {
   final String poemId;
   final bool currentlyLiked;
-  ToggleLike(this.poemId, this.currentlyLiked);
+  final int currentCount;
+  ToggleLike(this.poemId, this.currentlyLiked, this.currentCount);
 }
 
 class ToggleBookmark extends PoemEvent {
   final String poemId;
   final bool currentlyFavorited;
-  ToggleBookmark(this.poemId, this.currentlyFavorited);
+  final int currentCount;
+  ToggleBookmark(this.poemId, this.currentlyFavorited, this.currentCount);
 }
 
 class ReportPoem extends PoemEvent {

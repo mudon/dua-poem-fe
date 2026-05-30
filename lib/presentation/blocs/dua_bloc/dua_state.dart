@@ -4,6 +4,8 @@ class DuaState {
   final String? actionType;
   final Map<String, bool> likedStates;
   final Map<String, bool> favoritedStates;
+  final Map<String, int> likeCounts;
+  final Map<String, int> bookmarkCounts;
   final String? lastToggledDuaId;
 
   DuaState({
@@ -12,6 +14,8 @@ class DuaState {
     this.actionType,
     this.likedStates = const {},
     this.favoritedStates = const {},
+    this.likeCounts = const {},
+    this.bookmarkCounts = const {},
     this.lastToggledDuaId,
   });
 
@@ -21,6 +25,8 @@ class DuaState {
     String? actionType,
     Map<String, bool>? likedStates,
     Map<String, bool>? favoritedStates,
+    Map<String, int>? likeCounts,
+    Map<String, int>? bookmarkCounts,
     String? lastToggledDuaId,
   }) {
     return DuaState(
@@ -29,6 +35,8 @@ class DuaState {
       actionType: actionType ?? this.actionType,
       likedStates: likedStates ?? this.likedStates,
       favoritedStates: favoritedStates ?? this.favoritedStates,
+      likeCounts: likeCounts ?? this.likeCounts,
+      bookmarkCounts: bookmarkCounts ?? this.bookmarkCounts,
       lastToggledDuaId: lastToggledDuaId ?? this.lastToggledDuaId,
     );
   }

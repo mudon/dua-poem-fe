@@ -62,9 +62,7 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
             ? const Center(child: CircularProgressIndicator())
             : _poem == null
                 ? const Center(child: Text('Poem not found'))
-                : BlocProvider(
-                    create: (_) => getIt<PoemBloc>(),
-                    child: BlocListener<PoemBloc, PoemState>(
+                : BlocListener<PoemBloc, PoemState>(
                       listener: (context, state) {
                         if (state.error != null) {
                           setState(() {
@@ -148,11 +146,13 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                                 children: [
                                   GestureDetector(
                                     onTap: () {
+                                      final wasLiked = _isLiked;
+                                      final currentCount = _likeCount;
                                       setState(() {
                                         _isLiked = !_isLiked;
                                         _likeCount += _isLiked ? 1 : -1;
                                       });
-                                      context.read<PoemBloc>().add(ToggleLike(_poem!.id, _isLiked));
+                                      context.read<PoemBloc>().add(ToggleLike(_poem!.id, wasLiked, currentCount));
                                     },
                                     child: Row(
                                       children: [
@@ -170,11 +170,13 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                                   const SizedBox(width: 24),
                                   GestureDetector(
                                     onTap: () {
+                                      final wasBookmarked = _isBookmarked;
+                                      final currentCount = _bookmarkCount;
                                       setState(() {
                                         _isBookmarked = !_isBookmarked;
                                         _bookmarkCount += _isBookmarked ? 1 : -1;
                                       });
-                                      context.read<PoemBloc>().add(ToggleBookmark(_poem!.id, _isBookmarked));
+                                      context.read<PoemBloc>().add(ToggleBookmark(_poem!.id, wasBookmarked, currentCount));
                                     },
                                     child: Row(
                                       children: [
@@ -229,7 +231,6 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                         ),
                       ],
                     ),
-                  ),
                     ),
                   ),
       ),

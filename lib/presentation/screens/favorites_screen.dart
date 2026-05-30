@@ -98,24 +98,36 @@ class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProv
               final id = state.lastToggledDuaId;
               if (id == null) return;
               final idx = _favoriteDuas.indexWhere((d) => d.id == id);
-              if (idx == -1) return;
-              final d = _favoriteDuas[idx];
               if (state.actionType == 'like') {
+                if (idx == -1) return;
                 final isNowLiked = state.likedStates[id] ?? false;
+                final newCount = state.likeCounts[id] ?? _favoriteDuas[idx].likeCount;
                 setState(() {
-                  _favoriteDuas[idx] = d.copyWith(
+                  _favoriteDuas[idx] = _favoriteDuas[idx].copyWith(
                     isLiked: isNowLiked,
-                    likeCount: d.likeCount + (isNowLiked ? 1 : -1),
+                    likeCount: newCount,
                   );
                 });
               } else if (state.actionType == 'bookmark') {
                 final isNowFav = state.favoritedStates[id] ?? false;
-                setState(() {
-                  _favoriteDuas[idx] = d.copyWith(
-                    isFavorited: isNowFav,
-                    bookmarkCount: d.bookmarkCount + (isNowFav ? 1 : -1),
-                  );
-                });
+                if (isNowFav) {
+                  if (idx == -1) {
+                    getIt<DuaRepository>().getDuaDetail(id).then((result) {
+                      if (result.isSuccess && mounted) {
+                        setState(() => _favoriteDuas.insert(0, result.data!));
+                      }
+                    });
+                  } else {
+                    final newCount = state.bookmarkCounts[id] ?? _favoriteDuas[idx].bookmarkCount;
+                    setState(() {
+                      _favoriteDuas[idx] = _favoriteDuas[idx].copyWith(isFavorited: true, bookmarkCount: newCount);
+                    });
+                  }
+                } else {
+                  if (idx != -1) {
+                    setState(() => _favoriteDuas.removeAt(idx));
+                  }
+                }
               }
             },
           ),
@@ -125,24 +137,36 @@ class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProv
               final id = state.lastToggledPoemId;
               if (id == null) return;
               final idx = _favoritePoems.indexWhere((p) => p.id == id);
-              if (idx == -1) return;
-              final p = _favoritePoems[idx];
               if (state.actionType == 'like') {
+                if (idx == -1) return;
                 final isNowLiked = state.likedStates[id] ?? false;
+                final newCount = state.likeCounts[id] ?? _favoritePoems[idx].likeCount;
                 setState(() {
-                  _favoritePoems[idx] = p.copyWith(
+                  _favoritePoems[idx] = _favoritePoems[idx].copyWith(
                     isLiked: isNowLiked,
-                    likeCount: p.likeCount + (isNowLiked ? 1 : -1),
+                    likeCount: newCount,
                   );
                 });
               } else if (state.actionType == 'bookmark') {
                 final isNowFav = state.favoritedStates[id] ?? false;
-                setState(() {
-                  _favoritePoems[idx] = p.copyWith(
-                    isFavorited: isNowFav,
-                    bookmarkCount: p.bookmarkCount + (isNowFav ? 1 : -1),
-                  );
-                });
+                if (isNowFav) {
+                  if (idx == -1) {
+                    getIt<PoemRepository>().getPoemDetail(id).then((result) {
+                      if (result.isSuccess && mounted) {
+                        setState(() => _favoritePoems.insert(0, result.data!));
+                      }
+                    });
+                  } else {
+                    final newCount = state.bookmarkCounts[id] ?? _favoritePoems[idx].bookmarkCount;
+                    setState(() {
+                      _favoritePoems[idx] = _favoritePoems[idx].copyWith(isFavorited: true, bookmarkCount: newCount);
+                    });
+                  }
+                } else {
+                  if (idx != -1) {
+                    setState(() => _favoritePoems.removeAt(idx));
+                  }
+                }
               }
             },
           ),
@@ -156,7 +180,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProv
                     ? const Center(child: Text('No favorited duas yet'))
                     : ListView.builder(
                         itemCount: _favoriteDuas.length,
-                        itemBuilder: (_, i) => DuaCard(dua: _favoriteDuas[i], currentUser: widget.currentUser ?? _emptyUser),
+                        itemBuilder: (_, i) => DuaCard(key: ValueKey(_favoriteDuas[i].id), dua: _favoriteDuas[i], currentUser: widget.currentUser ?? _emptyUser),
                       ),
             _loadingPoems
                 ? const Center(child: CircularProgressIndicator())
@@ -164,7 +188,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProv
                     ? const Center(child: Text('No favorited poems yet'))
                     : ListView.builder(
                         itemCount: _favoritePoems.length,
-                        itemBuilder: (_, i) => PoemCard(poem: _favoritePoems[i], currentUser: widget.currentUser ?? _emptyUser),
+                        itemBuilder: (_, i) => PoemCard(key: ValueKey(_favoritePoems[i].id), poem: _favoritePoems[i], currentUser: widget.currentUser ?? _emptyUser),
                       ),
           ],
         ),

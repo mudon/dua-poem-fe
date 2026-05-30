@@ -101,22 +101,22 @@ class _HomeFeedState extends State<_HomeFeed> {
             if (state.actionType == 'like') {
               final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
               if (idx == -1) return;
-              final dua = homeState.latestDuas[idx];
               final isNowLiked = state.likedStates[id] ?? false;
+              final newCount = state.likeCounts[id] ?? homeState.latestDuas[idx].likeCount;
               context.read<HomeBloc>().add(UpdateDua(
                 duaId: id,
                 isLiked: isNowLiked,
-                likeCount: dua.likeCount + (isNowLiked ? 1 : -1),
+                likeCount: newCount,
               ));
             } else if (state.actionType == 'bookmark') {
               final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
               if (idx == -1) return;
-              final dua = homeState.latestDuas[idx];
               final isNowFav = state.favoritedStates[id] ?? false;
+              final newCount = state.bookmarkCounts[id] ?? homeState.latestDuas[idx].bookmarkCount;
               context.read<HomeBloc>().add(UpdateDua(
                 duaId: id,
                 isFavorited: isNowFav,
-                bookmarkCount: dua.bookmarkCount + (isNowFav ? 1 : -1),
+                bookmarkCount: newCount,
               ));
             }
           },
@@ -130,22 +130,22 @@ class _HomeFeedState extends State<_HomeFeed> {
             if (state.actionType == 'like') {
               final idx = homeState.latestPoems.indexWhere((p) => p.id == id);
               if (idx == -1) return;
-              final poem = homeState.latestPoems[idx];
               final isNowLiked = state.likedStates[id] ?? false;
+              final newCount = state.likeCounts[id] ?? homeState.latestPoems[idx].likeCount;
               context.read<HomeBloc>().add(UpdatePoem(
                 poemId: id,
                 isLiked: isNowLiked,
-                likeCount: poem.likeCount + (isNowLiked ? 1 : -1),
+                likeCount: newCount,
               ));
             } else if (state.actionType == 'bookmark') {
               final idx = homeState.latestPoems.indexWhere((p) => p.id == id);
               if (idx == -1) return;
-              final poem = homeState.latestPoems[idx];
               final isNowFav = state.favoritedStates[id] ?? false;
+              final newCount = state.bookmarkCounts[id] ?? homeState.latestPoems[idx].bookmarkCount;
               context.read<HomeBloc>().add(UpdatePoem(
                 poemId: id,
                 isFavorited: isNowFav,
-                bookmarkCount: poem.bookmarkCount + (isNowFav ? 1 : -1),
+                bookmarkCount: newCount,
               ));
             }
           },
@@ -182,7 +182,7 @@ class _HomeFeedState extends State<_HomeFeed> {
                 itemCount: state.searchDuas.length,
                 itemBuilder: (context, index) {
                   final user = (context.read<AuthBloc>().state as Authenticated).user;
-                  return DuaCard(dua: state.searchDuas[index], currentUser: user);
+                  return DuaCard(key: ValueKey(state.searchDuas[index].id), dua: state.searchDuas[index], currentUser: user);
                 },
               );
             }
@@ -191,7 +191,7 @@ class _HomeFeedState extends State<_HomeFeed> {
               itemCount: state.searchPoems.length,
               itemBuilder: (context, index) {
                 final user = (context.read<AuthBloc>().state as Authenticated).user;
-                return PoemCard(poem: state.searchPoems[index], currentUser: user);
+                return PoemCard(key: ValueKey(state.searchPoems[index].id), poem: state.searchPoems[index], currentUser: user);
               },
             );
           }
@@ -208,7 +208,7 @@ class _HomeFeedState extends State<_HomeFeed> {
                   );
                 }
                 final user = (context.read<AuthBloc>().state as Authenticated).user;
-                return DuaCard(dua: state.latestDuas[index], currentUser: user);
+                return DuaCard(key: ValueKey(state.latestDuas[index].id), dua: state.latestDuas[index], currentUser: user);
               },
             );
           }
@@ -223,7 +223,7 @@ class _HomeFeedState extends State<_HomeFeed> {
                 );
               }
               final user = (context.read<AuthBloc>().state as Authenticated).user;
-              return PoemCard(poem: state.latestPoems[index], currentUser: user);
+              return PoemCard(key: ValueKey(state.latestPoems[index].id), poem: state.latestPoems[index], currentUser: user);
             },
           );
         },

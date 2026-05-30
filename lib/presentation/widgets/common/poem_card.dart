@@ -29,9 +29,23 @@ class _PoemCardState extends State<PoemCard> {
     super.initState();
     final blocState = context.read<PoemBloc>().state;
     _isLiked = blocState.likedStates[widget.poem.id] ?? widget.poem.isLiked;
-    _likeCount = widget.poem.likeCount;
+    _likeCount = blocState.likeCounts[widget.poem.id] ?? widget.poem.likeCount;
     _isBookmarked = blocState.favoritedStates[widget.poem.id] ?? widget.poem.isFavorited;
-    _bookmarkCount = widget.poem.bookmarkCount;
+    _bookmarkCount = blocState.bookmarkCounts[widget.poem.id] ?? widget.poem.bookmarkCount;
+  }
+
+  @override
+  void didUpdateWidget(PoemCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.poem.id != widget.poem.id ||
+        oldWidget.poem.likeCount != widget.poem.likeCount ||
+        oldWidget.poem.isLiked != widget.poem.isLiked ||
+        oldWidget.poem.bookmarkCount != widget.poem.bookmarkCount ||
+        oldWidget.poem.isFavorited != widget.poem.isFavorited) {
+      final blocState = context.read<PoemBloc>().state;
+      _isLiked = blocState.likedStates[widget.poem.id] ?? widget.poem.isLiked;
+      _isBookmarked = blocState.favoritedStates[widget.poem.id] ?? widget.poem.isFavorited;
+    }
   }
 
   @override
@@ -48,11 +62,12 @@ class _PoemCardState extends State<PoemCard> {
               SnackBar(content: Text(state.error!)),
             );
           } else {
-            final synced = state.likedStates[widget.poem.id];
-            if (synced != null && synced != _isLiked) {
+            final liked = state.likedStates[widget.poem.id];
+            final count = state.likeCounts[widget.poem.id];
+            if (liked != null && count != null) {
               setState(() {
-                _isLiked = synced;
-                _likeCount += synced ? 1 : -1;
+                _isLiked = liked;
+                _likeCount = count;
               });
             }
           }
@@ -66,11 +81,12 @@ class _PoemCardState extends State<PoemCard> {
               SnackBar(content: Text(state.error!)),
             );
           } else {
-            final synced = state.favoritedStates[widget.poem.id];
-            if (synced != null && synced != _isBookmarked) {
+            final fav = state.favoritedStates[widget.poem.id];
+            final count = state.bookmarkCounts[widget.poem.id];
+            if (fav != null && count != null) {
               setState(() {
-                _isBookmarked = synced;
-                _bookmarkCount += synced ? 1 : -1;
+                _isBookmarked = fav;
+                _bookmarkCount = count;
               });
             }
           }
@@ -244,20 +260,22 @@ class _PoemCardState extends State<PoemCard> {
 
   void _toggleLike() {
     final wasLiked = _isLiked;
+    final currentCount = _likeCount;
     setState(() {
       _isLiked = !wasLiked;
       _likeCount += _isLiked ? 1 : -1;
     });
-    context.read<PoemBloc>().add(ToggleLike(widget.poem.id, wasLiked));
+    context.read<PoemBloc>().add(ToggleLike(widget.poem.id, wasLiked, currentCount));
   }
 
   void _toggleBookmark() {
     final wasBookmarked = _isBookmarked;
+    final currentCount = _bookmarkCount;
     setState(() {
       _isBookmarked = !wasBookmarked;
       _bookmarkCount += _isBookmarked ? 1 : -1;
     });
-    context.read<PoemBloc>().add(ToggleBookmark(widget.poem.id, wasBookmarked));
+    context.read<PoemBloc>().add(ToggleBookmark(widget.poem.id, wasBookmarked, currentCount));
   }
 
   void _showReportPopout() {

@@ -45,22 +45,22 @@ class MyDuasScreen extends StatelessWidget {
               if (state.actionType == 'like') {
                 final idx = homeState.myDuas.indexWhere((d) => d.id == id);
                 if (idx == -1) return;
-                final dua = homeState.myDuas[idx];
                 final isNowLiked = state.likedStates[id] ?? false;
+                final newCount = state.likeCounts[id] ?? homeState.myDuas[idx].likeCount;
                 ctx.read<HomeBloc>().add(UpdateDua(
                   duaId: id,
                   isLiked: isNowLiked,
-                  likeCount: dua.likeCount + (isNowLiked ? 1 : -1),
+                  likeCount: newCount,
                 ));
               } else if (state.actionType == 'bookmark') {
                 final idx = homeState.myDuas.indexWhere((d) => d.id == id);
                 if (idx == -1) return;
-                final dua = homeState.myDuas[idx];
                 final isNowFav = state.favoritedStates[id] ?? false;
+                final newCount = state.bookmarkCounts[id] ?? homeState.myDuas[idx].bookmarkCount;
                 ctx.read<HomeBloc>().add(UpdateDua(
                   duaId: id,
                   isFavorited: isNowFav,
-                  bookmarkCount: dua.bookmarkCount + (isNowFav ? 1 : -1),
+                  bookmarkCount: newCount,
                 ));
               }
             },
@@ -108,7 +108,7 @@ class MyDuasScreen extends StatelessWidget {
                               ? const Center(child: Text('No duas yet', style: TextStyle(color: Color(0xFF9A8C79))))
                               : ListView.builder(
                                   itemCount: duas.length,
-                                  itemBuilder: (_, i) => DuaCard(dua: duas[i], currentUser: user),
+                                  itemBuilder: (_, i) => DuaCard(key: ValueKey(duas[i].id), dua: duas[i], currentUser: user),
                                 ),
                     ),
                   ],

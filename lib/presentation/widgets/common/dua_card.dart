@@ -32,10 +32,24 @@ class _DuaCardState extends State<DuaCard> {
     super.initState();
     final blocState = context.read<DuaBloc>().state;
     _isLiked = blocState.likedStates[widget.dua.id] ?? widget.dua.isLiked;
-    _likeCount = widget.dua.likeCount;
+    _likeCount = blocState.likeCounts[widget.dua.id] ?? widget.dua.likeCount;
     _isBookmarked = blocState.favoritedStates[widget.dua.id] ?? widget.dua.isFavorited;
-    _bookmarkCount = widget.dua.bookmarkCount;
+    _bookmarkCount = blocState.bookmarkCounts[widget.dua.id] ?? widget.dua.bookmarkCount;
     _reportCount = widget.dua.reportCount;
+  }
+
+  @override
+  void didUpdateWidget(DuaCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.dua.id != widget.dua.id ||
+        oldWidget.dua.likeCount != widget.dua.likeCount ||
+        oldWidget.dua.isLiked != widget.dua.isLiked ||
+        oldWidget.dua.bookmarkCount != widget.dua.bookmarkCount ||
+        oldWidget.dua.isFavorited != widget.dua.isFavorited) {
+      final blocState = context.read<DuaBloc>().state;
+      _isLiked = blocState.likedStates[widget.dua.id] ?? widget.dua.isLiked;
+      _isBookmarked = blocState.favoritedStates[widget.dua.id] ?? widget.dua.isFavorited;
+    }
   }
 
   @override
@@ -52,11 +66,12 @@ class _DuaCardState extends State<DuaCard> {
               SnackBar(content: Text(state.error!)),
             );
           } else {
-            final synced = state.likedStates[widget.dua.id];
-            if (synced != null && synced != _isLiked) {
+            final liked = state.likedStates[widget.dua.id];
+            final count = state.likeCounts[widget.dua.id];
+            if (liked != null && count != null) {
               setState(() {
-                _isLiked = synced;
-                _likeCount += synced ? 1 : -1;
+                _isLiked = liked;
+                _likeCount = count;
               });
             }
           }
@@ -70,11 +85,12 @@ class _DuaCardState extends State<DuaCard> {
               SnackBar(content: Text(state.error!)),
             );
           } else {
-            final synced = state.favoritedStates[widget.dua.id];
-            if (synced != null && synced != _isBookmarked) {
+            final fav = state.favoritedStates[widget.dua.id];
+            final count = state.bookmarkCounts[widget.dua.id];
+            if (fav != null && count != null) {
               setState(() {
-                _isBookmarked = synced;
-                _bookmarkCount += synced ? 1 : -1;
+                _isBookmarked = fav;
+                _bookmarkCount = count;
               });
             }
           }
@@ -271,20 +287,22 @@ class _DuaCardState extends State<DuaCard> {
 
   void _toggleLike() {
     final wasLiked = _isLiked;
+    final currentCount = _likeCount;
     setState(() {
       _isLiked = !wasLiked;
       _likeCount += _isLiked ? 1 : -1;
     });
-    context.read<DuaBloc>().add(ToggleLike(widget.dua.id, wasLiked));
+    context.read<DuaBloc>().add(ToggleLike(widget.dua.id, wasLiked, currentCount));
   }
 
   void _toggleBookmark() {
     final wasBookmarked = _isBookmarked;
+    final currentCount = _bookmarkCount;
     setState(() {
       _isBookmarked = !wasBookmarked;
       _bookmarkCount += _isBookmarked ? 1 : -1;
     });
-    context.read<DuaBloc>().add(ToggleBookmark(widget.dua.id, wasBookmarked));
+    context.read<DuaBloc>().add(ToggleBookmark(widget.dua.id, wasBookmarked, currentCount));
   }
 
   void _showReportPopout() {

@@ -62,9 +62,7 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
             ? const Center(child: CircularProgressIndicator())
             : _dua == null
                 ? const Center(child: Text('Dua not found'))
-                : BlocProvider(
-                    create: (_) => getIt<DuaBloc>(),
-                    child: BlocListener<DuaBloc, DuaState>(
+                : BlocListener<DuaBloc, DuaState>(
                       listener: (context, state) {
                         if (state.error != null) {
                           setState(() {
@@ -164,11 +162,13 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                                   children: [
                                     GestureDetector(
                                       onTap: () {
+                                        final wasLiked = _isLiked;
+                                        final currentCount = _likeCount;
                                         setState(() {
                                           _isLiked = !_isLiked;
                                           _likeCount += _isLiked ? 1 : -1;
                                         });
-                                        context.read<DuaBloc>().add(ToggleLike(_dua!.id, _isLiked));
+                                        context.read<DuaBloc>().add(ToggleLike(_dua!.id, wasLiked, currentCount));
                                       },
                                       child: Row(
                                         children: [
@@ -186,11 +186,13 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                                     const SizedBox(width: 24),
                                     GestureDetector(
                                       onTap: () {
+                                        final wasBookmarked = _isBookmarked;
+                                        final currentCount = _bookmarkCount;
                                         setState(() {
                                           _isBookmarked = !_isBookmarked;
                                           _bookmarkCount += _isBookmarked ? 1 : -1;
                                         });
-                                        context.read<DuaBloc>().add(ToggleBookmark(_dua!.id, _isBookmarked));
+                                        context.read<DuaBloc>().add(ToggleBookmark(_dua!.id, wasBookmarked, currentCount));
                                       },
                                       child: Row(
                                         children: [
@@ -245,7 +247,6 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                           ),
                         ],
                       ),
-                    ),
                     ),
                   ),
       ),

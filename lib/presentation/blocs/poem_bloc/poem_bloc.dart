@@ -16,20 +16,24 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     emit(state.copyWith(isProcessing: true));
     final result = await _poemRepo.toggleLike(event.poemId, event.currentlyLiked);
     final newLiked = Map<String, bool>.from(state.likedStates);
+    final newLikeCounts = Map<String, int>.from(state.likeCounts);
     if (result.isSuccess) {
       newLiked[event.poemId] = !event.currentlyLiked;
+      newLikeCounts[event.poemId] = event.currentCount + (event.currentlyLiked ? -1 : 1);
     }
-    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'like', likedStates: newLiked, lastToggledPoemId: event.poemId));
+    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'like', likedStates: newLiked, likeCounts: newLikeCounts, lastToggledPoemId: event.poemId));
   }
 
   Future<void> _onToggleBookmark(ToggleBookmark event, Emitter<PoemState> emit) async {
     emit(state.copyWith(isProcessing: true));
     final result = await _poemRepo.toggleBookmark(event.poemId, event.currentlyFavorited);
     final newFavorited = Map<String, bool>.from(state.favoritedStates);
+    final newBookmarkCounts = Map<String, int>.from(state.bookmarkCounts);
     if (result.isSuccess) {
       newFavorited[event.poemId] = !event.currentlyFavorited;
+      newBookmarkCounts[event.poemId] = event.currentCount + (event.currentlyFavorited ? -1 : 1);
     }
-    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'bookmark', favoritedStates: newFavorited, lastToggledPoemId: event.poemId));
+    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'bookmark', favoritedStates: newFavorited, bookmarkCounts: newBookmarkCounts, lastToggledPoemId: event.poemId));
   }
 
   Future<void> _onReport(ReportPoem event, Emitter<PoemState> emit) async {
