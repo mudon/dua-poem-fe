@@ -102,6 +102,7 @@ class _PoemCardState extends State<PoemCard> {
             setState(() => _viewCount = count);
           }
         } else if (state.actionType == 'report') {
+          if (state.lastToggledPoemId != widget.poem.id) return;
           if (state.error != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Report failed: ${state.error}')),

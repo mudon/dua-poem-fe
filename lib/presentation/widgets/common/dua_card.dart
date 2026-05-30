@@ -102,6 +102,7 @@ class _DuaCardState extends State<DuaCard> {
             setState(() => _viewCount = count);
           }
         } else if (state.actionType == 'report') {
+          if (state.lastToggledDuaId != widget.dua.id) return;
           if (state.error != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Report failed: ${state.error}')),

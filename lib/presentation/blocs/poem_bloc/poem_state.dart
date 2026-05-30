@@ -38,7 +38,7 @@ class PoemState {
     return PoemState(
       isProcessing: isProcessing ?? this.isProcessing,
       error: error ?? this.error,
-      actionType: actionType ?? this.actionType,
+      actionType: actionType,
       likedStates: likedStates ?? this.likedStates,
       favoritedStates: favoritedStates ?? this.favoritedStates,
       likeCounts: likeCounts ?? this.likeCounts,
