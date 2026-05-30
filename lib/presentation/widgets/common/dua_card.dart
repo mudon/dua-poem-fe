@@ -194,7 +194,7 @@ class _DuaCardState extends State<DuaCard> {
                         child: Text(
                           widget.dua.userAvatar.isNotEmpty
                               ? widget.dua.userAvatar
-                              : (widget.dua.userName.isNotEmpty ? widget.dua.userName[0].toUpperCase() : '?'),
+                              : '?',
                           style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF4A5B3E)),
                         ),
                       ),

@@ -180,7 +180,7 @@ class _PoemCardState extends State<PoemCard> {
                         child: Text(
                           widget.poem.userAvatar.isNotEmpty
                               ? widget.poem.userAvatar
-                              : (widget.poem.userName.isNotEmpty ? widget.poem.userName[0].toUpperCase() : '?'),
+                              : '?',
                           style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF4A5B3E)),
                         ),
                       ),

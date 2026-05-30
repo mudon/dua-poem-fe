@@ -27,7 +27,7 @@ class UserModel {
     final createdAt = DateTime.parse(json['createdAt']);
     return UserModel(
       id: json['id'].toString(),
-      firstName: json['firstName'] ?? '',
+      firstName: json['firstName'] ?? json['name'] ?? '',
       lastName: json['lastName'] ?? '',
       email: json['email'] ?? '',
       role: json['role'] ?? 'user',

@@ -47,35 +47,12 @@ class PoemModel {
     this.updatedAt,
   });
 
-  factory PoemModel.fromJson(Map<String, dynamic> json) => PoemModel(
-        id: json['id'].toString(),
-        title: json['title'],
-        verified: json['verified'],
-        content: json['content'],
-        transliteration: json['transliteration'],
-        translation: json['translation'],
-        description: json['description'],
-        author: json['author'],
-        category: json['category'],
-        categoryId: json['categoryId'],
-        tags: List<String>.from(json['tags']),
-        userId: json['userId'].toString(),
-        userName: json['userName'],
-        userAvatar: json['userAvatar'],
-        views: json['views'],
-        bookmarkCount: json['bookmarkCount'],
-        likeCount: json['likeCount'],
-        reportCount: json['reportCount'] ?? 0,
-        createdAt: json['createdAt'],
-        updatedAt: json['updatedAt'],
-      );
-
   factory PoemModel.fromApiJson(Map<String, dynamic> json) {
     final firstName = json['createdByFirstName'] as String? ?? '';
     final lastName = json['createdByLastName'] as String? ?? '';
     final userName = firstName.isNotEmpty
         ? '$firstName $lastName'
-        : (json['createdByName'] as String? ?? '');
+        : '';
     return PoemModel(
       id: json['id'].toString(),
       title: json['title'] ?? '',

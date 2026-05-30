@@ -51,37 +51,12 @@ class DuaModel {
     this.updatedAt,
   });
 
-  factory DuaModel.fromJson(Map<String, dynamic> json) => DuaModel(
-        id: json['id'].toString(),
-        title: json['title'],
-        verified: json['verified'],
-        arabicText: json['arabicText'],
-        transliteration: json['transliteration'],
-        translation: json['translation'],
-        description: json['description'],
-        whenToRecite: json['whenToRecite'],
-        occasion: json['occasion'],
-        repetitionCount: json['repetitionCount'],
-        category: json['category'],
-        categoryId: json['categoryId'],
-        tags: List<String>.from(json['tags']),
-        userId: json['userId'].toString(),
-        userName: json['userName'],
-        userAvatar: json['userAvatar'],
-        views: json['views'],
-        bookmarkCount: json['bookmarkCount'],
-        likeCount: json['likeCount'],
-        reportCount: json['reportCount'] ?? 0,
-        createdAt: json['createdAt'],
-        updatedAt: json['updatedAt'],
-      );
-
   factory DuaModel.fromApiJson(Map<String, dynamic> json) {
     final firstName = json['createdByFirstName'] as String? ?? '';
     final lastName = json['createdByLastName'] as String? ?? '';
     final userName = firstName.isNotEmpty
         ? '$firstName $lastName'
-        : (json['createdByName'] as String? ?? '');
+        : '';
     return DuaModel(
       id: json['id'].toString(),
       title: json['title'] ?? '',

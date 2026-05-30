@@ -46,7 +46,7 @@ class UserStatsModel {
   factory UserStatsModel.fromJson(Map<String, dynamic> json) {
     return UserStatsModel(
       userId: json['userId'] as String? ?? '',
-      firstName: json['firstName'] as String? ?? json['name'] as String? ?? '',
+      firstName: json['firstName'] as String? ?? '',
       lastName: json['lastName'] as String? ?? '',
       duasCreated: json['duasCreated'] as int? ?? 0,
       poemsCreated: json['poemsCreated'] as int? ?? 0,

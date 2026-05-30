@@ -133,8 +133,8 @@ class AppRouter {
         path: '/user/:userId',
         builder: (_, state) {
           final userId = state.pathParameters['userId']!;
-          final userName = state.extra as String? ?? 'User';
-          return UserDetailScreen(userId: userId, userName: userName);
+          final userDisplayName = state.extra as String? ?? 'User';
+          return UserDetailScreen(userId: userId, userDisplayName: userDisplayName);
         },
       ),
     ],

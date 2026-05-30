@@ -19,10 +19,10 @@ import '../widgets/common/poem_card.dart';
 import '../../app/dependency_injection.dart';
 
 class UserDetailScreen extends StatefulWidget {
-  final String userName;
+  final String userDisplayName;
   final String userId;
 
-  const UserDetailScreen({super.key, required this.userName, required this.userId});
+  const UserDetailScreen({super.key, required this.userDisplayName, required this.userId});
 
   @override
   State<UserDetailScreen> createState() => _UserDetailScreenState();
@@ -73,7 +73,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final name = _profile?.fullName ?? widget.userName;
+    final name = _profile?.fullName ?? widget.userDisplayName;
     final currentUser = (context.read<AuthBloc>().state as Authenticated).user;
 
     return MultiBlocProvider(
@@ -173,7 +173,9 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                             radius: 35,
                             backgroundColor: const Color(0xFFDCE8D3),
                             child: Text(
-                              name.isNotEmpty ? name[0].toUpperCase() : '?',
+                              _profile?.firstName.isNotEmpty == true
+                                  ? _profile!.firstName[0].toUpperCase()
+                                  : (name.isNotEmpty ? name[0].toUpperCase() : '?'),
                               style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: Color(0xFF4A5B3E)),
                             ),
                           ),
