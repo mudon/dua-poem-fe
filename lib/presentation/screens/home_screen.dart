@@ -80,7 +80,15 @@ class _HomeFeedState extends State<_HomeFeed> {
     if (_scrollController.position.pixels < _scrollController.position.maxScrollExtent - 300) return;
     final homeBloc = context.read<HomeBloc>();
     final s = homeBloc.state;
-    if (s.isSearching) return;
+    if (s.isSearching) {
+      if (s.isSearchLoading || s.loadingMoreSearch) return;
+      if (s.showDuasTab && s.hasMoreSearchDuas) {
+        homeBloc.add(FetchMoreSearchResults(query: s.searchQuery, showDuasTab: true));
+      } else if (!s.showDuasTab && s.hasMoreSearchPoems) {
+        homeBloc.add(FetchMoreSearchResults(query: s.searchQuery, showDuasTab: false));
+      }
+      return;
+    }
     if (s.showDuasTab && s.hasMoreDuas && !s.loadingMoreDuas) {
       homeBloc.add(FetchMoreDuas(limit: 20, offset: s.latestDuas.length));
     } else if (!s.showDuasTab && s.hasMorePoems && !s.loadingMorePoems) {
@@ -207,8 +215,14 @@ class _HomeFeedState extends State<_HomeFeed> {
             if (state.showDuasTab) {
               return ListView.builder(
                 controller: _scrollController,
-                itemCount: state.searchDuas.length,
+                itemCount: state.searchDuas.length + (state.loadingMoreSearch ? 1 : 0),
                 itemBuilder: (context, index) {
+                  if (index == state.searchDuas.length) {
+                    return const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
                   final user = (context.read<AuthBloc>().state as Authenticated).user;
                   return DuaCard(key: ValueKey(state.searchDuas[index].id), dua: state.searchDuas[index], currentUser: user);
                 },
@@ -216,8 +230,14 @@ class _HomeFeedState extends State<_HomeFeed> {
             }
             return ListView.builder(
               controller: _scrollController,
-              itemCount: state.searchPoems.length,
+              itemCount: state.searchPoems.length + (state.loadingMoreSearch ? 1 : 0),
               itemBuilder: (context, index) {
+                if (index == state.searchPoems.length) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
                 final user = (context.read<AuthBloc>().state as Authenticated).user;
                 return PoemCard(key: ValueKey(state.searchPoems[index].id), poem: state.searchPoems[index], currentUser: user);
               },

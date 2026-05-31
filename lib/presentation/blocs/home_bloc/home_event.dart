@@ -36,6 +36,13 @@ class SearchRequested extends HomeEvent {
 
 class ClearSearch extends HomeEvent {}
 
+class FetchMoreSearchResults extends HomeEvent {
+  final String query;
+  final bool showDuasTab;
+  final int limit;
+  FetchMoreSearchResults({required this.query, required this.showDuasTab, this.limit = 20});
+}
+
 class FetchMyDuas extends HomeEvent {
   final String userId;
   FetchMyDuas(this.userId);

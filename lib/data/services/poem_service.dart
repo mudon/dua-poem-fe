@@ -65,8 +65,8 @@ class PoemService {
         .toList();
   }
 
-  Future<List<PoemModel>> search(String query) async {
-    final response = await _dioClient.dio.get('/poems/search', queryParameters: {'q': query});
+  Future<List<PoemModel>> search(String query, {int limit = 20, int offset = 0}) async {
+    final response = await _dioClient.dio.get('/poems/search', queryParameters: {'q': query, 'limit': limit, 'offset': offset});
     return (response.data as List)
         .map((e) => PoemModel.fromApiJson(e as Map<String, dynamic>))
         .toList();

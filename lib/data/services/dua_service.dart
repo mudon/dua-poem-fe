@@ -65,8 +65,8 @@ class DuaService {
         .toList();
   }
 
-  Future<List<DuaModel>> search(String query) async {
-    final response = await _dioClient.dio.get('/duas/search', queryParameters: {'q': query});
+  Future<List<DuaModel>> search(String query, {int limit = 20, int offset = 0}) async {
+    final response = await _dioClient.dio.get('/duas/search', queryParameters: {'q': query, 'limit': limit, 'offset': offset});
     return (response.data as List)
         .map((e) => DuaModel.fromApiJson(e as Map<String, dynamic>))
         .toList();

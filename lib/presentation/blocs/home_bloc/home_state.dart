@@ -12,6 +12,11 @@ class HomeState {
   final String searchQuery;
   final List<DuaModel> searchDuas;
   final List<PoemModel> searchPoems;
+  final int searchDuaOffset;
+  final int searchPoemOffset;
+  final bool hasMoreSearchDuas;
+  final bool hasMoreSearchPoems;
+  final bool loadingMoreSearch;
   final List<DuaModel> myDuas;
   final bool myDuasLoading;
   final List<PoemModel> myPoems;
@@ -34,6 +39,11 @@ class HomeState {
     this.searchQuery = '',
     this.searchDuas = const [],
     this.searchPoems = const [],
+    this.searchDuaOffset = 0,
+    this.searchPoemOffset = 0,
+    this.hasMoreSearchDuas = true,
+    this.hasMoreSearchPoems = true,
+    this.loadingMoreSearch = false,
     this.myDuas = const [],
     this.myDuasLoading = false,
     this.myPoems = const [],
@@ -57,6 +67,11 @@ class HomeState {
     String? searchQuery,
     List<DuaModel>? searchDuas,
     List<PoemModel>? searchPoems,
+    int? searchDuaOffset,
+    int? searchPoemOffset,
+    bool? hasMoreSearchDuas,
+    bool? hasMoreSearchPoems,
+    bool? loadingMoreSearch,
     List<DuaModel>? myDuas,
     bool? myDuasLoading,
     List<PoemModel>? myPoems,
@@ -79,6 +94,11 @@ class HomeState {
       searchQuery: searchQuery ?? this.searchQuery,
       searchDuas: searchDuas ?? this.searchDuas,
       searchPoems: searchPoems ?? this.searchPoems,
+      searchDuaOffset: searchDuaOffset ?? this.searchDuaOffset,
+      searchPoemOffset: searchPoemOffset ?? this.searchPoemOffset,
+      hasMoreSearchDuas: hasMoreSearchDuas ?? this.hasMoreSearchDuas,
+      hasMoreSearchPoems: hasMoreSearchPoems ?? this.hasMoreSearchPoems,
+      loadingMoreSearch: loadingMoreSearch ?? this.loadingMoreSearch,
       myDuas: myDuas ?? this.myDuas,
       myDuasLoading: myDuasLoading ?? this.myDuasLoading,
       myPoems: myPoems ?? this.myPoems,

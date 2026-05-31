@@ -1,4 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../data/models/dua_model.dart';
+import '../../../data/models/poem_model.dart';
 import '../../../data/repositories/dua_repository.dart';
 import '../../../data/repositories/poem_repository.dart';
 import 'home_event.dart';
@@ -15,7 +17,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<FetchMorePoems>(_fetchMorePoems);
     on<ToggleHomeTab>((event, emit) => emit(state.copyWith(showDuasTab: event.showDuas)));
     on<SearchRequested>(_search);
-    on<ClearSearch>((event, emit) => emit(state.copyWith(isSearching: false, isSearchLoading: false, searchQuery: '', searchDuas: [], searchPoems: [])));
+    on<FetchMoreSearchResults>(_searchMore);
+    on<ClearSearch>((event, emit) => emit(state.copyWith(
+      isSearching: false, isSearchLoading: false, loadingMoreSearch: false,
+      searchQuery: '', searchDuas: [], searchPoems: [],
+      searchDuaOffset: 0, searchPoemOffset: 0, hasMoreSearchDuas: true, hasMoreSearchPoems: true,
+    )));
     on<FetchMyDuas>(_fetchMyDuas);
     on<FetchMyPoems>(_fetchMyPoems);
     on<UpdateDua>(_onUpdateDua);
@@ -164,19 +171,77 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
     if (event.query == state.searchQuery && state.isSearching) return;
 
-    emit(state.copyWith(searchQuery: event.query, isSearching: true, isSearchLoading: true, error: null));
+    emit(state.copyWith(
+      searchQuery: event.query, isSearching: true, isSearchLoading: true, error: null,
+      searchDuas: [], searchPoems: [], searchDuaOffset: 0, searchPoemOffset: 0,
+      hasMoreSearchDuas: true, hasMoreSearchPoems: true,
+    ));
 
     final queryAtCall = event.query;
-    final duasResult = await _duaRepo.search(event.query);
-    final poemsResult = await _poemRepo.search(event.query);
+    final limit = 20;
+    final duasResult = await _duaRepo.search(event.query, limit: limit, offset: 0);
+    final poemsResult = await _poemRepo.search(event.query, limit: limit, offset: 0);
 
     if (queryAtCall != state.searchQuery) return;
 
+    final duas = duasResult.isSuccess ? duasResult.data! : <DuaModel>[];
+    final poems = poemsResult.isSuccess ? poemsResult.data! : <PoemModel>[];
+
     emit(state.copyWith(
       isSearchLoading: false,
-      searchDuas: duasResult.isSuccess ? duasResult.data! : [],
-      searchPoems: poemsResult.isSuccess ? poemsResult.data! : [],
+      searchDuas: duas,
+      searchPoems: poems,
+      searchDuaOffset: duas.length,
+      searchPoemOffset: poems.length,
+      hasMoreSearchDuas: duas.length >= limit,
+      hasMoreSearchPoems: poems.length >= limit,
       error: (!duasResult.isSuccess || !poemsResult.isSuccess) ? 'Search failed for some results' : null,
     ));
+  }
+
+  Future<void> _searchMore(FetchMoreSearchResults event, Emitter<HomeState> emit) async {
+    if (state.loadingMoreSearch) return;
+
+    emit(state.copyWith(loadingMoreSearch: true));
+
+    final queryAtCall = event.query;
+
+    if (event.showDuasTab) {
+      if (!state.hasMoreSearchDuas) {
+        emit(state.copyWith(loadingMoreSearch: false));
+        return;
+      }
+      final result = await _duaRepo.search(event.query, limit: event.limit, offset: state.searchDuaOffset);
+      if (queryAtCall != state.searchQuery) { emit(state.copyWith(loadingMoreSearch: false)); return; }
+      if (result.isSuccess) {
+        final items = result.data!;
+        emit(state.copyWith(
+          loadingMoreSearch: false,
+          searchDuas: [...state.searchDuas, ...items],
+          searchDuaOffset: state.searchDuaOffset + items.length,
+          hasMoreSearchDuas: items.length >= event.limit,
+        ));
+      } else {
+        emit(state.copyWith(loadingMoreSearch: false));
+      }
+    } else {
+      if (!state.hasMoreSearchPoems) {
+        emit(state.copyWith(loadingMoreSearch: false));
+        return;
+      }
+      final result = await _poemRepo.search(event.query, limit: event.limit, offset: state.searchPoemOffset);
+      if (queryAtCall != state.searchQuery) { emit(state.copyWith(loadingMoreSearch: false)); return; }
+      if (result.isSuccess) {
+        final items = result.data!;
+        emit(state.copyWith(
+          loadingMoreSearch: false,
+          searchPoems: [...state.searchPoems, ...items],
+          searchPoemOffset: state.searchPoemOffset + items.length,
+          hasMoreSearchPoems: items.length >= event.limit,
+        ));
+      } else {
+        emit(state.copyWith(loadingMoreSearch: false));
+      }
+    }
   }
 }

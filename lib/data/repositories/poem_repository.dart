@@ -79,9 +79,9 @@ class PoemRepository {
     }
   }
 
-  Future<ApiResult<List<PoemModel>>> search(String query) async {
+  Future<ApiResult<List<PoemModel>>> search(String query, {int limit = 20, int offset = 0}) async {
     try {
-      final results = await _poemService.search(query);
+      final results = await _poemService.search(query, limit: limit, offset: offset);
       return ApiResult.success(results);
     } catch (e) {
       return ApiResult.failure(e.toString());
