@@ -254,7 +254,7 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                                           _isLiked = !_isLiked;
                                           _likeCount += _isLiked ? 1 : -1;
                                         });
-                                        context.read<DuaBloc>().add(ToggleLike(_dua!.id, wasLiked, currentCount));
+                                        getIt<DuaBloc>().add(ToggleLike(_dua!.id, wasLiked, currentCount));
                                       },
                                       child: Row(
                                         children: [
@@ -278,7 +278,7 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                                           _isBookmarked = !_isBookmarked;
                                           _bookmarkCount += _isBookmarked ? 1 : -1;
                                         });
-                                        context.read<DuaBloc>().add(ToggleBookmark(_dua!.id, wasBookmarked, currentCount));
+                                        getIt<DuaBloc>().add(ToggleBookmark(_dua!.id, wasBookmarked, currentCount));
                                       },
                                       child: Row(
                                         children: [
@@ -296,39 +296,39 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                                   ],
                                 ),
                                 const SizedBox(height: 24),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton.icon(
-                                    onPressed: () {
-                                      final reasons = ['wrong_arabic_text', 'wrong_transliteration', 'wrong_translation', 'wrong_source', 'inappropriate_content', 'duplicate_dua', 'other'];
-                                      showModalBottomSheet(
-                                        context: context,
-                                        isScrollControlled: true,
-                                        backgroundColor: Colors.transparent,
-                        builder: (ctx) => _DetailReportSheet(
-                          title: _dua!.title,
-                          reasons: reasons,
-                          onSubmit: (reason, desc) {
-                                            context.read<DuaBloc>().add(ReportDua(_dua!.id, reason, desc));
-                                            Navigator.pop(ctx);
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              const SnackBar(content: Text('Report submitted')),
-                                            );
-                                          },
-                                        ),
-                                      );
-                                    },
-                                    onLongPress: () => _showReportsPopup(context),
-                                    icon: const Icon(Icons.flag_outlined, size: 16),
-                                    label: const Text('Report this content', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFFFEF1EC),
-                                      foregroundColor: const Color(0xFFC25A3F),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
-                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton.icon(
+                                      onPressed: () {
+                                        final reasons = ['wrong_arabic_text', 'wrong_transliteration', 'wrong_translation', 'wrong_source', 'inappropriate_content', 'duplicate_dua', 'other'];
+                                        showModalBottomSheet(
+                                          context: context,
+                                          isScrollControlled: true,
+                                          backgroundColor: Colors.transparent,
+                                          builder: (ctx) => _DetailReportSheet(
+                                            title: _dua!.title,
+                                            reasons: reasons,
+                                            onSubmit: (reason, desc) {
+                                              getIt<DuaBloc>().add(ReportDua(_dua!.id, reason, desc));
+                                              Navigator.pop(ctx);
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(content: Text('Report submitted')),
+                                              );
+                                            },
+                                          ),
+                                        );
+                                      },
+                                      onLongPress: () => _showReportsPopup(context),
+                                      icon: const Icon(Icons.flag_outlined, size: 16),
+                                      label: const Text('Report this content', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFFFEF1EC),
+                                        foregroundColor: const Color(0xFFC25A3F),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
+                                        padding: const EdgeInsets.symmetric(vertical: 14),
+                                      ),
                                     ),
                                   ),
-                                ),
                                 if (_dua!.userId == widget.currentUser.id) ...[
                                   const SizedBox(height: 10),
                                   Badge(
@@ -357,7 +357,7 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                           ),
                         ],
                       ),
-                    ),
+                      ),
           ),
         ),
       ),

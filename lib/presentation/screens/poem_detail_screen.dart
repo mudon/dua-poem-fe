@@ -238,7 +238,7 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                                         _isLiked = !_isLiked;
                                         _likeCount += _isLiked ? 1 : -1;
                                       });
-                                      context.read<PoemBloc>().add(ToggleLike(_poem!.id, wasLiked, currentCount));
+                                      getIt<PoemBloc>().add(ToggleLike(_poem!.id, wasLiked, currentCount));
                                     },
                                     child: Row(
                                       children: [
@@ -262,7 +262,7 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                                         _isBookmarked = !_isBookmarked;
                                         _bookmarkCount += _isBookmarked ? 1 : -1;
                                       });
-                                      context.read<PoemBloc>().add(ToggleBookmark(_poem!.id, wasBookmarked, currentCount));
+                                      getIt<PoemBloc>().add(ToggleBookmark(_poem!.id, wasBookmarked, currentCount));
                                     },
                                     child: Row(
                                       children: [
@@ -293,7 +293,7 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                                         title: _poem!.title,
                                         reasons: reasons,
                                         onSubmit: (reason, desc) {
-                                          context.read<PoemBloc>().add(ReportPoem(_poem!.id, reason, desc));
+                                          getIt<PoemBloc>().add(ReportPoem(_poem!.id, reason, desc));
                                           Navigator.pop(ctx);
                                           ScaffoldMessenger.of(context).showSnackBar(
                                             const SnackBar(content: Text('Report submitted')),

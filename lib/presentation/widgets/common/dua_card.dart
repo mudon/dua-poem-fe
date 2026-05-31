@@ -275,8 +275,7 @@ class _DuaCardState extends State<DuaCard> {
                     ),
                     const SizedBox(width: 16),
                     GestureDetector(
-                      onTap: _showReportPopout,
-                      onLongPress: () => _showReportsPopup(context),
+                      onTap: () => _showReportsPopup(context),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -347,21 +346,6 @@ class _DuaCardState extends State<DuaCard> {
     context.read<DuaBloc>().add(ToggleBookmark(widget.dua.id, wasBookmarked, currentCount));
   }
 
-  void _showReportPopout() {
-    final reasons = ['wrong_arabic_text', 'wrong_transliteration', 'wrong_translation', 'wrong_source', 'inappropriate_content', 'duplicate_dua', 'other'];
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => _ReportBottomSheet(
-        reasons: reasons,
-        onSubmit: (reason, description) {
-          Navigator.pop(ctx);
-          context.read<DuaBloc>().add(ReportDua(widget.dua.id, reason, description));
-        },
-      ),
-    );
-  }
 }
 
 class _ReportStatusSheet extends StatelessWidget {
@@ -527,122 +511,4 @@ class _TagPill extends StatelessWidget {
   }
 }
 
-class _ReportBottomSheet extends StatefulWidget {
-  final List<String> reasons;
-  final Function(String reason, String description) onSubmit;
 
-  const _ReportBottomSheet({required this.reasons, required this.onSubmit});
-
-  @override
-  State<_ReportBottomSheet> createState() => _ReportBottomSheetState();
-}
-
-class _ReportBottomSheetState extends State<_ReportBottomSheet> {
-  final _descCtrl = TextEditingController();
-  int _selectedIndex = 0;
-
-  @override
-  void dispose() {
-    _descCtrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
-      decoration: const BoxDecoration(
-        color: Color(0xFFFEFCF5),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 20, offset: Offset(0, -6))],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              color: Color(0xFFFEFAF2),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-              border: Border(bottom: BorderSide(color: Color(0xFFEFE8DE))),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Row(
-                  children: [
-                    Icon(Icons.flag_outlined, size: 18, color: Color(0xFF7C9A6E)),
-                    SizedBox(width: 8),
-                    Text('Report content', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                  ],
-                ),
-                GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: const Icon(Icons.close, color: Color(0xFFA18E76)),
-                ),
-              ],
-            ),
-          ),
-          Flexible(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Column(
-                children: List.generate(widget.reasons.length, (i) {
-                  final r = widget.reasons[i];
-                  final label = r.replaceAll('_', ' ').split(' ').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' ');
-                  final isSelected = _selectedIndex == i;
-                  return GestureDetector(
-                    onTap: () => setState(() => _selectedIndex = i),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      child: Row(
-                        children: [
-                          Icon(
-                            isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                            color: isSelected ? AppTheme.sage : const Color(0xFFAB9F8E),
-                            size: 22,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(label, style: const TextStyle(fontSize: 14)),
-                        ],
-                      ),
-                    ),
-                  );
-                }),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: TextField(
-              controller: _descCtrl,
-              decoration: const InputDecoration(
-                hintText: 'Description (optional)',
-                filled: true,
-                fillColor: Color(0xFFF7F3ED),
-                border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(16))),
-                contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              ),
-              maxLines: 2,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => widget.onSubmit(widget.reasons[_selectedIndex], _descCtrl.text),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFEF1EC),
-                  foregroundColor: const Color(0xFFC25A3F),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
-                  padding: const EdgeInsets.symmetric(vertical: 14)),
-                child: const Text('Submit Report', style: TextStyle(fontWeight: FontWeight.w600)),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
