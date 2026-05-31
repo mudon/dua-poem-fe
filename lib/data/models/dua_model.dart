@@ -16,9 +16,10 @@ class DuaModel {
   final String userName;
   final String userAvatar;
   final int views;
+  final int reportCount;
+  final int activeReportCount;
   final int bookmarkCount;
   final int likeCount;
-  final int reportCount;
   final bool isLiked;
   final bool isFavorited;
   final String? createdAt;
@@ -42,9 +43,10 @@ class DuaModel {
     required this.userName,
     required this.userAvatar,
     required this.views,
-    required this.bookmarkCount,
+    required this.reportCount,
+    this.activeReportCount = 0,
+    this.bookmarkCount = 0,
     required this.likeCount,
-    this.reportCount = 0,
     this.isLiked = false,
     this.isFavorited = false,
     this.createdAt,
@@ -86,6 +88,7 @@ class DuaModel {
       isLiked: json['isLiked'] ?? false,
       isFavorited: json['isFavorited'] ?? false,
       reportCount: json['reportCount'] ?? 0,
+      activeReportCount: json['activeReportCount'] ?? 0,
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
     );
@@ -104,6 +107,7 @@ class DuaModel {
     String? occasion,
     int? repetitionCount,
     int? reportCount,
+    int? activeReportCount,
   }) {
     return DuaModel(
       id: id,
@@ -128,6 +132,7 @@ class DuaModel {
       isLiked: isLiked ?? this.isLiked,
       isFavorited: isFavorited ?? this.isFavorited,
       reportCount: reportCount ?? this.reportCount,
+      activeReportCount: activeReportCount ?? this.activeReportCount,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );

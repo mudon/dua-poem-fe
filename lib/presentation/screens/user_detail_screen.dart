@@ -78,8 +78,8 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
 
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => getIt<DuaBloc>()),
-        BlocProvider(create: (_) => getIt<PoemBloc>()),
+        BlocProvider.value(value: getIt<DuaBloc>()),
+        BlocProvider.value(value: getIt<PoemBloc>()),
       ],
       child: MultiBlocListener(
         listeners: [

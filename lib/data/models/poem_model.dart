@@ -17,6 +17,7 @@ class PoemModel {
   final int bookmarkCount;
   final int likeCount;
   final int reportCount;
+  final int activeReportCount;
   final bool isLiked;
   final bool isFavorited;
   final String? createdAt;
@@ -41,6 +42,7 @@ class PoemModel {
     required this.bookmarkCount,
     required this.likeCount,
     this.reportCount = 0,
+    this.activeReportCount = 0,
     this.isLiked = false,
     this.isFavorited = false,
     this.createdAt,
@@ -80,6 +82,7 @@ class PoemModel {
       isLiked: json['isLiked'] ?? false,
       isFavorited: json['isFavorited'] ?? false,
       reportCount: json['reportCount'] ?? 0,
+      activeReportCount: json['activeReportCount'] ?? 0,
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
     );

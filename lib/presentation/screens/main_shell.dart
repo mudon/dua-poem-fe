@@ -15,8 +15,8 @@ class MainShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => getIt<DuaBloc>()),
-        BlocProvider(create: (_) => getIt<PoemBloc>()),
+        BlocProvider.value(value: getIt<DuaBloc>()),
+        BlocProvider.value(value: getIt<PoemBloc>()),
       ],
       child: Scaffold(
         body: navigationShell,

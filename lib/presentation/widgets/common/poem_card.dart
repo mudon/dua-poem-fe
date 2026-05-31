@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../data/models/poem_model.dart';
+import '../../../data/models/report_model.dart';
 import '../../../data/models/user_model.dart';
+import '../../../data/repositories/poem_repository.dart';
 import '../../../core/themes/app_theme.dart';
 import '../../blocs/poem_bloc/poem_bloc.dart';
 import '../../blocs/poem_bloc/poem_event.dart';
 import '../../blocs/poem_bloc/poem_state.dart';
+import '../../../app/dependency_injection.dart';
 
 class PoemCard extends StatefulWidget {
   final PoemModel poem;
@@ -23,7 +26,7 @@ class _PoemCardState extends State<PoemCard> {
   late int _likeCount;
   late bool _isBookmarked;
   late int _bookmarkCount;
-  late int _reportCount;
+  late int _activeReportCount;
   late int _viewCount;
 
   @override
@@ -34,7 +37,7 @@ class _PoemCardState extends State<PoemCard> {
     _likeCount = blocState.likeCounts[widget.poem.id] ?? widget.poem.likeCount;
     _isBookmarked = blocState.favoritedStates[widget.poem.id] ?? widget.poem.isFavorited;
     _bookmarkCount = blocState.bookmarkCounts[widget.poem.id] ?? widget.poem.bookmarkCount;
-    _reportCount = blocState.reportCounts[widget.poem.id] ?? widget.poem.reportCount;
+    _activeReportCount = widget.poem.activeReportCount;
       _viewCount = blocState.viewCounts[widget.poem.id] ?? widget.poem.views;
   }
 
@@ -49,7 +52,7 @@ class _PoemCardState extends State<PoemCard> {
       final blocState = context.read<PoemBloc>().state;
       _isLiked = blocState.likedStates[widget.poem.id] ?? widget.poem.isLiked;
       _isBookmarked = blocState.favoritedStates[widget.poem.id] ?? widget.poem.isFavorited;
-      _reportCount = blocState.reportCounts[widget.poem.id] ?? widget.poem.reportCount;
+      _activeReportCount = widget.poem.activeReportCount;
     _viewCount = blocState.viewCounts[widget.poem.id] ?? widget.poem.views;
     }
   }
@@ -108,8 +111,7 @@ class _PoemCardState extends State<PoemCard> {
               SnackBar(content: Text('Report failed: ${state.error}')),
             );
           } else {
-            final count = state.reportCounts[widget.poem.id];
-            if (count != null) setState(() => _reportCount = count);
+            setState(() => _activeReportCount++);
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Report submitted')),
             );
@@ -264,11 +266,12 @@ class _PoemCardState extends State<PoemCard> {
                     const SizedBox(width: 16),
                     GestureDetector(
                       onTap: _showReportPopout,
+                      onLongPress: _showReportsPopup,
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(Icons.flag_outlined, color: Color(0xFFAB9F8E), size: 18),
-                          if (_reportCount > 0)
+                          if (_activeReportCount > 0)
                             Container(
                               margin: const EdgeInsets.only(left: 4),
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
@@ -277,7 +280,7 @@ class _PoemCardState extends State<PoemCard> {
                                 borderRadius: BorderRadius.circular(30),
                               ),
                               child: Text(
-                                '$_reportCount',
+                                '$_activeReportCount',
                                 style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
                               ),
                             ),
@@ -313,6 +316,25 @@ class _PoemCardState extends State<PoemCard> {
       _bookmarkCount += _isBookmarked ? 1 : -1;
     });
     context.read<PoemBloc>().add(ToggleBookmark(widget.poem.id, wasBookmarked, currentCount));
+  }
+
+  void _showReportsPopup() async {
+    final repo = getIt<PoemRepository>();
+    final result = await repo.getReports(widget.poem.id);
+    if (!mounted) return;
+    final reports = <ReportModel>[];
+    if (result.isSuccess && result.data != null) {
+      for (final r in result.data!) {
+        reports.add(ReportModel.fromJson(r as Map<String, dynamic>));
+      }
+    }
+    if (!mounted) return;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _ReportStatusSheet(reports: reports),
+    );
   }
 
   void _showReportPopout() {
@@ -492,6 +514,95 @@ class _PoemReportBottomSheetState extends State<_PoemReportBottomSheet> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ReportStatusSheet extends StatelessWidget {
+  final List<ReportModel> reports;
+  const _ReportStatusSheet({required this.reports});
+
+  Color _statusColor(String status) {
+    switch (status) {
+      case 'pending':
+        return Colors.orange;
+      case 'fix_submitted':
+        return Colors.blue;
+      case 'resolved':
+        return Colors.green;
+      case 'dismissed':
+        return Colors.grey;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Reports', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            if (reports.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Center(child: Text('No reports', style: TextStyle(color: Colors.grey))),
+              )
+            else
+              ...reports.map((r) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: _statusColor(r.status).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            r.status.replaceAll('_', ' '),
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: _statusColor(r.status)),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          r.reason.replaceAll('_', ' '),
+                          style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+                        ),
+                      ],
+                    ),
+                    if (r.description != null && r.description!.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        r.description!,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 12, color: Color(0xFF6B6358)),
+                      ),
+                    ],
+                  ],
+                ),
+              )),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

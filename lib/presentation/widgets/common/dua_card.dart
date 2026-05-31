@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../data/models/dua_model.dart';
+import '../../../data/models/report_model.dart';
 import '../../../data/models/user_model.dart';
+import '../../../data/repositories/dua_repository.dart';
 import '../../../core/themes/app_theme.dart';
 import '../../blocs/dua_bloc/dua_bloc.dart';
 import '../../blocs/dua_bloc/dua_event.dart';
 import '../../blocs/dua_bloc/dua_state.dart';
+import '../../../app/dependency_injection.dart';
 
 class DuaCard extends StatefulWidget {
   final DuaModel dua;
@@ -23,7 +26,7 @@ class _DuaCardState extends State<DuaCard> {
   late int _likeCount;
   late bool _isBookmarked;
   late int _bookmarkCount;
-  late int _reportCount;
+  late int _activeReportCount;
   late int _viewCount;
 
   @override
@@ -35,7 +38,7 @@ class _DuaCardState extends State<DuaCard> {
     _isBookmarked = blocState.favoritedStates[widget.dua.id] ?? widget.dua.isFavorited;
     _bookmarkCount = blocState.bookmarkCounts[widget.dua.id] ?? widget.dua.bookmarkCount;
       _viewCount = blocState.viewCounts[widget.dua.id] ?? widget.dua.views;
-    _reportCount = widget.dua.reportCount;
+    _activeReportCount = widget.dua.activeReportCount;
   }
 
   @override
@@ -50,7 +53,7 @@ class _DuaCardState extends State<DuaCard> {
       _isLiked = blocState.likedStates[widget.dua.id] ?? widget.dua.isLiked;
       _isBookmarked = blocState.favoritedStates[widget.dua.id] ?? widget.dua.isFavorited;
       _viewCount = blocState.viewCounts[widget.dua.id] ?? widget.dua.views;
-      _reportCount = blocState.reportCounts[widget.dua.id] ?? widget.dua.reportCount;
+      _activeReportCount = widget.dua.activeReportCount;
     }
   }
 
@@ -108,8 +111,7 @@ class _DuaCardState extends State<DuaCard> {
               SnackBar(content: Text('Report failed: ${state.error}')),
             );
           } else {
-            final count = state.reportCounts[widget.dua.id];
-            if (count != null) setState(() => _reportCount = count);
+            setState(() => _activeReportCount++);
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Report submitted')),
             );
@@ -274,11 +276,12 @@ class _DuaCardState extends State<DuaCard> {
                     const SizedBox(width: 16),
                     GestureDetector(
                       onTap: _showReportPopout,
+                      onLongPress: () => _showReportsPopup(context),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(Icons.flag_outlined, color: Color(0xFFAB9F8E), size: 18),
-                          if (_reportCount > 0)
+                          if (_activeReportCount > 0)
                             Container(
                               margin: const EdgeInsets.only(left: 4),
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
@@ -287,7 +290,7 @@ class _DuaCardState extends State<DuaCard> {
                                 borderRadius: BorderRadius.circular(30),
                               ),
                               child: Text(
-                                '$_reportCount',
+                                '$_activeReportCount',
                                 style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
                               ),
                             ),
@@ -299,9 +302,28 @@ class _DuaCardState extends State<DuaCard> {
               ],
             ),
           ],
+          ),
         ),
       ),
-      ),
+    );
+  }
+
+  Future<void> _showReportsPopup(BuildContext context) async {
+    final repo = getIt<DuaRepository>();
+    final result = await repo.getReports(widget.dua.id);
+    if (!mounted) return;
+    final reports = <ReportModel>[];
+    if (result.isSuccess && result.data != null) {
+      for (final r in result.data!) {
+        reports.add(ReportModel.fromJson(r as Map<String, dynamic>));
+      }
+    }
+    if (!context.mounted) return;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _ReportStatusSheet(reports: reports),
     );
   }
 
@@ -337,6 +359,124 @@ class _DuaCardState extends State<DuaCard> {
           Navigator.pop(ctx);
           context.read<DuaBloc>().add(ReportDua(widget.dua.id, reason, description));
         },
+      ),
+    );
+  }
+}
+
+class _ReportStatusSheet extends StatelessWidget {
+  final List<ReportModel> reports;
+
+  const _ReportStatusSheet({required this.reports});
+
+  String _formatReason(String reason) {
+    return reason.replaceAll('_', ' ').split(' ').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' ');
+  }
+
+  Color _statusColor(String status) {
+    switch (status) {
+      case 'pending': return const Color(0xFFD68B2E);
+      case 'fix_submitted': return const Color(0xFF4A7BBF);
+      case 'resolved': return const Color(0xFF3F7849);
+      case 'dismissed': return const Color(0xFF9A8C79);
+      default: return const Color(0xFF9A8C79);
+    }
+  }
+
+  String _statusLabel(String status) {
+    return status.replaceAll('_', ' ').split(' ').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' ');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
+      decoration: const BoxDecoration(
+        color: Color(0xFFFEFCF5),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 20, offset: Offset(0, -6))],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(
+              color: Color(0xFFFEFAF2),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              border: Border(bottom: BorderSide(color: Color(0xFFEFE8DE))),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.flag_outlined, size: 18, color: Color(0xFF7C9A6E)),
+                    const SizedBox(width: 8),
+                    Text(reports.length == 1 ? '1 Report' : '${reports.length} Reports',
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                  ],
+                ),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: const Icon(Icons.close, color: Color(0xFFA18E76)),
+                ),
+              ],
+            ),
+          ),
+          Flexible(
+            child: reports.isEmpty
+                ? const Center(child: Text('No reports yet', style: TextStyle(color: Color(0xFF9A8C79))))
+                : ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: reports.length,
+                    separatorBuilder: (_, _) => const Divider(height: 16, color: Color(0xFFEFE8DE)),
+                    itemBuilder: (context, index) {
+                      final r = reports[index];
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(_formatReason(r.reason),
+                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: _statusColor(r.status).withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                                child: Text(_statusLabel(r.status),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                    color: _statusColor(r.status),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (r.description != null && r.description!.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(r.description!,
+                              style: const TextStyle(fontSize: 13, color: Color(0xFF6B6152)),
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                          if (r.createdAt != null) ...[
+                            const SizedBox(height: 4),
+                            Text(r.createdAt!,
+                              style: const TextStyle(fontSize: 11, color: Color(0xFFAB9F8E))),
+                          ],
+                        ],
+                      );
+                    },
+                  ),
+          ),
+        ],
       ),
     );
   }
