@@ -10,6 +10,7 @@ import '../../blocs/poem_bloc/poem_bloc.dart';
 import '../../blocs/poem_bloc/poem_event.dart';
 import '../../blocs/poem_bloc/poem_state.dart';
 import '../../../app/dependency_injection.dart';
+import 'report_status_sheet.dart';
 
 class PoemCard extends StatefulWidget {
   final PoemModel poem;
@@ -332,7 +333,7 @@ class _PoemCardState extends State<PoemCard> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => _ReportStatusSheet(reports: reports),
+      builder: (ctx) => ReportStatusSheet(reports: reports),
     );
   }
 
@@ -383,91 +384,3 @@ class _PoemTagPill extends StatelessWidget {
   }
 }
 
-class _ReportStatusSheet extends StatelessWidget {
-  final List<ReportModel> reports;
-  const _ReportStatusSheet({required this.reports});
-
-  Color _statusColor(String status) {
-    switch (status) {
-      case 'pending':
-        return Colors.orange;
-      case 'fix_submitted':
-        return Colors.blue;
-      case 'resolved':
-        return Colors.green;
-      case 'dismissed':
-        return Colors.grey;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Reports', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            if (reports.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                child: Center(child: Text('No reports', style: TextStyle(color: Colors.grey))),
-              )
-            else
-              ...reports.map((r) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: _statusColor(r.status).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            r.status.replaceAll('_', ' '),
-                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: _statusColor(r.status)),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          r.reason.replaceAll('_', ' '),
-                          style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
-                        ),
-                      ],
-                    ),
-                    if (r.description != null && r.description!.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        r.description!,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 12, color: Color(0xFF6B6358)),
-                      ),
-                    ],
-                  ],
-                ),
-              )),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Close'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
