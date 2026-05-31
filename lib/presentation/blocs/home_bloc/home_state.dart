@@ -8,6 +8,7 @@ class HomeState {
   final List<PoemModel> latestPoems;
   final bool showDuasTab;
   final bool isSearching;
+  final bool isSearchLoading;
   final String searchQuery;
   final List<DuaModel> searchDuas;
   final List<PoemModel> searchPoems;
@@ -29,6 +30,7 @@ class HomeState {
     this.latestPoems = const [],
     this.showDuasTab = true,
     this.isSearching = false,
+    this.isSearchLoading = false,
     this.searchQuery = '',
     this.searchDuas = const [],
     this.searchPoems = const [],
@@ -51,6 +53,7 @@ class HomeState {
     List<PoemModel>? latestPoems,
     bool? showDuasTab,
     bool? isSearching,
+    bool? isSearchLoading,
     String? searchQuery,
     List<DuaModel>? searchDuas,
     List<PoemModel>? searchPoems,
@@ -72,6 +75,7 @@ class HomeState {
       latestPoems: latestPoems ?? this.latestPoems,
       showDuasTab: showDuasTab ?? this.showDuasTab,
       isSearching: isSearching ?? this.isSearching,
+      isSearchLoading: isSearchLoading ?? this.isSearchLoading,
       searchQuery: searchQuery ?? this.searchQuery,
       searchDuas: searchDuas ?? this.searchDuas,
       searchPoems: searchPoems ?? this.searchPoems,

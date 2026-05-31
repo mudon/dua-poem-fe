@@ -189,7 +189,7 @@ class _HomeFeedState extends State<_HomeFeed> {
           }
 
           if (state.isSearching) {
-            if (state.isSearching && state.searchQuery.isNotEmpty && state.searchDuas.isEmpty && state.searchPoems.isEmpty) {
+            if (state.isSearchLoading) {
               return const Center(child: CircularProgressIndicator());
             }
             if (state.searchQuery.isNotEmpty && state.showDuasTab && state.searchDuas.isEmpty) {

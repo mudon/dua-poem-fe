@@ -15,7 +15,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<FetchMorePoems>(_fetchMorePoems);
     on<ToggleHomeTab>((event, emit) => emit(state.copyWith(showDuasTab: event.showDuas)));
     on<SearchRequested>(_search);
-    on<ClearSearch>((event, emit) => emit(state.copyWith(isSearching: false, searchQuery: '', searchDuas: [], searchPoems: [])));
+    on<ClearSearch>((event, emit) => emit(state.copyWith(isSearching: false, isSearchLoading: false, searchQuery: '', searchDuas: [], searchPoems: [])));
     on<FetchMyDuas>(_fetchMyDuas);
     on<FetchMyPoems>(_fetchMyPoems);
     on<UpdateDua>(_onUpdateDua);
@@ -162,13 +162,18 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       return;
     }
 
-    emit(state.copyWith(searchQuery: event.query, isSearching: true, error: null));
+    if (event.query == state.searchQuery && state.isSearching) return;
 
+    emit(state.copyWith(searchQuery: event.query, isSearching: true, isSearchLoading: true, error: null));
+
+    final queryAtCall = event.query;
     final duasResult = await _duaRepo.search(event.query);
     final poemsResult = await _poemRepo.search(event.query);
 
+    if (queryAtCall != state.searchQuery) return;
+
     emit(state.copyWith(
-      isSearching: false,
+      isSearchLoading: false,
       searchDuas: duasResult.isSuccess ? duasResult.data! : [],
       searchPoems: poemsResult.isSuccess ? poemsResult.data! : [],
       error: (!duasResult.isSuccess || !poemsResult.isSuccess) ? 'Search failed for some results' : null,
