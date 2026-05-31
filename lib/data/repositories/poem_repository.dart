@@ -105,4 +105,22 @@ class PoemRepository {
       return ApiResult.failure(e.toString());
     }
   }
+
+  Future<ApiResult<Map<String, dynamic>>> createRevision(String poemId, Map<String, dynamic> data) async {
+    try {
+      final result = await _poemService.createRevision(poemId, data);
+      return ApiResult.success(result);
+    } catch (e) {
+      return ApiResult.failure(e.toString());
+    }
+  }
+
+  Future<ApiResult<List<dynamic>>> getReports(String poemId) async {
+    try {
+      final reports = await _poemService.getPoemReports(poemId);
+      return ApiResult.success(reports);
+    } catch (e) {
+      return ApiResult.failure(e.toString());
+    }
+  }
 }

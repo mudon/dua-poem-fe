@@ -87,4 +87,14 @@ class DuaService {
       'description': description,
     });
   }
+
+  Future<Map<String, dynamic>> createRevision(String duaId, Map<String, dynamic> data) async {
+    final response = await _dioClient.dio.post('/duas/$duaId/revisions', data: data);
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<List<dynamic>> getDuaReports(String duaId) async {
+    final response = await _dioClient.dio.get('/duas/$duaId/reports');
+    return response.data as List;
+  }
 }

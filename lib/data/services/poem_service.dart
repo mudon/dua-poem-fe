@@ -87,4 +87,14 @@ class PoemService {
       'description': description,
     });
   }
+
+  Future<Map<String, dynamic>> createRevision(String poemId, Map<String, dynamic> data) async {
+    final response = await _dioClient.dio.post('/poems/$poemId/revisions', data: data);
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<List<dynamic>> getPoemReports(String poemId) async {
+    final response = await _dioClient.dio.get('/poems/$poemId/reports');
+    return response.data as List;
+  }
 }
