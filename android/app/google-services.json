@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "494112043315",
+    "project_id": "dua-poem-push-notification",
+    "storage_bucket": "dua-poem-push-notification.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:494112043315:android:391c042c1037fe29e08e46",
+        "android_client_info": {
+          "package_name": "com.company.duapoem"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxlDFXpytu9YV6Yx_LQHFQwKKXa6t-2O0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
