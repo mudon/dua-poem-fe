@@ -16,6 +16,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     on<RecordView>(_onRecordView);
     on<ReportPoem>(_onReport);
     on<SignalRLikeCountUpdated>(_onSignalRLikeCountUpdated);
+    on<SignalRFavoritesCountUpdated>(_onSignalRFavoritesCountUpdated);
     _listenToSignalR();
   }
 
@@ -24,6 +25,13 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
       try {
         final id = update.id;
         add(SignalRLikeCountUpdated(id, update.likesCount));
+      } catch (_) {}
+    });
+
+    getIt<SignalRService>().onFavoritesCountUpdated.listen((update) {
+      try {
+        final id = update.id;
+        add(SignalRFavoritesCountUpdated(id, update.favoritesCount));
       } catch (_) {}
     });
   }
@@ -59,12 +67,21 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     emit(state.copyWith(isProcessing: true));
     final result = await _poemRepo.toggleBookmark(event.poemId, event.currentlyFavorited);
     final newFavorited = Map<String, bool>.from(state.favoritedStates);
-    final newBookmarkCounts = Map<String, int>.from(state.bookmarkCounts);
     if (result.isSuccess) {
       newFavorited[event.poemId] = !event.currentlyFavorited;
-      newBookmarkCounts[event.poemId] = event.currentCount + (event.currentlyFavorited ? -1 : 1);
     }
-    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'bookmark', favoritedStates: newFavorited, bookmarkCounts: newBookmarkCounts, lastToggledPoemId: event.poemId));
+    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'bookmark', favoritedStates: newFavorited, lastToggledPoemId: event.poemId));
+  }
+
+  void _onSignalRFavoritesCountUpdated(SignalRFavoritesCountUpdated event, Emitter<PoemState> emit) {
+    print('[SignalR] PoemBloc received SignalRFavoritesCountUpdated: poemId=${event.poemId}, favoritesCount=${event.favoritesCount}');
+    final newBookmarkCounts = Map<String, int>.from(state.bookmarkCounts);
+    newBookmarkCounts[event.poemId] = event.favoritesCount;
+    emit(state.copyWith(
+      bookmarkCounts: newBookmarkCounts,
+      actionType: 'signalr_bookmark',
+      lastToggledPoemId: event.poemId,
+    ));
   }
 
   void _onRecordView(RecordView event, Emitter<PoemState> emit) {

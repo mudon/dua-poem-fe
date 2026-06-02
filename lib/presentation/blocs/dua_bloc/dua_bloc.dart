@@ -16,6 +16,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     on<RecordView>(_onRecordView);
     on<ReportDua>(_onReport);
     on<SignalRLikeCountUpdated>(_onSignalRLikeCountUpdated);
+    on<SignalRFavoritesCountUpdated>(_onSignalRFavoritesCountUpdated);
     _listenToSignalR();
   }
 
@@ -24,6 +25,13 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
       try {
         final id = update.id;
         add(SignalRLikeCountUpdated(id, update.likesCount));
+      } catch (_) {}
+    });
+
+    getIt<SignalRService>().onFavoritesCountUpdated.listen((update) {
+      try {
+        final id = update.id;
+        add(SignalRFavoritesCountUpdated(id, update.favoritesCount));
       } catch (_) {}
     });
   }
@@ -59,12 +67,21 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     emit(state.copyWith(isProcessing: true));
     final result = await _duaRepo.toggleBookmark(event.duaId, event.currentlyFavorited);
     final newFavorited = Map<String, bool>.from(state.favoritedStates);
-    final newBookmarkCounts = Map<String, int>.from(state.bookmarkCounts);
     if (result.isSuccess) {
       newFavorited[event.duaId] = !event.currentlyFavorited;
-      newBookmarkCounts[event.duaId] = event.currentCount + (event.currentlyFavorited ? -1 : 1);
     }
-    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'bookmark', favoritedStates: newFavorited, bookmarkCounts: newBookmarkCounts, lastToggledDuaId: event.duaId));
+    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'bookmark', favoritedStates: newFavorited, lastToggledDuaId: event.duaId));
+  }
+
+  void _onSignalRFavoritesCountUpdated(SignalRFavoritesCountUpdated event, Emitter<DuaState> emit) {
+    print('[SignalR] DuaBloc received SignalRFavoritesCountUpdated: duaId=${event.duaId}, favoritesCount=${event.favoritesCount}');
+    final newBookmarkCounts = Map<String, int>.from(state.bookmarkCounts);
+    newBookmarkCounts[event.duaId] = event.favoritesCount;
+    emit(state.copyWith(
+      bookmarkCounts: newBookmarkCounts,
+      actionType: 'signalr_bookmark',
+      lastToggledDuaId: event.duaId,
+    ));
   }
 
   void _onRecordView(RecordView event, Emitter<DuaState> emit) {

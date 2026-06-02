@@ -126,6 +126,14 @@ class _HomeFeedState extends State<_HomeFeed> {
                 duaId: id,
                 likeCount: newCount,
               ));
+            } else if (state.actionType == 'signalr_bookmark') {
+              final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
+              if (idx == -1) return;
+              final newCount = state.bookmarkCounts[id] ?? homeState.latestDuas[idx].bookmarkCount;
+              context.read<HomeBloc>().add(UpdateDua(
+                duaId: id,
+                bookmarkCount: newCount,
+              ));
             } else if (state.actionType == 'bookmark') {
               final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
               if (idx == -1) return;
@@ -176,6 +184,14 @@ class _HomeFeedState extends State<_HomeFeed> {
               context.read<HomeBloc>().add(UpdatePoem(
                 poemId: id,
                 likeCount: newCount,
+              ));
+            } else if (state.actionType == 'signalr_bookmark') {
+              final idx = homeState.latestPoems.indexWhere((p) => p.id == id);
+              if (idx == -1) return;
+              final newCount = state.bookmarkCounts[id] ?? homeState.latestPoems[idx].bookmarkCount;
+              context.read<HomeBloc>().add(UpdatePoem(
+                poemId: id,
+                bookmarkCount: newCount,
               ));
             } else if (state.actionType == 'bookmark') {
               final idx = homeState.latestPoems.indexWhere((p) => p.id == id);

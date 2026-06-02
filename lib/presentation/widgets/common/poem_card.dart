@@ -69,6 +69,11 @@ class _PoemCardState extends State<PoemCard> {
           if (count != null) {
             setState(() => _likeCount = count);
           }
+        } else if (state.actionType == 'signalr_bookmark') {
+          final count = state.bookmarkCounts[widget.poem.id];
+          if (count != null) {
+            setState(() => _bookmarkCount = count);
+          }
         } else if (state.actionType == 'like') {
           if (state.error != null) {
             setState(() => _isLiked = !_isLiked);
@@ -87,10 +92,7 @@ class _PoemCardState extends State<PoemCard> {
           }
         } else if (state.actionType == 'bookmark') {
           if (state.error != null) {
-            setState(() {
-              _isBookmarked = !_isBookmarked;
-              _bookmarkCount += _isBookmarked ? 1 : -1;
-            });
+            setState(() => _isBookmarked = !_isBookmarked);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.error!)),
             );
@@ -310,12 +312,8 @@ class _PoemCardState extends State<PoemCard> {
 
   void _toggleBookmark() {
     final wasBookmarked = _isBookmarked;
-    final currentCount = _bookmarkCount;
-    setState(() {
-      _isBookmarked = !wasBookmarked;
-      _bookmarkCount += _isBookmarked ? 1 : -1;
-    });
-    context.read<PoemBloc>().add(ToggleBookmark(widget.poem.id, wasBookmarked, currentCount));
+    setState(() => _isBookmarked = !wasBookmarked);
+    context.read<PoemBloc>().add(ToggleBookmark(widget.poem.id, wasBookmarked, _bookmarkCount));
   }
 
   void _showReportsPopup() async {

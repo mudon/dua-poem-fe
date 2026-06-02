@@ -69,6 +69,11 @@ class _DuaCardState extends State<DuaCard> {
           if (count != null) {
             setState(() => _likeCount = count);
           }
+        } else if (state.actionType == 'signalr_bookmark') {
+          final count = state.bookmarkCounts[widget.dua.id];
+          if (count != null) {
+            setState(() => _bookmarkCount = count);
+          }
         } else if (state.actionType == 'like') {
           if (state.error != null) {
             setState(() => _isLiked = !_isLiked);
@@ -87,10 +92,7 @@ class _DuaCardState extends State<DuaCard> {
           }
         } else if (state.actionType == 'bookmark') {
           if (state.error != null) {
-            setState(() {
-              _isBookmarked = !_isBookmarked;
-              _bookmarkCount += _isBookmarked ? 1 : -1;
-            });
+            setState(() => _isBookmarked = !_isBookmarked);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.error!)),
             );
@@ -339,12 +341,8 @@ class _DuaCardState extends State<DuaCard> {
 
   void _toggleBookmark() {
     final wasBookmarked = _isBookmarked;
-    final currentCount = _bookmarkCount;
-    setState(() {
-      _isBookmarked = !wasBookmarked;
-      _bookmarkCount += _isBookmarked ? 1 : -1;
-    });
-    context.read<DuaBloc>().add(ToggleBookmark(widget.dua.id, wasBookmarked, currentCount));
+    setState(() => _isBookmarked = !wasBookmarked);
+    context.read<DuaBloc>().add(ToggleBookmark(widget.dua.id, wasBookmarked, _bookmarkCount));
   }
 
 }

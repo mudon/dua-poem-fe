@@ -3,15 +3,20 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:signalr_core/signalr_core.dart';
 import '../../core/constants/api_config.dart';
 import '../models/signalr/likes_update_model.dart';
+import '../models/signalr/favorites_update_model.dart';
 
 class SignalRService {
   HubConnection? _duaHubConnection;
   HubConnection? _poemHubConnection;
+  HubConnection? _duaFavHubConnection;
+  HubConnection? _poemFavHubConnection;
   final _likesController = StreamController<LikesUpdateModel>.broadcast();
+  final _favoritesController = StreamController<FavoritesUpdateModel>.broadcast();
   bool _isConnected = false;
   Future<void>? _connectFuture;
 
   Stream<LikesUpdateModel> get onLikesCountUpdated => _likesController.stream;
+  Stream<FavoritesUpdateModel> get onFavoritesCountUpdated => _favoritesController.stream;
 
   String get _hubBaseUrl =>
       ApiConfig.baseUrl.replaceAll('/api', '');
@@ -41,6 +46,8 @@ class SignalRService {
     try {
       await _connectHub('/hubs/dua-likes', token);
       await _connectHub('/hubs/poem-likes', token);
+      await _connectHub('/hubs/dua-favorites', token);
+      await _connectHub('/hubs/poem-favorites', token);
       _isConnected = true;
     } catch (e) {
       print('[SignalR] _connectInternal failed: $e');
@@ -66,10 +73,18 @@ class SignalRService {
       _likesController.add(LikesUpdateModel.fromJson(data));
     });
 
+    connection.on('FavoritesCountUpdated', (args) {
+      if (args == null || args.isEmpty) return;
+      final data = args[0] as Map<String, dynamic>;
+      _favoritesController.add(FavoritesUpdateModel.fromJson(data));
+    });
+
     connection.onclose((Exception? error) {
       print('[SignalR] Connection closed for $hubPath: $error');
       if (hubPath.contains('dua-likes')) _duaHubConnection = null;
       if (hubPath.contains('poem-likes')) _poemHubConnection = null;
+      if (hubPath.contains('dua-favorites')) _duaFavHubConnection = null;
+      if (hubPath.contains('poem-favorites')) _poemFavHubConnection = null;
     });
 
     await connection.start();
@@ -77,6 +92,8 @@ class SignalRService {
 
     if (hubPath.contains('dua-likes')) _duaHubConnection = connection;
     if (hubPath.contains('poem-likes')) _poemHubConnection = connection;
+    if (hubPath.contains('dua-favorites')) _duaFavHubConnection = connection;
+    if (hubPath.contains('poem-favorites')) _poemFavHubConnection = connection;
   }
 
   Future<void> joinDuaGroup(String duaId) async {
@@ -128,12 +145,25 @@ class SignalRService {
     } catch (e) {
       print('[SignalR] disconnect poem hub error: $e');
     }
+    try {
+      await _duaFavHubConnection?.stop();
+    } catch (e) {
+      print('[SignalR] disconnect dua favorites hub error: $e');
+    }
+    try {
+      await _poemFavHubConnection?.stop();
+    } catch (e) {
+      print('[SignalR] disconnect poem favorites hub error: $e');
+    }
     _duaHubConnection = null;
     _poemHubConnection = null;
+    _duaFavHubConnection = null;
+    _poemFavHubConnection = null;
   }
 
   void dispose() {
     disconnect();
     _likesController.close();
+    _favoritesController.close();
   }
 }

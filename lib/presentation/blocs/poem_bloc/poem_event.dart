@@ -32,3 +32,9 @@ class SignalRLikeCountUpdated extends PoemEvent {
   final int likesCount;
   SignalRLikeCountUpdated(this.poemId, this.likesCount);
 }
+
+class SignalRFavoritesCountUpdated extends PoemEvent {
+  final String poemId;
+  final int favoritesCount;
+  SignalRFavoritesCountUpdated(this.poemId, this.favoritesCount);
+}
