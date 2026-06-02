@@ -5,6 +5,7 @@ import '../../data/models/dua_model.dart';
 import '../../data/models/report_model.dart';
 import '../../core/themes/app_theme.dart';
 import '../../data/repositories/dua_repository.dart';
+import '../../data/services/signalr_service.dart';
 import '../blocs/dua_bloc/dua_bloc.dart';
 import '../blocs/dua_bloc/dua_event.dart';
 import '../blocs/dua_bloc/dua_state.dart';
@@ -39,6 +40,13 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
     _bookmarkCount = 0;
     _loadDua();
     _loadReports();
+    getIt<SignalRService>().joinDuaGroup(widget.duaId);
+  }
+
+  @override
+  void dispose() {
+    getIt<SignalRService>().leaveDuaGroup(widget.duaId);
+    super.dispose();
   }
 
   Future<void> _loadReports() async {
@@ -148,23 +156,27 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                 ? const Center(child: Text('Dua not found'))
                 : BlocProvider.value(
                     value: getIt<DuaBloc>(),
-                    child: BlocListener<DuaBloc, DuaState>(
-                      listener: (context, state) {
-                        if (state.error != null) {
-                          setState(() {
-                            if (state.actionType == 'like') {
-                              _isLiked = !_isLiked;
-                              _likeCount += _isLiked ? 1 : -1;
-                            } else if (state.actionType == 'bookmark') {
-                              _isBookmarked = !_isBookmarked;
-                              _bookmarkCount += _isBookmarked ? 1 : -1;
-                            }
-                          });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(state.error!)),
-                          );
-                        }
-                      },
+                      child: BlocListener<DuaBloc, DuaState>(
+                        listener: (context, state) {
+                          if (state.error != null) {
+                            setState(() {
+                              if (state.actionType == 'like') {
+                                _isLiked = !_isLiked;
+                                _likeCount += _isLiked ? 1 : -1;
+                              } else if (state.actionType == 'bookmark') {
+                                _isBookmarked = !_isBookmarked;
+                                _bookmarkCount += _isBookmarked ? 1 : -1;
+                              }
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(state.error!)),
+                            );
+                          }
+                          final count = state.likeCounts[widget.duaId];
+                          if (count != null && count != _likeCount) {
+                            setState(() => _likeCount = count);
+                          }
+                        },
                       child: SingleChildScrollView(
                       padding: const EdgeInsets.all(16),
                       child: Column(

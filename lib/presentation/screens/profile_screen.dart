@@ -36,7 +36,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadData() async {
-    final user = (context.read<AuthBloc>().state as Authenticated).user;
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! Authenticated) return;
+    final user = authState.user;
     try {
       final stats = await getIt<UserService>().getStats(user.id);
       final duasResult = await getIt<DuaRepository>().getUserDuas(user.id);
@@ -118,7 +120,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = (context.read<AuthBloc>().state as Authenticated).user;
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! Authenticated) return const SizedBox.shrink();
+    final user = authState.user;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F0E8),
@@ -198,9 +202,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 else if (_selectedTab == 0)
                   _buildDetailsTab(user)
                 else if (_selectedTab == 1)
-                  _buildDuas()
+                  _buildDuas(user)
                 else
-                  _buildPoems(),
+                  _buildPoems(user),
                 const SizedBox(height: 16),
                 Container(height: 1, color: const Color(0xFFF0EAE0)),
                 const SizedBox(height: 12),
@@ -263,7 +267,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildDuas() {
+  Widget _buildDuas(UserModel user) {
     if (_userDuas.isEmpty) {
       return const Center(child: Padding(
         padding: EdgeInsets.all(32),
@@ -271,11 +275,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ));
     }
     return Column(
-      children: _userDuas.map((d) => DuaCard(dua: d, currentUser: _currentUser())).toList(),
+      children: _userDuas.map((d) => DuaCard(dua: d, currentUser: user)).toList(),
     );
   }
 
-  Widget _buildPoems() {
+  Widget _buildPoems(UserModel user) {
     if (_userPoems.isEmpty) {
       return const Center(child: Padding(
         padding: EdgeInsets.all(32),
@@ -283,12 +287,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ));
     }
     return Column(
-      children: _userPoems.map((p) => PoemCard(poem: p, currentUser: _currentUser())).toList(),
+      children: _userPoems.map((p) => PoemCard(poem: p, currentUser: user)).toList(),
     );
-  }
-
-  UserModel _currentUser() {
-    return (context.read<AuthBloc>().state as Authenticated).user;
   }
 }
 

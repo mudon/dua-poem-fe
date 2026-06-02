@@ -3,6 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/services/user_service.dart';
+import '../../../data/services/signalr_service.dart';
 import '../../../data/models/user_model.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -10,8 +11,9 @@ import 'auth_state.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepo;
   final UserService _userService;
+  final SignalRService _signalRService;
 
-  AuthBloc(this._authRepo, this._userService) : super(AuthInitial()) {
+  AuthBloc(this._authRepo, this._userService, this._signalRService) : super(AuthInitial()) {
     on<LoginRequested>(_onLogin);
     on<SignupRequested>(_onSignup);
     on<LogoutRequested>(_onLogout);
@@ -24,6 +26,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final result = await _authRepo.login(event.email, event.password);
     if (result.isSuccess) {
       await _saveUser(result.data!);
+      await _signalRService.connect();
       emit(Authenticated(result.data!));
     } else {
       emit(AuthError(result.error!));
@@ -35,6 +38,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final result = await _authRepo.signup(event.firstName, event.lastName, event.email, event.password);
     if (result.isSuccess) {
       await _saveUser(result.data!);
+      await _signalRService.connect();
       emit(Authenticated(result.data!));
     } else {
       emit(AuthError(result.error!));
@@ -42,6 +46,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onLogout(LogoutRequested event, Emitter<AuthState> emit) async {
+    await _signalRService.disconnect();
     await _authRepo.logout();
     const storage = FlutterSecureStorage();
     await storage.delete(key: 'cached_user');
@@ -51,6 +56,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onCheck(CheckAuthStatus event, Emitter<AuthState> emit) async {
     final isLogged = await _authRepo.isLoggedIn();
     if (isLogged) {
+      await _signalRService.connect();
       const storage = FlutterSecureStorage();
       final cachedUser = await storage.read(key: 'cached_user');
       if (cachedUser != null) {

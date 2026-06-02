@@ -14,12 +14,15 @@ import '../widgets/forms/create_poem_sheet.dart';
 
 void _showCreatePoemSheet(BuildContext context) {
   final homeBloc = context.read<HomeBloc>();
+  final authState = context.read<AuthBloc>().state;
+  if (authState is! Authenticated) return;
+  final userId = authState.user.id;
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (_) => CreatePoemSheet(
-      onCreated: () => homeBloc.add(FetchMyPoems((context.read<AuthBloc>().state as Authenticated).user.id)),
+      onCreated: () => homeBloc.add(FetchMyPoems(userId)),
     ),
   );
 }
@@ -29,7 +32,9 @@ class MyPoemsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = (context.read<AuthBloc>().state as Authenticated).user;
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! Authenticated) return const SizedBox.shrink();
+    final user = authState.user;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F0E8),

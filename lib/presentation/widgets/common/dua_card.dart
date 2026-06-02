@@ -52,7 +52,9 @@ class _DuaCardState extends State<DuaCard> {
         oldWidget.dua.isFavorited != widget.dua.isFavorited) {
       final blocState = context.read<DuaBloc>().state;
       _isLiked = blocState.likedStates[widget.dua.id] ?? widget.dua.isLiked;
+      _likeCount = blocState.likeCounts[widget.dua.id] ?? widget.dua.likeCount;
       _isBookmarked = blocState.favoritedStates[widget.dua.id] ?? widget.dua.isFavorited;
+      _bookmarkCount = blocState.bookmarkCounts[widget.dua.id] ?? widget.dua.bookmarkCount;
       _viewCount = blocState.viewCounts[widget.dua.id] ?? widget.dua.views;
       _activeReportCount = widget.dua.activeReportCount;
     }
@@ -62,12 +64,14 @@ class _DuaCardState extends State<DuaCard> {
   Widget build(BuildContext context) {
     return BlocListener<DuaBloc, DuaState>(
       listener: (context, state) {
-        if (state.actionType == 'like') {
+        if (state.actionType == 'signalr_like') {
+          final count = state.likeCounts[widget.dua.id];
+          if (count != null) {
+            setState(() => _likeCount = count);
+          }
+        } else if (state.actionType == 'like') {
           if (state.error != null) {
-            setState(() {
-              _isLiked = !_isLiked;
-              _likeCount += _isLiked ? 1 : -1;
-            });
+            setState(() => _isLiked = !_isLiked);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.error!)),
             );
@@ -329,12 +333,8 @@ class _DuaCardState extends State<DuaCard> {
 
   void _toggleLike() {
     final wasLiked = _isLiked;
-    final currentCount = _likeCount;
-    setState(() {
-      _isLiked = !wasLiked;
-      _likeCount += _isLiked ? 1 : -1;
-    });
-    context.read<DuaBloc>().add(ToggleLike(widget.dua.id, wasLiked, currentCount));
+    setState(() => _isLiked = !wasLiked);
+    context.read<DuaBloc>().add(ToggleLike(widget.dua.id, wasLiked, _likeCount));
   }
 
   void _toggleBookmark() {

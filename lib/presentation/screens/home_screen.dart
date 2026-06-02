@@ -23,7 +23,9 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = (context.read<AuthBloc>().state as Authenticated).user;
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! Authenticated) return const SizedBox.shrink();
+    final user = authState.user;
 
     return BlocProvider(
       create: (context) => HomeBloc(
@@ -116,6 +118,14 @@ class _HomeFeedState extends State<_HomeFeed> {
                 isLiked: isNowLiked,
                 likeCount: newCount,
               ));
+            } else if (state.actionType == 'signalr_like') {
+              final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
+              if (idx == -1) return;
+              final newCount = state.likeCounts[id] ?? homeState.latestDuas[idx].likeCount;
+              context.read<HomeBloc>().add(UpdateDua(
+                duaId: id,
+                likeCount: newCount,
+              ));
             } else if (state.actionType == 'bookmark') {
               final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
               if (idx == -1) return;
@@ -157,6 +167,14 @@ class _HomeFeedState extends State<_HomeFeed> {
               context.read<HomeBloc>().add(UpdatePoem(
                 poemId: id,
                 isLiked: isNowLiked,
+                likeCount: newCount,
+              ));
+            } else if (state.actionType == 'signalr_like') {
+              final idx = homeState.latestPoems.indexWhere((p) => p.id == id);
+              if (idx == -1) return;
+              final newCount = state.likeCounts[id] ?? homeState.latestPoems[idx].likeCount;
+              context.read<HomeBloc>().add(UpdatePoem(
+                poemId: id,
                 likeCount: newCount,
               ));
             } else if (state.actionType == 'bookmark') {
@@ -223,8 +241,9 @@ class _HomeFeedState extends State<_HomeFeed> {
                       child: Center(child: CircularProgressIndicator()),
                     );
                   }
-                  final user = (context.read<AuthBloc>().state as Authenticated).user;
-                  return DuaCard(key: ValueKey(state.searchDuas[index].id), dua: state.searchDuas[index], currentUser: user);
+                  final authState = context.read<AuthBloc>().state;
+                  if (authState is! Authenticated) return const SizedBox.shrink();
+                  return DuaCard(key: ValueKey(state.searchDuas[index].id), dua: state.searchDuas[index], currentUser: authState.user);
                 },
               );
             }
@@ -238,8 +257,9 @@ class _HomeFeedState extends State<_HomeFeed> {
                     child: Center(child: CircularProgressIndicator()),
                   );
                 }
-                final user = (context.read<AuthBloc>().state as Authenticated).user;
-                return PoemCard(key: ValueKey(state.searchPoems[index].id), poem: state.searchPoems[index], currentUser: user);
+                final authState = context.read<AuthBloc>().state;
+                if (authState is! Authenticated) return const SizedBox.shrink();
+                return PoemCard(key: ValueKey(state.searchPoems[index].id), poem: state.searchPoems[index], currentUser: authState.user);
               },
             );
           }
@@ -255,8 +275,9 @@ class _HomeFeedState extends State<_HomeFeed> {
                     child: Center(child: CircularProgressIndicator()),
                   );
                 }
-                final user = (context.read<AuthBloc>().state as Authenticated).user;
-                return DuaCard(key: ValueKey(state.latestDuas[index].id), dua: state.latestDuas[index], currentUser: user);
+                final authState = context.read<AuthBloc>().state;
+                if (authState is! Authenticated) return const SizedBox.shrink();
+                return DuaCard(key: ValueKey(state.latestDuas[index].id), dua: state.latestDuas[index], currentUser: authState.user);
               },
             );
           }
@@ -270,8 +291,9 @@ class _HomeFeedState extends State<_HomeFeed> {
                   child: Center(child: CircularProgressIndicator()),
                 );
               }
-              final user = (context.read<AuthBloc>().state as Authenticated).user;
-              return PoemCard(key: ValueKey(state.latestPoems[index].id), poem: state.latestPoems[index], currentUser: user);
+              final authState = context.read<AuthBloc>().state;
+              if (authState is! Authenticated) return const SizedBox.shrink();
+              return PoemCard(key: ValueKey(state.latestPoems[index].id), poem: state.latestPoems[index], currentUser: authState.user);
             },
           );
         },

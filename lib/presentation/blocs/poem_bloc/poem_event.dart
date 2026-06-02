@@ -26,3 +26,9 @@ class ReportPoem extends PoemEvent {
   final String description;
   ReportPoem(this.poemId, this.reason, this.description);
 }
+
+class SignalRLikeCountUpdated extends PoemEvent {
+  final String poemId;
+  final int likesCount;
+  SignalRLikeCountUpdated(this.poemId, this.likesCount);
+}

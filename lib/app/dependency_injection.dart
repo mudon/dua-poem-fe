@@ -9,6 +9,7 @@ import '../data/services/poem_service.dart';
 import '../data/services/category_service.dart';
 import '../data/services/tag_service.dart';
 import '../data/services/user_service.dart';
+import '../data/services/signalr_service.dart';
 import '../data/repositories/auth_repository.dart';
 import '../data/repositories/dua_repository.dart';
 import '../data/repositories/poem_repository.dart';
@@ -39,6 +40,7 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton(() => CategoryService(getIt<DioClient>()));
   getIt.registerLazySingleton(() => TagService(getIt<DioClient>()));
   getIt.registerLazySingleton(() => UserService(getIt<DioClient>()));
+  getIt.registerLazySingleton(() => SignalRService());
 
   // Repositories
   getIt.registerLazySingleton(() => AuthRepository(getIt<AuthService>(), secureStorage));
@@ -48,7 +50,11 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton(() => TagRepository(getIt<TagService>()));
 
   // BLoCs
-  getIt.registerFactory(() => AuthBloc(getIt<AuthRepository>(), getIt<UserService>()));
+  getIt.registerFactory(() => AuthBloc(
+    getIt<AuthRepository>(),
+    getIt<UserService>(),
+    getIt<SignalRService>(),
+  ));
   getIt.registerFactory(() => HomeBloc(getIt<DuaRepository>(), getIt<PoemRepository>()));
   getIt.registerLazySingleton(() => DuaBloc(getIt<DuaRepository>()));
   getIt.registerLazySingleton(() => PoemBloc(getIt<PoemRepository>()));

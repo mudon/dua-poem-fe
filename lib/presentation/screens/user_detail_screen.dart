@@ -74,7 +74,9 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final name = _profile?.fullName ?? widget.userDisplayName;
-    final currentUser = (context.read<AuthBloc>().state as Authenticated).user;
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! Authenticated) return const SizedBox.shrink();
+    final currentUser = authState.user;
 
     return MultiBlocProvider(
       providers: [

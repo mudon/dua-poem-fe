@@ -52,7 +52,9 @@ class _PoemCardState extends State<PoemCard> {
         oldWidget.poem.isFavorited != widget.poem.isFavorited) {
       final blocState = context.read<PoemBloc>().state;
       _isLiked = blocState.likedStates[widget.poem.id] ?? widget.poem.isLiked;
+      _likeCount = blocState.likeCounts[widget.poem.id] ?? widget.poem.likeCount;
       _isBookmarked = blocState.favoritedStates[widget.poem.id] ?? widget.poem.isFavorited;
+      _bookmarkCount = blocState.bookmarkCounts[widget.poem.id] ?? widget.poem.bookmarkCount;
       _activeReportCount = widget.poem.activeReportCount;
     _viewCount = blocState.viewCounts[widget.poem.id] ?? widget.poem.views;
     }
@@ -62,12 +64,14 @@ class _PoemCardState extends State<PoemCard> {
   Widget build(BuildContext context) {
     return BlocListener<PoemBloc, PoemState>(
       listener: (context, state) {
-        if (state.actionType == 'like') {
+        if (state.actionType == 'signalr_like') {
+          final count = state.likeCounts[widget.poem.id];
+          if (count != null) {
+            setState(() => _likeCount = count);
+          }
+        } else if (state.actionType == 'like') {
           if (state.error != null) {
-            setState(() {
-              _isLiked = !_isLiked;
-              _likeCount += _isLiked ? 1 : -1;
-            });
+            setState(() => _isLiked = !_isLiked);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.error!)),
             );
@@ -300,12 +304,8 @@ class _PoemCardState extends State<PoemCard> {
 
   void _toggleLike() {
     final wasLiked = _isLiked;
-    final currentCount = _likeCount;
-    setState(() {
-      _isLiked = !wasLiked;
-      _likeCount += _isLiked ? 1 : -1;
-    });
-    context.read<PoemBloc>().add(ToggleLike(widget.poem.id, wasLiked, currentCount));
+    setState(() => _isLiked = !wasLiked);
+    context.read<PoemBloc>().add(ToggleLike(widget.poem.id, wasLiked, _likeCount));
   }
 
   void _toggleBookmark() {

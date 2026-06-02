@@ -26,3 +26,9 @@ class ReportDua extends DuaEvent {
   final String description;
   ReportDua(this.duaId, this.reason, this.description);
 }
+
+class SignalRLikeCountUpdated extends DuaEvent {
+  final String duaId;
+  final int likesCount;
+  SignalRLikeCountUpdated(this.duaId, this.likesCount);
+}
