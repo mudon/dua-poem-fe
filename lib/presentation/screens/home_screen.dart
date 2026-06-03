@@ -144,12 +144,26 @@ class _HomeFeedState extends State<_HomeFeed> {
                 isFavorited: isNowFav,
                 bookmarkCount: newCount,
               ));
+            } else if (state.actionType == 'signalr_view') {
+              final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
+              if (idx == -1) return;
+              final newViews = state.viewCounts[id];
+              if (newViews != null) {
+                context.read<HomeBloc>().add(UpdateDua(duaId: id, views: newViews));
+              }
             } else if (state.actionType == 'view') {
               final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
               if (idx == -1) return;
               final newViews = state.viewCounts[id];
               if (newViews != null) {
                 context.read<HomeBloc>().add(UpdateDua(duaId: id, views: newViews));
+              }
+            } else if (state.actionType == 'signalr_report') {
+              final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
+              if (idx == -1) return;
+              final newCount = state.reportCounts[id];
+              if (newCount != null) {
+                context.read<HomeBloc>().add(UpdateDua(duaId: id, reportCount: newCount));
               }
             } else if (state.actionType == 'report') {
               final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
@@ -203,12 +217,26 @@ class _HomeFeedState extends State<_HomeFeed> {
                 isFavorited: isNowFav,
                 bookmarkCount: newCount,
               ));
+            } else if (state.actionType == 'signalr_view') {
+              final idx = homeState.latestPoems.indexWhere((p) => p.id == id);
+              if (idx == -1) return;
+              final newViews = state.viewCounts[id];
+              if (newViews != null) {
+                context.read<HomeBloc>().add(UpdatePoem(poemId: id, views: newViews));
+              }
             } else if (state.actionType == 'view') {
               final idx = homeState.latestPoems.indexWhere((p) => p.id == id);
               if (idx == -1) return;
               final newViews = state.viewCounts[id];
               if (newViews != null) {
                 context.read<HomeBloc>().add(UpdatePoem(poemId: id, views: newViews));
+              }
+            } else if (state.actionType == 'signalr_report') {
+              final idx = homeState.latestPoems.indexWhere((p) => p.id == id);
+              if (idx == -1) return;
+              final newCount = state.reportCounts[id];
+              if (newCount != null) {
+                context.read<HomeBloc>().add(UpdatePoem(poemId: id, reportCount: newCount));
               }
             } else if (state.actionType == 'report') {
               final idx = homeState.latestPoems.indexWhere((p) => p.id == id);

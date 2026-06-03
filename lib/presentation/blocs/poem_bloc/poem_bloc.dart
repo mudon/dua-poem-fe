@@ -17,6 +17,8 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     on<ReportPoem>(_onReport);
     on<SignalRLikeCountUpdated>(_onSignalRLikeCountUpdated);
     on<SignalRFavoritesCountUpdated>(_onSignalRFavoritesCountUpdated);
+    on<SignalRViewsCountUpdated>(_onSignalRViewsCountUpdated);
+    on<SignalRReportsCountUpdated>(_onSignalRReportsCountUpdated);
     _listenToSignalR();
   }
 
@@ -32,6 +34,20 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
       try {
         final id = update.id;
         add(SignalRFavoritesCountUpdated(id, update.favoritesCount));
+      } catch (_) {}
+    });
+
+    getIt<SignalRService>().onViewsCountUpdated.listen((update) {
+      try {
+        final id = update.id;
+        add(SignalRViewsCountUpdated(id, update.viewsCount));
+      } catch (_) {}
+    });
+
+    getIt<SignalRService>().onReportsCountUpdated.listen((update) {
+      try {
+        final id = update.id;
+        add(SignalRReportsCountUpdated(id, update.reportsCount));
       } catch (_) {}
     });
   }
@@ -84,6 +100,28 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     ));
   }
 
+  void _onSignalRViewsCountUpdated(SignalRViewsCountUpdated event, Emitter<PoemState> emit) {
+    print('[SignalR] PoemBloc received SignalRViewsCountUpdated: poemId=${event.poemId}, viewsCount=${event.viewsCount}');
+    final newViewCounts = Map<String, int>.from(state.viewCounts);
+    newViewCounts[event.poemId] = event.viewsCount;
+    emit(state.copyWith(
+      viewCounts: newViewCounts,
+      actionType: 'signalr_view',
+      lastToggledPoemId: event.poemId,
+    ));
+  }
+
+  void _onSignalRReportsCountUpdated(SignalRReportsCountUpdated event, Emitter<PoemState> emit) {
+    print('[SignalR] PoemBloc received SignalRReportsCountUpdated: poemId=${event.poemId}, reportsCount=${event.reportsCount}');
+    final newReportCounts = Map<String, int>.from(state.reportCounts);
+    newReportCounts[event.poemId] = event.reportsCount;
+    emit(state.copyWith(
+      reportCounts: newReportCounts,
+      actionType: 'signalr_report',
+      lastToggledPoemId: event.poemId,
+    ));
+  }
+
   void _onRecordView(RecordView event, Emitter<PoemState> emit) {
     final newViewCounts = Map<String, int>.from(state.viewCounts);
     newViewCounts[event.poemId] = event.viewCount;
@@ -93,16 +131,10 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
   Future<void> _onReport(ReportPoem event, Emitter<PoemState> emit) async {
     emit(state.copyWith(isProcessing: true));
     final result = await _poemRepo.reportPoem(event.poemId, event.reason, event.description);
-    final newReportCounts = Map<String, int>.from(state.reportCounts);
-    if (result.isSuccess) {
-      final current = state.reportCounts[event.poemId] ?? 0;
-      newReportCounts[event.poemId] = current + 1;
-    }
     emit(state.copyWith(
       isProcessing: false,
       error: result.isSuccess ? null : result.error,
       actionType: 'report',
-      reportCounts: newReportCounts,
       lastToggledPoemId: event.poemId,
     ));
   }

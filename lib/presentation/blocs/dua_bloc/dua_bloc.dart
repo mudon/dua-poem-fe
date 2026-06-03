@@ -17,6 +17,8 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     on<ReportDua>(_onReport);
     on<SignalRLikeCountUpdated>(_onSignalRLikeCountUpdated);
     on<SignalRFavoritesCountUpdated>(_onSignalRFavoritesCountUpdated);
+    on<SignalRViewsCountUpdated>(_onSignalRViewsCountUpdated);
+    on<SignalRReportsCountUpdated>(_onSignalRReportsCountUpdated);
     _listenToSignalR();
   }
 
@@ -32,6 +34,20 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
       try {
         final id = update.id;
         add(SignalRFavoritesCountUpdated(id, update.favoritesCount));
+      } catch (_) {}
+    });
+
+    getIt<SignalRService>().onViewsCountUpdated.listen((update) {
+      try {
+        final id = update.id;
+        add(SignalRViewsCountUpdated(id, update.viewsCount));
+      } catch (_) {}
+    });
+
+    getIt<SignalRService>().onReportsCountUpdated.listen((update) {
+      try {
+        final id = update.id;
+        add(SignalRReportsCountUpdated(id, update.reportsCount));
       } catch (_) {}
     });
   }
@@ -84,6 +100,28 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     ));
   }
 
+  void _onSignalRViewsCountUpdated(SignalRViewsCountUpdated event, Emitter<DuaState> emit) {
+    print('[SignalR] DuaBloc received SignalRViewsCountUpdated: duaId=${event.duaId}, viewsCount=${event.viewsCount}');
+    final newViewCounts = Map<String, int>.from(state.viewCounts);
+    newViewCounts[event.duaId] = event.viewsCount;
+    emit(state.copyWith(
+      viewCounts: newViewCounts,
+      actionType: 'signalr_view',
+      lastToggledDuaId: event.duaId,
+    ));
+  }
+
+  void _onSignalRReportsCountUpdated(SignalRReportsCountUpdated event, Emitter<DuaState> emit) {
+    print('[SignalR] DuaBloc received SignalRReportsCountUpdated: duaId=${event.duaId}, reportsCount=${event.reportsCount}');
+    final newReportCounts = Map<String, int>.from(state.reportCounts);
+    newReportCounts[event.duaId] = event.reportsCount;
+    emit(state.copyWith(
+      reportCounts: newReportCounts,
+      actionType: 'signalr_report',
+      lastToggledDuaId: event.duaId,
+    ));
+  }
+
   void _onRecordView(RecordView event, Emitter<DuaState> emit) {
     final newViewCounts = Map<String, int>.from(state.viewCounts);
     newViewCounts[event.duaId] = event.viewCount;
@@ -93,16 +131,10 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
   Future<void> _onReport(ReportDua event, Emitter<DuaState> emit) async {
     emit(state.copyWith(isProcessing: true));
     final result = await _duaRepo.reportDua(event.duaId, event.reason, event.description);
-    final newReportCounts = Map<String, int>.from(state.reportCounts);
-    if (result.isSuccess) {
-      final current = state.reportCounts[event.duaId] ?? 0;
-      newReportCounts[event.duaId] = current + 1;
-    }
     emit(state.copyWith(
       isProcessing: false,
       error: result.isSuccess ? null : result.error,
       actionType: 'report',
-      reportCounts: newReportCounts,
       lastToggledDuaId: event.duaId,
     ));
   }

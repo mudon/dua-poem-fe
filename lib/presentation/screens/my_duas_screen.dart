@@ -67,6 +67,13 @@ class MyDuasScreen extends StatelessWidget {
                   isFavorited: isNowFav,
                   bookmarkCount: newCount,
                 ));
+              } else if (state.actionType == 'signalr_view') {
+                final idx = homeState.myDuas.indexWhere((d) => d.id == id);
+                if (idx == -1) return;
+                final newViews = state.viewCounts[id];
+                if (newViews != null) {
+                  ctx.read<HomeBloc>().add(UpdateDua(duaId: id, views: newViews));
+                }
               } else if (state.actionType == 'view') {
                 final idx = homeState.myDuas.indexWhere((d) => d.id == id);
                 if (idx == -1) return;

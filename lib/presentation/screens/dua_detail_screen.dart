@@ -73,12 +73,7 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
   Future<void> _loadDua() async {
     final repo = getIt<DuaRepository>();
     final result = await repo.getDuaDetail(widget.duaId);
-    repo.recordView(widget.duaId).then((_) {
-      if (mounted) {
-        final currentViews = _dua?.views ?? 0;
-        getIt<DuaBloc>().add(RecordView(widget.duaId, currentViews + 1));
-      }
-    });
+    repo.recordView(widget.duaId);
     if (mounted) {
       setState(() {
         _dua = result.data;

@@ -106,10 +106,20 @@ class _DuaCardState extends State<DuaCard> {
               });
             }
           }
+        } else if (state.actionType == 'signalr_view') {
+          final count = state.viewCounts[widget.dua.id];
+          if (count != null) {
+            setState(() => _viewCount = count);
+          }
         } else if (state.actionType == 'view') {
           final count = state.viewCounts[widget.dua.id];
           if (count != null) {
             setState(() => _viewCount = count);
+          }
+        } else if (state.actionType == 'signalr_report') {
+          final count = state.reportCounts[widget.dua.id];
+          if (count != null) {
+            setState(() => _activeReportCount = count);
           }
         } else if (state.actionType == 'report') {
           if (state.lastToggledDuaId != widget.dua.id) return;
@@ -118,7 +128,6 @@ class _DuaCardState extends State<DuaCard> {
               SnackBar(content: Text('Report failed: ${state.error}')),
             );
           } else {
-            setState(() => _activeReportCount++);
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Report submitted')),
             );

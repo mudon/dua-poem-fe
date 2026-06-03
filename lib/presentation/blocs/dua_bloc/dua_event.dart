@@ -38,3 +38,15 @@ class SignalRFavoritesCountUpdated extends DuaEvent {
   final int favoritesCount;
   SignalRFavoritesCountUpdated(this.duaId, this.favoritesCount);
 }
+
+class SignalRViewsCountUpdated extends DuaEvent {
+  final String duaId;
+  final int viewsCount;
+  SignalRViewsCountUpdated(this.duaId, this.viewsCount);
+}
+
+class SignalRReportsCountUpdated extends DuaEvent {
+  final String duaId;
+  final int reportsCount;
+  SignalRReportsCountUpdated(this.duaId, this.reportsCount);
+}

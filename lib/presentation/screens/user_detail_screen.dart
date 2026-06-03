@@ -93,22 +93,54 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
               final idx = _userDuas.indexWhere((d) => d.id == id);
               if (idx == -1) return;
               final d = _userDuas[idx];
-              if (state.actionType == 'like') {
+              if (state.actionType == 'signalr_like') {
+                final newCount = state.likeCounts[id];
+                if (newCount != null) {
+                  setState(() => _userDuas[idx] = d.copyWith(likeCount: newCount));
+                }
+              } else if (state.actionType == 'like') {
                 final isNowLiked = state.likedStates[id] ?? false;
+                final newCount = state.likeCounts[id] ?? d.likeCount;
                 setState(() {
                   _userDuas[idx] = d.copyWith(
                     isLiked: isNowLiked,
-                    likeCount: d.likeCount + (isNowLiked ? 1 : -1),
+                    likeCount: newCount,
                   );
                 });
+              } else if (state.actionType == 'signalr_bookmark') {
+                final newCount = state.bookmarkCounts[id];
+                if (newCount != null) {
+                  setState(() => _userDuas[idx] = d.copyWith(bookmarkCount: newCount));
+                }
               } else if (state.actionType == 'bookmark') {
                 final isNowFav = state.favoritedStates[id] ?? false;
+                final newCount = state.bookmarkCounts[id] ?? d.bookmarkCount;
                 setState(() {
                   _userDuas[idx] = d.copyWith(
                     isFavorited: isNowFav,
-                    bookmarkCount: d.bookmarkCount + (isNowFav ? 1 : -1),
+                    bookmarkCount: newCount,
                   );
                 });
+              } else if (state.actionType == 'signalr_view') {
+                final newViews = state.viewCounts[id];
+                if (newViews != null) {
+                  setState(() => _userDuas[idx] = d.copyWith(views: newViews));
+                }
+              } else if (state.actionType == 'view') {
+                final newViews = state.viewCounts[id];
+                if (newViews != null) {
+                  setState(() => _userDuas[idx] = d.copyWith(views: newViews));
+                }
+              } else if (state.actionType == 'signalr_report') {
+                final newCount = state.reportCounts[id];
+                if (newCount != null) {
+                  setState(() => _userDuas[idx] = d.copyWith(reportCount: newCount));
+                }
+              } else if (state.actionType == 'report') {
+                final newCount = state.reportCounts[id];
+                if (newCount != null) {
+                  setState(() => _userDuas[idx] = d.copyWith(reportCount: newCount));
+                }
               }
             },
           ),
@@ -120,22 +152,54 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
               final idx = _userPoems.indexWhere((p) => p.id == id);
               if (idx == -1) return;
               final p = _userPoems[idx];
-              if (state.actionType == 'like') {
+              if (state.actionType == 'signalr_like') {
+                final newCount = state.likeCounts[id];
+                if (newCount != null) {
+                  setState(() => _userPoems[idx] = p.copyWith(likeCount: newCount));
+                }
+              } else if (state.actionType == 'like') {
                 final isNowLiked = state.likedStates[id] ?? false;
+                final newCount = state.likeCounts[id] ?? p.likeCount;
                 setState(() {
                   _userPoems[idx] = p.copyWith(
                     isLiked: isNowLiked,
-                    likeCount: p.likeCount + (isNowLiked ? 1 : -1),
+                    likeCount: newCount,
                   );
                 });
+              } else if (state.actionType == 'signalr_bookmark') {
+                final newCount = state.bookmarkCounts[id];
+                if (newCount != null) {
+                  setState(() => _userPoems[idx] = p.copyWith(bookmarkCount: newCount));
+                }
               } else if (state.actionType == 'bookmark') {
                 final isNowFav = state.favoritedStates[id] ?? false;
+                final newCount = state.bookmarkCounts[id] ?? p.bookmarkCount;
                 setState(() {
                   _userPoems[idx] = p.copyWith(
                     isFavorited: isNowFav,
-                    bookmarkCount: p.bookmarkCount + (isNowFav ? 1 : -1),
+                    bookmarkCount: newCount,
                   );
                 });
+              } else if (state.actionType == 'signalr_view') {
+                final newViews = state.viewCounts[id];
+                if (newViews != null) {
+                  setState(() => _userPoems[idx] = p.copyWith(views: newViews));
+                }
+              } else if (state.actionType == 'view') {
+                final newViews = state.viewCounts[id];
+                if (newViews != null) {
+                  setState(() => _userPoems[idx] = p.copyWith(views: newViews));
+                }
+              } else if (state.actionType == 'signalr_report') {
+                final newCount = state.reportCounts[id];
+                if (newCount != null) {
+                  setState(() => _userPoems[idx] = p.copyWith(reportCount: newCount));
+                }
+              } else if (state.actionType == 'report') {
+                final newCount = state.reportCounts[id];
+                if (newCount != null) {
+                  setState(() => _userPoems[idx] = p.copyWith(reportCount: newCount));
+                }
               }
             },
           ),
