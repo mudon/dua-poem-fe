@@ -44,6 +44,8 @@ class _NotificationBellState extends State<NotificationBell> {
         return Icons.pending_actions;
       case 'revision_reviewed':
         return Icons.edit_note;
+      case 'report_reopened':
+        return Icons.refresh;
       default:
         return Icons.notifications_outlined;
     }
