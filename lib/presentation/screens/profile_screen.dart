@@ -13,6 +13,7 @@ import '../blocs/auth_bloc/auth_event.dart';
 import '../blocs/auth_bloc/auth_state.dart';
 import '../widgets/common/dua_card.dart';
 import '../widgets/common/poem_card.dart';
+import '../widgets/common/notification_bell.dart';
 import '../../app/dependency_injection.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -126,6 +127,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F0E8),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFFEFCF7),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        title: const Text('Profile', style: TextStyle(color: Color(0xFF3C4F34), fontWeight: FontWeight.w600)),
+        actions: const [Padding(padding: EdgeInsets.only(right: 12), child: NotificationBell())],
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),

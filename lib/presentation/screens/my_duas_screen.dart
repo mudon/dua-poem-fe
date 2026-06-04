@@ -9,6 +9,7 @@ import '../blocs/home_bloc/home_bloc.dart';
 import '../blocs/home_bloc/home_event.dart';
 import '../blocs/home_bloc/home_state.dart';
 import '../widgets/common/dua_card.dart';
+import '../widgets/common/notification_bell.dart';
 import '../../app/dependency_injection.dart';
 import '../widgets/forms/create_dua_sheet.dart';
 
@@ -38,6 +39,13 @@ class MyDuasScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F0E8),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFFEFCF7),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        title: const Text('My Duas', style: TextStyle(color: Color(0xFF3C4F34), fontWeight: FontWeight.w600)),
+        actions: const [Padding(padding: EdgeInsets.only(right: 12), child: NotificationBell())],
+      ),
       body: SafeArea(
         child: BlocProvider(
           create: (_) => getIt<HomeBloc>()..add(FetchMyDuas(user.id)),

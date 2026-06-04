@@ -11,6 +11,7 @@ import '../blocs/poem_bloc/poem_bloc.dart';
 import '../blocs/poem_bloc/poem_state.dart';
 import '../widgets/common/dua_card.dart';
 import '../widgets/common/poem_card.dart';
+import '../widgets/common/notification_bell.dart';
 import '../../app/dependency_injection.dart';
 
 class FavoritesScreen extends StatefulWidget {
@@ -79,6 +80,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProv
       appBar: AppBar(
         title: const Text('Favorites'),
         automaticallyImplyLeading: false,
+        actions: const [Padding(padding: EdgeInsets.only(right: 12), child: NotificationBell())],
         bottom: TabBar(
           controller: _tabController,
           tabs: const [

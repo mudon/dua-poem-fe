@@ -9,6 +9,7 @@ import '../blocs/home_bloc/home_state.dart';
 import '../blocs/poem_bloc/poem_bloc.dart';
 import '../blocs/poem_bloc/poem_state.dart';
 import '../widgets/common/poem_card.dart';
+import '../widgets/common/notification_bell.dart';
 import '../../app/dependency_injection.dart';
 import '../widgets/forms/create_poem_sheet.dart';
 
@@ -38,6 +39,13 @@ class MyPoemsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F0E8),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFFEFCF7),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        title: const Text('My Poems', style: TextStyle(color: Color(0xFF3C4F34), fontWeight: FontWeight.w600)),
+        actions: const [Padding(padding: EdgeInsets.only(right: 12), child: NotificationBell())],
+      ),
       body: SafeArea(
         child: BlocProvider(
           create: (_) => getIt<HomeBloc>()..add(FetchMyPoems(user.id)),

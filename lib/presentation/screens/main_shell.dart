@@ -4,12 +4,25 @@ import 'package:go_router/go_router.dart';
 import '../../core/themes/app_theme.dart';
 import '../blocs/dua_bloc/dua_bloc.dart';
 import '../blocs/poem_bloc/poem_bloc.dart';
+import '../blocs/notification_bloc/notification_bloc.dart';
+import '../blocs/notification_bloc/notification_event.dart';
 import '../../app/dependency_injection.dart';
 
-class MainShell extends StatelessWidget {
+class MainShell extends StatefulWidget {
   final StatefulNavigationShell navigationShell;
 
   const MainShell({super.key, required this.navigationShell});
+
+  @override
+  State<MainShell> createState() => _MainShellState();
+}
+
+class _MainShellState extends State<MainShell> {
+  @override
+  void initState() {
+    super.initState();
+    getIt<NotificationBloc>().add(LoadNotifications(refresh: true));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,9 +30,10 @@ class MainShell extends StatelessWidget {
       providers: [
         BlocProvider.value(value: getIt<DuaBloc>()),
         BlocProvider.value(value: getIt<PoemBloc>()),
+        BlocProvider.value(value: getIt<NotificationBloc>()),
       ],
       child: Scaffold(
-        body: navigationShell,
+        body: widget.navigationShell,
         bottomNavigationBar: Container(
           decoration: const BoxDecoration(
             border: Border(top: BorderSide(color: Color(0xFFEAE2D6))),
@@ -28,8 +42,8 @@ class MainShell extends StatelessWidget {
             backgroundColor: const Color(0xFFFEFCF7),
             selectedItemColor: AppTheme.sage,
             unselectedItemColor: const Color(0xFF9D9080),
-            currentIndex: navigationShell.currentIndex,
-            onTap: (i) => navigationShell.goBranch(i),
+            currentIndex: widget.navigationShell.currentIndex,
+            onTap: (i) => widget.navigationShell.goBranch(i),
             type: BottomNavigationBarType.fixed,
             selectedFontSize: 12,
             unselectedFontSize: 12,

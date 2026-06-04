@@ -473,7 +473,7 @@ class _HeaderBar extends StatelessWidget {
               ),
               Row(
                 children: [
-                  const NotificationBell(unreadCount: 3),
+                  const NotificationBell(),
                   const SizedBox(width: 16),
                   const Icon(Icons.person_outline, size: 18, color: Color(0xFF5C5346)),
                   const SizedBox(width: 6),
