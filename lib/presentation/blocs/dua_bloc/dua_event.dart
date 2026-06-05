@@ -50,3 +50,10 @@ class SignalRReportsCountUpdated extends DuaEvent {
   final int reportsCount;
   SignalRReportsCountUpdated(this.duaId, this.reportsCount);
 }
+
+class SignalRReportReturned extends DuaEvent {
+  final String duaId;
+  SignalRReportReturned(this.duaId);
+}
+
+class ClearReturnedReports extends DuaEvent {}

@@ -1,10 +1,15 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../app/dependency_injection.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/services/user_service.dart';
 import '../../../data/services/signalr_service.dart';
 import '../../../data/models/user_model.dart';
+import '../../blocs/dua_bloc/dua_event.dart' as dua_event;
+import '../../blocs/poem_bloc/poem_event.dart' as poem_event;
+import '../../blocs/dua_bloc/dua_bloc.dart';
+import '../../blocs/poem_bloc/poem_bloc.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -47,6 +52,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onLogout(LogoutRequested event, Emitter<AuthState> emit) async {
     await _signalRService.disconnect();
+    getIt<DuaBloc>().add(dua_event.ClearReturnedReports());
+    getIt<PoemBloc>().add(poem_event.ClearReturnedReports());
     await _authRepo.logout();
     const storage = FlutterSecureStorage();
     await storage.delete(key: 'cached_user');

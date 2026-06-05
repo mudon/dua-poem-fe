@@ -29,6 +29,7 @@ class _DuaCardState extends State<DuaCard> {
   late int _bookmarkCount;
   late int _activeReportCount;
   late int _viewCount;
+  late bool _needsFix;
 
   @override
   void initState() {
@@ -38,8 +39,9 @@ class _DuaCardState extends State<DuaCard> {
     _likeCount = blocState.likeCounts[widget.dua.id] ?? widget.dua.likeCount;
     _isBookmarked = blocState.favoritedStates[widget.dua.id] ?? widget.dua.isFavorited;
     _bookmarkCount = blocState.bookmarkCounts[widget.dua.id] ?? widget.dua.bookmarkCount;
-      _viewCount = blocState.viewCounts[widget.dua.id] ?? widget.dua.views;
+    _viewCount = blocState.viewCounts[widget.dua.id] ?? widget.dua.views;
     _activeReportCount = blocState.reportCounts[widget.dua.id] ?? widget.dua.activeReportCount;
+    _needsFix = widget.currentUser.id == widget.dua.userId && blocState.returnedReportIds.contains(widget.dua.id);
   }
 
   @override
@@ -57,6 +59,7 @@ class _DuaCardState extends State<DuaCard> {
       _bookmarkCount = blocState.bookmarkCounts[widget.dua.id] ?? widget.dua.bookmarkCount;
       _viewCount = blocState.viewCounts[widget.dua.id] ?? widget.dua.views;
       _activeReportCount = blocState.reportCounts[widget.dua.id] ?? widget.dua.activeReportCount;
+      _needsFix = widget.currentUser.id == widget.dua.userId && blocState.returnedReportIds.contains(widget.dua.id);
     }
   }
 
@@ -120,6 +123,10 @@ class _DuaCardState extends State<DuaCard> {
           final count = state.reportCounts[widget.dua.id];
           if (count != null) {
             setState(() => _activeReportCount = count);
+          }
+        } else if (state.actionType == 'signalr_report_returned') {
+          if (state.lastToggledDuaId == widget.dua.id && widget.currentUser.id == widget.dua.userId) {
+            setState(() => _needsFix = true);
           }
         } else if (state.actionType == 'report') {
           if (state.lastToggledDuaId != widget.dua.id) return;
@@ -299,7 +306,24 @@ class _DuaCardState extends State<DuaCard> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.flag_outlined, color: Color(0xFFAB9F8E), size: 18),
+                          Stack(
+                            children: [
+                              const Icon(Icons.flag_outlined, color: Color(0xFFAB9F8E), size: 18),
+                              if (_needsFix)
+                                Positioned(
+                                  right: -4,
+                                  top: -4,
+                                  child: Container(
+                                    width: 10,
+                                    height: 10,
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFFE6A817),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
                           if (_activeReportCount > 0)
                             Container(
                               margin: const EdgeInsets.only(left: 4),

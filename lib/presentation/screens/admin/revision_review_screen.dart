@@ -242,19 +242,19 @@ class _RevisionReviewScreenState extends State<RevisionReviewScreen> {
                                     const SizedBox(width: 8),
                                     _DecisionButton(
                                       label: 'Resolve',
-                                      isSelected: _decisions[id] == 'resolve',
+                                      isSelected: _decisions[id] == 'resolved',
                                       color: const Color(0xFF3F7849),
                                       onTap: () => setState(() {
-                                        _decisions[id] = _decisions[id] == 'resolve' ? '' : 'resolve';
+                                        _decisions[id] = _decisions[id] == 'resolved' ? '' : 'resolved';
                                       }),
                                     ),
                                     const SizedBox(width: 6),
                                     _DecisionButton(
                                       label: 'Dismiss',
-                                      isSelected: _decisions[id] == 'dismiss',
+                                      isSelected: _decisions[id] == 'dismissed',
                                       color: const Color(0xFF9A8C79),
                                       onTap: () => setState(() {
-                                        _decisions[id] = _decisions[id] == 'dismiss' ? '' : 'dismiss';
+                                        _decisions[id] = _decisions[id] == 'dismissed' ? '' : 'dismissed';
                                       }),
                                     ),
                                     const SizedBox(width: 6),

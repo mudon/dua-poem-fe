@@ -8,6 +8,7 @@ class DuaState {
   final Map<String, int> bookmarkCounts;
   final Map<String, int> viewCounts;
   final Map<String, int> reportCounts;
+  final Set<String> returnedReportIds;
   final String? lastToggledDuaId;
 
   DuaState({
@@ -20,6 +21,7 @@ class DuaState {
     this.bookmarkCounts = const {},
     this.viewCounts = const {},
     this.reportCounts = const {},
+    this.returnedReportIds = const {},
     this.lastToggledDuaId,
   });
 
@@ -33,6 +35,7 @@ class DuaState {
     Map<String, int>? bookmarkCounts,
     Map<String, int>? viewCounts,
     Map<String, int>? reportCounts,
+    Set<String>? returnedReportIds,
     String? lastToggledDuaId,
   }) {
     return DuaState(
@@ -45,6 +48,7 @@ class DuaState {
       bookmarkCounts: bookmarkCounts ?? this.bookmarkCounts,
       viewCounts: viewCounts ?? this.viewCounts,
       reportCounts: reportCounts ?? this.reportCounts,
+      returnedReportIds: returnedReportIds ?? this.returnedReportIds,
       lastToggledDuaId: lastToggledDuaId ?? this.lastToggledDuaId,
     );
   }

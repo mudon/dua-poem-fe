@@ -50,3 +50,10 @@ class SignalRReportsCountUpdated extends PoemEvent {
   final int reportsCount;
   SignalRReportsCountUpdated(this.poemId, this.reportsCount);
 }
+
+class SignalRReportReturned extends PoemEvent {
+  final String poemId;
+  SignalRReportReturned(this.poemId);
+}
+
+class ClearReturnedReports extends PoemEvent {}

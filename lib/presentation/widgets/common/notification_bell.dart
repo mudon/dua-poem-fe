@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../app/dependency_injection.dart';
 import '../../../data/models/notification_model.dart';
 import '../../blocs/notification_bloc/notification_bloc.dart';
@@ -215,14 +217,35 @@ class _NotificationBellState extends State<NotificationBell> {
                                       padding: EdgeInsets.symmetric(horizontal: 12),
                                       child: Divider(height: 1, color: Color(0xFFF0EAE0)),
                                     ),
-                                    itemBuilder: (_, i) => _NotificationItem(
-                                      notification: items[i],
-                                      icon: _iconForType(items[i].type),
-                                      timeAgo: _timeAgo(items[i].createdAt),
-                                      onTap: items[i].isRead
-                                          ? null
-                                          : () => getIt<NotificationBloc>().add(MarkAsRead(items[i].id)),
-                                    ),
+                    itemBuilder: (_, i) {
+                      final n = items[i];
+                      final isReturnedFix = n.type == 'report_reopened';
+                      String? navigatePath;
+                      if (isReturnedFix && n.data != null) {
+                        try {
+                          final parsed = jsonDecode(n.data!) as Map<String, dynamic>;
+                          final duaId = parsed['duaId'] as String?;
+                          final poemId = parsed['poemId'] as String?;
+                          if (duaId != null) navigatePath = '/dua/$duaId';
+                          if (poemId != null) navigatePath = '/poem/$poemId';
+                        } catch (_) {}
+                      }
+                      return _NotificationItem(
+                        notification: n,
+                        icon: _iconForType(n.type),
+                        timeAgo: _timeAgo(n.createdAt),
+                        onTap: n.isRead
+                            ? null
+                            : () => getIt<NotificationBloc>().add(MarkAsRead(n.id)),
+                        actionLabel: navigatePath != null ? 'Submit Fix' : null,
+                        onActionTap: navigatePath != null
+                            ? () {
+                                _dismiss();
+                                context.push(navigatePath!, extra: null);
+                              }
+                            : null,
+                      );
+                    },
                                   ),
                                 ),
                             ],
@@ -248,12 +271,16 @@ class _NotificationItem extends StatelessWidget {
   final IconData icon;
   final String timeAgo;
   final VoidCallback? onTap;
+  final String? actionLabel;
+  final VoidCallback? onActionTap;
 
   const _NotificationItem({
     required this.notification,
     required this.icon,
     required this.timeAgo,
     this.onTap,
+    this.actionLabel,
+    this.onActionTap,
   });
 
   @override
@@ -297,13 +324,34 @@ class _NotificationItem extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   if (notification.body != null)
-                    Text(
-                      notification.body!,
-                      style: const TextStyle(fontSize: 11, color: Color(0xFF7A6B5A)),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                      Text(
+                        notification.body!,
+                        style: const TextStyle(fontSize: 11, color: Color(0xFF7A6B5A)),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                  if (actionLabel != null && onActionTap != null) ...[
+                    const SizedBox(height: 6),
+                    GestureDetector(
+                      onTap: onActionTap,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE6A817).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: Text(
+                          actionLabel!,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF8B6F0E),
+                          ),
+                        ),
+                      ),
                     ),
-                ],
+                  ],
+                  ],
               ),
             ),
             const SizedBox(width: 8),

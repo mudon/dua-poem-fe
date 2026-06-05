@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../app/dependency_injection.dart';
 import '../../../data/repositories/dua_repository.dart';
@@ -9,6 +10,7 @@ import 'dua_state.dart';
 class DuaBloc extends Bloc<DuaEvent, DuaState> {
   final DuaRepository _duaRepo;
   StreamSubscription? _signalRSub;
+  StreamSubscription? _notificationSub;
 
   DuaBloc(this._duaRepo) : super(DuaState()) {
     on<ToggleLike>(_onToggleLike);
@@ -19,7 +21,10 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     on<SignalRFavoritesCountUpdated>(_onSignalRFavoritesCountUpdated);
     on<SignalRViewsCountUpdated>(_onSignalRViewsCountUpdated);
     on<SignalRReportsCountUpdated>(_onSignalRReportsCountUpdated);
+    on<SignalRReportReturned>(_onSignalRReportReturned);
+    on<ClearReturnedReports>(_onClearReturnedReports);
     _listenToSignalR();
+    _listenToNotifications();
   }
 
   void _listenToSignalR() {
@@ -52,6 +57,30 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     });
   }
 
+  void _listenToNotifications() {
+    _notificationSub = getIt<SignalRService>().onNotificationReceived.listen((notification) {
+      try {
+        if (notification.type == 'report_reopened') {
+          final data = notification.data;
+          if (data == null) return;
+          final parsed = jsonDecode(data) as Map<String, dynamic>;
+          final duaId = parsed['duaId'] as String?;
+          if (duaId == null) return;
+          add(SignalRReportReturned(duaId));
+        }
+      } catch (_) {}
+    });
+  }
+
+  void _onSignalRReportReturned(SignalRReportReturned event, Emitter<DuaState> emit) {
+    final updated = Set<String>.from(state.returnedReportIds)..add(event.duaId);
+    emit(state.copyWith(returnedReportIds: updated, actionType: 'signalr_report_returned', lastToggledDuaId: event.duaId));
+  }
+
+  void _onClearReturnedReports(ClearReturnedReports event, Emitter<DuaState> emit) {
+    emit(state.copyWith(returnedReportIds: const {}));
+  }
+
   void _onSignalRLikeCountUpdated(SignalRLikeCountUpdated event, Emitter<DuaState> emit) {
     print('[SignalR] DuaBloc received SignalRLikeCountUpdated: duaId=${event.duaId}, likesCount=${event.likesCount}');
     final newLikeCounts = Map<String, int>.from(state.likeCounts);
@@ -66,6 +95,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
   @override
   Future<void> close() {
     _signalRSub?.cancel();
+    _notificationSub?.cancel();
     return super.close();
   }
 

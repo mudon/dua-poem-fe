@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../app/dependency_injection.dart';
 import '../../../data/repositories/poem_repository.dart';
@@ -9,6 +10,7 @@ import 'poem_state.dart';
 class PoemBloc extends Bloc<PoemEvent, PoemState> {
   final PoemRepository _poemRepo;
   StreamSubscription? _signalRSub;
+  StreamSubscription? _notificationSub;
 
   PoemBloc(this._poemRepo) : super(PoemState()) {
     on<ToggleLike>(_onToggleLike);
@@ -19,7 +21,10 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     on<SignalRFavoritesCountUpdated>(_onSignalRFavoritesCountUpdated);
     on<SignalRViewsCountUpdated>(_onSignalRViewsCountUpdated);
     on<SignalRReportsCountUpdated>(_onSignalRReportsCountUpdated);
+    on<SignalRReportReturned>(_onSignalRReportReturned);
+    on<ClearReturnedReports>(_onClearReturnedReports);
     _listenToSignalR();
+    _listenToNotifications();
   }
 
   void _listenToSignalR() {
@@ -52,6 +57,30 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     });
   }
 
+  void _listenToNotifications() {
+    _notificationSub = getIt<SignalRService>().onNotificationReceived.listen((notification) {
+      try {
+        if (notification.type == 'report_reopened') {
+          final data = notification.data;
+          if (data == null) return;
+          final parsed = jsonDecode(data) as Map<String, dynamic>;
+          final poemId = parsed['poemId'] as String?;
+          if (poemId == null) return;
+          add(SignalRReportReturned(poemId));
+        }
+      } catch (_) {}
+    });
+  }
+
+  void _onSignalRReportReturned(SignalRReportReturned event, Emitter<PoemState> emit) {
+    final updated = Set<String>.from(state.returnedReportIds)..add(event.poemId);
+    emit(state.copyWith(returnedReportIds: updated, actionType: 'signalr_report_returned', lastToggledPoemId: event.poemId));
+  }
+
+  void _onClearReturnedReports(ClearReturnedReports event, Emitter<PoemState> emit) {
+    emit(state.copyWith(returnedReportIds: const {}));
+  }
+
   void _onSignalRLikeCountUpdated(SignalRLikeCountUpdated event, Emitter<PoemState> emit) {
     print('[SignalR] PoemBloc received SignalRLikeCountUpdated: poemId=${event.poemId}, likesCount=${event.likesCount}');
     final newLikeCounts = Map<String, int>.from(state.likeCounts);
@@ -66,6 +95,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
   @override
   Future<void> close() {
     _signalRSub?.cancel();
+    _notificationSub?.cancel();
     return super.close();
   }
 
