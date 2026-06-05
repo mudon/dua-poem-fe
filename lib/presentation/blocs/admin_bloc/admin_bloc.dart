@@ -8,7 +8,8 @@ import 'admin_state.dart';
 
 class AdminBloc extends Bloc<AdminEvent, AdminState> {
   final AdminRepository _adminRepo;
-  StreamSubscription? _signalRSub;
+  StreamSubscription? _notificationSub;
+  StreamSubscription? _reportsSub;
 
   AdminBloc(this._adminRepo) : super(AdminState()) {
     on<LoadPendingRevisions>(_onLoadPending);
@@ -17,10 +18,13 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
   }
 
   void _listenToSignalR() {
-    _signalRSub = getIt<SignalRService>().onNotificationReceived.listen((notification) {
+    _notificationSub = getIt<SignalRService>().onNotificationReceived.listen((notification) {
       if (notification.type == 'revision_submitted') {
         add(LoadPendingRevisions());
       }
+    });
+    _reportsSub = getIt<SignalRService>().onReportsCountUpdated.listen((_) {
+      add(LoadPendingRevisions());
     });
   }
 
@@ -54,7 +58,8 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
 
   @override
   Future<void> close() {
-    _signalRSub?.cancel();
+    _notificationSub?.cancel();
+    _reportsSub?.cancel();
     return super.close();
   }
 }
