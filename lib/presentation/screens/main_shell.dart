@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/themes/app_theme.dart';
+import '../blocs/auth_bloc/auth_bloc.dart';
+import '../blocs/auth_bloc/auth_state.dart';
 import '../blocs/dua_bloc/dua_bloc.dart';
 import '../blocs/poem_bloc/poem_bloc.dart';
 import '../blocs/notification_bloc/notification_bloc.dart';
@@ -24,6 +26,27 @@ class _MainShellState extends State<MainShell> {
     getIt<NotificationBloc>().add(LoadNotifications(refresh: true));
   }
 
+  List<BottomNavigationBarItem> _buildNavItems() {
+    final authState = context.watch<AuthBloc>().state;
+    final isAdmin = authState is Authenticated && authState.user.role == 'admin';
+
+    final items = <BottomNavigationBarItem>[
+      const BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Home'),
+      const BottomNavigationBarItem(icon: Icon(Icons.book_outlined), activeIcon: Icon(Icons.book), label: 'Duas'),
+      const BottomNavigationBarItem(icon: Icon(Icons.auto_stories_outlined), activeIcon: Icon(Icons.auto_stories), label: 'Poems'),
+      const BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profile'),
+      const BottomNavigationBarItem(icon: Icon(Icons.bookmark_outline), activeIcon: Icon(Icons.bookmark), label: 'Favorites'),
+    ];
+
+    if (isAdmin) {
+      items.add(
+        const BottomNavigationBarItem(icon: Icon(Icons.shield_outlined), activeIcon: Icon(Icons.shield), label: 'Admin'),
+      );
+    }
+
+    return items;
+  }
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
@@ -32,7 +55,7 @@ class _MainShellState extends State<MainShell> {
         BlocProvider.value(value: getIt<PoemBloc>()),
         BlocProvider.value(value: getIt<NotificationBloc>()),
       ],
-      child: Scaffold(
+        child: Scaffold(
         body: widget.navigationShell,
         bottomNavigationBar: Container(
           decoration: const BoxDecoration(
@@ -47,13 +70,7 @@ class _MainShellState extends State<MainShell> {
             type: BottomNavigationBarType.fixed,
             selectedFontSize: 12,
             unselectedFontSize: 12,
-            items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Home'),
-              BottomNavigationBarItem(icon: Icon(Icons.book_outlined), activeIcon: Icon(Icons.book), label: 'Duas'),
-              BottomNavigationBarItem(icon: Icon(Icons.auto_stories_outlined), activeIcon: Icon(Icons.auto_stories), label: 'Poems'),
-              BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profile'),
-              BottomNavigationBarItem(icon: Icon(Icons.bookmark_outline), activeIcon: Icon(Icons.bookmark), label: 'Favorites'),
-            ],
+            items: _buildNavItems(),
           ),
         ),
       ),

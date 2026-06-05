@@ -100,6 +100,7 @@ class PoemModel {
     String? author,
     String? transliteration,
     int? reportCount,
+    int? activeReportCount,
   }) {
     return PoemModel(
       id: id,
@@ -122,6 +123,7 @@ class PoemModel {
       isLiked: isLiked ?? this.isLiked,
       isFavorited: isFavorited ?? this.isFavorited,
       reportCount: reportCount ?? this.reportCount,
+      activeReportCount: activeReportCount ?? this.activeReportCount,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );

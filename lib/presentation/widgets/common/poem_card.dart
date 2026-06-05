@@ -38,7 +38,7 @@ class _PoemCardState extends State<PoemCard> {
     _likeCount = blocState.likeCounts[widget.poem.id] ?? widget.poem.likeCount;
     _isBookmarked = blocState.favoritedStates[widget.poem.id] ?? widget.poem.isFavorited;
     _bookmarkCount = blocState.bookmarkCounts[widget.poem.id] ?? widget.poem.bookmarkCount;
-    _activeReportCount = widget.poem.activeReportCount;
+    _activeReportCount = blocState.reportCounts[widget.poem.id] ?? widget.poem.activeReportCount;
       _viewCount = blocState.viewCounts[widget.poem.id] ?? widget.poem.views;
   }
 
@@ -55,7 +55,7 @@ class _PoemCardState extends State<PoemCard> {
       _likeCount = blocState.likeCounts[widget.poem.id] ?? widget.poem.likeCount;
       _isBookmarked = blocState.favoritedStates[widget.poem.id] ?? widget.poem.isFavorited;
       _bookmarkCount = blocState.bookmarkCounts[widget.poem.id] ?? widget.poem.bookmarkCount;
-      _activeReportCount = widget.poem.activeReportCount;
+      _activeReportCount = blocState.reportCounts[widget.poem.id] ?? widget.poem.activeReportCount;
     _viewCount = blocState.viewCounts[widget.poem.id] ?? widget.poem.views;
     }
   }
@@ -123,6 +123,10 @@ class _PoemCardState extends State<PoemCard> {
           }
         } else if (state.actionType == 'report') {
           if (state.lastToggledPoemId != widget.poem.id) return;
+          final count = state.reportCounts[widget.poem.id];
+          if (count != null) {
+            setState(() => _activeReportCount = count);
+          }
           if (state.error != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Report failed: ${state.error}')),

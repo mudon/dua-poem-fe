@@ -41,11 +41,13 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
     _loadDua();
     _loadReports();
     getIt<SignalRService>().joinDuaGroup(widget.duaId);
+    getIt<SignalRService>().joinDuaReportGroup(widget.duaId);
   }
 
   @override
   void dispose() {
     getIt<SignalRService>().leaveDuaGroup(widget.duaId);
+    getIt<SignalRService>().leaveDuaReportGroup(widget.duaId);
     super.dispose();
   }
 

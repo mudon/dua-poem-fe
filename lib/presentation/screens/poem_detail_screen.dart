@@ -41,11 +41,13 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
     _loadPoem();
     _loadReports();
     getIt<SignalRService>().joinPoemGroup(widget.poemId);
+    getIt<SignalRService>().joinPoemReportGroup(widget.poemId);
   }
 
   @override
   void dispose() {
     getIt<SignalRService>().leavePoemGroup(widget.poemId);
+    getIt<SignalRService>().leavePoemReportGroup(widget.poemId);
     super.dispose();
   }
 

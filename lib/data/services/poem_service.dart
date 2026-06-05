@@ -97,4 +97,9 @@ class PoemService {
     final response = await _dioClient.dio.get('/poems/$poemId/reports');
     return response.data as List;
   }
+
+  Future<Map<String, dynamic>> getPoemRevisionDetail(String revisionId) async {
+    final response = await _dioClient.dio.get('/poem-revisions/$revisionId');
+    return response.data as Map<String, dynamic>;
+  }
 }

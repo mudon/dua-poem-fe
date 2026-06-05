@@ -39,7 +39,7 @@ class _DuaCardState extends State<DuaCard> {
     _isBookmarked = blocState.favoritedStates[widget.dua.id] ?? widget.dua.isFavorited;
     _bookmarkCount = blocState.bookmarkCounts[widget.dua.id] ?? widget.dua.bookmarkCount;
       _viewCount = blocState.viewCounts[widget.dua.id] ?? widget.dua.views;
-    _activeReportCount = widget.dua.activeReportCount;
+    _activeReportCount = blocState.reportCounts[widget.dua.id] ?? widget.dua.activeReportCount;
   }
 
   @override
@@ -56,7 +56,7 @@ class _DuaCardState extends State<DuaCard> {
       _isBookmarked = blocState.favoritedStates[widget.dua.id] ?? widget.dua.isFavorited;
       _bookmarkCount = blocState.bookmarkCounts[widget.dua.id] ?? widget.dua.bookmarkCount;
       _viewCount = blocState.viewCounts[widget.dua.id] ?? widget.dua.views;
-      _activeReportCount = widget.dua.activeReportCount;
+      _activeReportCount = blocState.reportCounts[widget.dua.id] ?? widget.dua.activeReportCount;
     }
   }
 
@@ -123,6 +123,10 @@ class _DuaCardState extends State<DuaCard> {
           }
         } else if (state.actionType == 'report') {
           if (state.lastToggledDuaId != widget.dua.id) return;
+          final count = state.reportCounts[widget.dua.id];
+          if (count != null) {
+            setState(() => _activeReportCount = count);
+          }
           if (state.error != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Report failed: ${state.error}')),

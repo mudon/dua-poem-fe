@@ -97,4 +97,9 @@ class DuaService {
     final response = await _dioClient.dio.get('/duas/$duaId/reports');
     return response.data as List;
   }
+
+  Future<Map<String, dynamic>> getDuaRevisionDetail(String revisionId) async {
+    final response = await _dioClient.dio.get('/dua-revisions/$revisionId');
+    return response.data as Map<String, dynamic>;
+  }
 }
