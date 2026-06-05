@@ -15,6 +15,7 @@ import '../presentation/screens/poem_detail_screen.dart';
 import '../presentation/screens/user_detail_screen.dart';
 import '../presentation/screens/admin/admin_screen.dart';
 import '../presentation/screens/admin/revision_review_screen.dart';
+import '../presentation/screens/leaderboard_screen.dart';
 import '../data/models/user_model.dart';
 
 class AuthStateNotifier extends ChangeNotifier {
@@ -90,6 +91,14 @@ class AppRouter {
               GoRoute(
                 path: '/poems',
                 builder: (_, _) => const MyPoemsScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/leaderboard',
+                builder: (_, _) => const LeaderboardScreen(),
               ),
             ],
           ),

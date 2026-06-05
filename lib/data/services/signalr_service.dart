@@ -7,6 +7,7 @@ import '../models/signalr/favorites_update_model.dart';
 import '../models/signalr/views_update_model.dart';
 import '../models/signalr/reports_update_model.dart';
 import '../models/signalr/notification_update_model.dart';
+import '../models/signalr/leaderboard_update_model.dart';
 
 class SignalRService {
   HubConnection? _duaHubConnection;
@@ -18,11 +19,13 @@ class SignalRService {
   HubConnection? _duaReportHubConnection;
   HubConnection? _poemReportHubConnection;
   HubConnection? _notificationHubConnection;
+  HubConnection? _leaderboardHubConnection;
   final _likesController = StreamController<LikesUpdateModel>.broadcast();
   final _favoritesController = StreamController<FavoritesUpdateModel>.broadcast();
   final _viewsController = StreamController<ViewsUpdateModel>.broadcast();
   final _reportsController = StreamController<ReportsUpdateModel>.broadcast();
   final _notificationController = StreamController<NotificationUpdateModel>.broadcast();
+  final _leaderboardController = StreamController<List<LeaderboardUpdateModel>>.broadcast();
   bool _isConnected = false;
   Future<void>? _connectFuture;
 
@@ -31,6 +34,7 @@ class SignalRService {
   Stream<ViewsUpdateModel> get onViewsCountUpdated => _viewsController.stream;
   Stream<ReportsUpdateModel> get onReportsCountUpdated => _reportsController.stream;
   Stream<NotificationUpdateModel> get onNotificationReceived => _notificationController.stream;
+  Stream<List<LeaderboardUpdateModel>> get onLeaderboardUpdated => _leaderboardController.stream;
 
   String get _hubBaseUrl =>
       ApiConfig.baseUrl.replaceAll('/api', '');
@@ -70,6 +74,11 @@ class SignalRService {
         await _connectHub('/hubs/notifications', token);
       } catch (e) {
         print('[SignalR] Failed to connect /hubs/notifications: $e');
+      }
+      try {
+        await _connectHub('/hubs/leaderboard', token);
+      } catch (e) {
+        print('[SignalR] Failed to connect /hubs/leaderboard: $e');
       }
       _isConnected = true;
     } catch (e) {
@@ -124,6 +133,13 @@ class SignalRService {
       _notificationController.add(NotificationUpdateModel.fromJson(data));
     });
 
+    connection.on('LeaderboardUpdated', (args) {
+      if (args == null || args.isEmpty) return;
+      final data = args[0] as List<dynamic>;
+      final entries = data.map((e) => LeaderboardUpdateModel.fromJson(e as Map<String, dynamic>)).toList();
+      _leaderboardController.add(entries);
+    });
+
     connection.onclose((Exception? error) {
       print('[SignalR] Connection closed for $hubPath: $error');
       if (hubPath.contains('dua-likes')) _duaHubConnection = null;
@@ -135,6 +151,7 @@ class SignalRService {
       if (hubPath.contains('dua-reports')) _duaReportHubConnection = null;
       if (hubPath.contains('poem-reports')) _poemReportHubConnection = null;
       if (hubPath.contains('notifications')) _notificationHubConnection = null;
+      if (hubPath.contains('leaderboard')) _leaderboardHubConnection = null;
     });
 
     await connection.start();
@@ -149,6 +166,7 @@ class SignalRService {
     if (hubPath.contains('dua-reports')) _duaReportHubConnection = connection;
     if (hubPath.contains('poem-reports')) _poemReportHubConnection = connection;
     if (hubPath.contains('notifications')) _notificationHubConnection = connection;
+    if (hubPath.contains('leaderboard')) _leaderboardHubConnection = connection;
   }
 
   Future<void> joinDuaGroup(String duaId) async {
@@ -343,6 +361,11 @@ class SignalRService {
     } catch (e) {
       print('[SignalR] disconnect notification hub error: $e');
     }
+    try {
+      await _leaderboardHubConnection?.stop();
+    } catch (e) {
+      print('[SignalR] disconnect leaderboard hub error: $e');
+    }
     _duaHubConnection = null;
     _poemHubConnection = null;
     _duaFavHubConnection = null;
@@ -352,6 +375,7 @@ class SignalRService {
     _duaReportHubConnection = null;
     _poemReportHubConnection = null;
     _notificationHubConnection = null;
+    _leaderboardHubConnection = null;
   }
 
   void dispose() {
@@ -361,5 +385,6 @@ class SignalRService {
     _viewsController.close();
     _reportsController.close();
     _notificationController.close();
+    _leaderboardController.close();
   }
 }
