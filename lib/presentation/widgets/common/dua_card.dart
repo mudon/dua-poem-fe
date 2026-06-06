@@ -48,6 +48,9 @@ class _DuaCardState extends State<DuaCard> {
   void didUpdateWidget(DuaCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.dua.id != widget.dua.id ||
+        oldWidget.dua.title != widget.dua.title ||
+        oldWidget.dua.arabicText != widget.dua.arabicText ||
+        oldWidget.dua.translation != widget.dua.translation ||
         oldWidget.dua.likeCount != widget.dua.likeCount ||
         oldWidget.dua.isLiked != widget.dua.isLiked ||
         oldWidget.dua.bookmarkCount != widget.dua.bookmarkCount ||
@@ -143,6 +146,9 @@ class _DuaCardState extends State<DuaCard> {
               const SnackBar(content: Text('Report submitted')),
             );
           }
+        } else if (state.actionType == 'content_updated') {
+          if (state.lastToggledDuaId != widget.dua.id) return;
+          setState(() {});
         }
       },
       child: GestureDetector(

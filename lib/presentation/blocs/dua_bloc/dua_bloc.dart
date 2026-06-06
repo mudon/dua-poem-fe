@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../app/dependency_injection.dart';
+import '../../../data/models/signalr/dua_content_update_model.dart';
 import '../../../data/repositories/dua_repository.dart';
 import '../../../data/services/signalr_service.dart';
 import 'dua_event.dart';
@@ -23,6 +24,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     on<SignalRReportsCountUpdated>(_onSignalRReportsCountUpdated);
     on<SignalRReportReturned>(_onSignalRReportReturned);
     on<ClearReturnedReports>(_onClearReturnedReports);
+    on<SignalRDuaContentUpdated>(_onSignalRDuaContentUpdated);
     _listenToSignalR();
     _listenToNotifications();
   }
@@ -55,6 +57,23 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
         add(SignalRReportsCountUpdated(id, update.reportsCount));
       } catch (_) {}
     });
+
+    getIt<SignalRService>().onDuaContentUpdated.listen((update) {
+      try {
+        add(SignalRDuaContentUpdated(
+          duaId: update.id,
+          title: update.title,
+          arabicText: update.arabicText,
+          transliteration: update.transliteration,
+          translation: update.translation,
+          description: update.description,
+          whenToRecite: update.whenToRecite,
+          occasion: update.occasion,
+          repetitionCount: update.repetitionCount,
+          updatedAt: update.updatedAt,
+        ));
+      } catch (_) {}
+    });
   }
 
   void _listenToNotifications() {
@@ -70,6 +89,28 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
         }
       } catch (_) {}
     });
+  }
+
+  void _onSignalRDuaContentUpdated(SignalRDuaContentUpdated event, Emitter<DuaState> emit) {
+    print('[SignalR] DuaBloc received SignalRDuaContentUpdated: duaId=${event.duaId}, title=${event.title}');
+    final newContentUpdates = Map<String, DuaContentUpdateModel?>.from(state.contentUpdates);
+    newContentUpdates[event.duaId] = DuaContentUpdateModel(
+      id: event.duaId,
+      title: event.title,
+      arabicText: event.arabicText,
+      transliteration: event.transliteration,
+      translation: event.translation,
+      description: event.description,
+      whenToRecite: event.whenToRecite,
+      occasion: event.occasion,
+      repetitionCount: event.repetitionCount,
+      updatedAt: event.updatedAt,
+    );
+    emit(state.copyWith(
+      contentUpdates: newContentUpdates,
+      actionType: 'content_updated',
+      lastToggledDuaId: event.duaId,
+    ));
   }
 
   void _onSignalRReportReturned(SignalRReportReturned event, Emitter<DuaState> emit) {

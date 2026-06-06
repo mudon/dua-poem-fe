@@ -1,3 +1,5 @@
+import '../../../data/models/signalr/poem_content_update_model.dart';
+
 class PoemState {
   final bool isProcessing;
   final String? error;
@@ -8,6 +10,7 @@ class PoemState {
   final Map<String, int> bookmarkCounts;
   final Map<String, int> viewCounts;
   final Map<String, int> reportCounts;
+  final Map<String, PoemContentUpdateModel?> contentUpdates;
   final Set<String> returnedReportIds;
   final String? lastToggledPoemId;
 
@@ -21,6 +24,7 @@ class PoemState {
     this.bookmarkCounts = const {},
     this.viewCounts = const {},
     this.reportCounts = const {},
+    this.contentUpdates = const {},
     this.returnedReportIds = const {},
     this.lastToggledPoemId,
   });
@@ -35,6 +39,7 @@ class PoemState {
     Map<String, int>? bookmarkCounts,
     Map<String, int>? viewCounts,
     Map<String, int>? reportCounts,
+    Map<String, PoemContentUpdateModel?>? contentUpdates,
     Set<String>? returnedReportIds,
     String? lastToggledPoemId,
   }) {
@@ -48,6 +53,7 @@ class PoemState {
       bookmarkCounts: bookmarkCounts ?? this.bookmarkCounts,
       viewCounts: viewCounts ?? this.viewCounts,
       reportCounts: reportCounts ?? this.reportCounts,
+      contentUpdates: contentUpdates ?? this.contentUpdates,
       returnedReportIds: returnedReportIds ?? this.returnedReportIds,
       lastToggledPoemId: lastToggledPoemId ?? this.lastToggledPoemId,
     );

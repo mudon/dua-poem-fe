@@ -8,6 +8,8 @@ import '../models/signalr/views_update_model.dart';
 import '../models/signalr/reports_update_model.dart';
 import '../models/signalr/notification_update_model.dart';
 import '../models/signalr/leaderboard_update_model.dart';
+import '../models/signalr/dua_content_update_model.dart';
+import '../models/signalr/poem_content_update_model.dart';
 
 class SignalRService {
   HubConnection? _duaHubConnection;
@@ -26,6 +28,8 @@ class SignalRService {
   final _reportsController = StreamController<ReportsUpdateModel>.broadcast();
   final _notificationController = StreamController<NotificationUpdateModel>.broadcast();
   final _leaderboardController = StreamController<List<LeaderboardUpdateModel>>.broadcast();
+  final _duaContentController = StreamController<DuaContentUpdateModel>.broadcast();
+  final _poemContentController = StreamController<PoemContentUpdateModel>.broadcast();
   bool _isConnected = false;
   Future<void>? _connectFuture;
 
@@ -35,6 +39,8 @@ class SignalRService {
   Stream<ReportsUpdateModel> get onReportsCountUpdated => _reportsController.stream;
   Stream<NotificationUpdateModel> get onNotificationReceived => _notificationController.stream;
   Stream<List<LeaderboardUpdateModel>> get onLeaderboardUpdated => _leaderboardController.stream;
+  Stream<DuaContentUpdateModel> get onDuaContentUpdated => _duaContentController.stream;
+  Stream<PoemContentUpdateModel> get onPoemContentUpdated => _poemContentController.stream;
 
   String get _hubBaseUrl =>
       ApiConfig.baseUrl.replaceAll('/api', '');
@@ -138,6 +144,18 @@ class SignalRService {
       final data = args[0] as List<dynamic>;
       final entries = data.map((e) => LeaderboardUpdateModel.fromJson(e as Map<String, dynamic>)).toList();
       _leaderboardController.add(entries);
+    });
+
+    connection.on('DuaContentUpdated', (args) {
+      if (args == null || args.isEmpty) return;
+      final data = args[0] as Map<String, dynamic>;
+      _duaContentController.add(DuaContentUpdateModel.fromJson(data));
+    });
+
+    connection.on('PoemContentUpdated', (args) {
+      if (args == null || args.isEmpty) return;
+      final data = args[0] as Map<String, dynamic>;
+      _poemContentController.add(PoemContentUpdateModel.fromJson(data));
     });
 
     connection.onclose((Exception? error) {
@@ -386,5 +404,7 @@ class SignalRService {
     _reportsController.close();
     _notificationController.close();
     _leaderboardController.close();
+    _duaContentController.close();
+    _poemContentController.close();
   }
 }

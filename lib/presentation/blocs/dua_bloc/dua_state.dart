@@ -1,3 +1,5 @@
+import '../../../data/models/signalr/dua_content_update_model.dart';
+
 class DuaState {
   final bool isProcessing;
   final String? error;
@@ -8,6 +10,7 @@ class DuaState {
   final Map<String, int> bookmarkCounts;
   final Map<String, int> viewCounts;
   final Map<String, int> reportCounts;
+  final Map<String, DuaContentUpdateModel?> contentUpdates;
   final Set<String> returnedReportIds;
   final String? lastToggledDuaId;
 
@@ -21,6 +24,7 @@ class DuaState {
     this.bookmarkCounts = const {},
     this.viewCounts = const {},
     this.reportCounts = const {},
+    this.contentUpdates = const {},
     this.returnedReportIds = const {},
     this.lastToggledDuaId,
   });
@@ -35,6 +39,7 @@ class DuaState {
     Map<String, int>? bookmarkCounts,
     Map<String, int>? viewCounts,
     Map<String, int>? reportCounts,
+    Map<String, DuaContentUpdateModel?>? contentUpdates,
     Set<String>? returnedReportIds,
     String? lastToggledDuaId,
   }) {
@@ -48,6 +53,7 @@ class DuaState {
       bookmarkCounts: bookmarkCounts ?? this.bookmarkCounts,
       viewCounts: viewCounts ?? this.viewCounts,
       reportCounts: reportCounts ?? this.reportCounts,
+      contentUpdates: contentUpdates ?? this.contentUpdates,
       returnedReportIds: returnedReportIds ?? this.returnedReportIds,
       lastToggledDuaId: lastToggledDuaId ?? this.lastToggledDuaId,
     );

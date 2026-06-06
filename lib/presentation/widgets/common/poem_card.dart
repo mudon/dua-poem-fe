@@ -48,6 +48,9 @@ class _PoemCardState extends State<PoemCard> {
   void didUpdateWidget(PoemCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.poem.id != widget.poem.id ||
+        oldWidget.poem.title != widget.poem.title ||
+        oldWidget.poem.content != widget.poem.content ||
+        oldWidget.poem.translation != widget.poem.translation ||
         oldWidget.poem.likeCount != widget.poem.likeCount ||
         oldWidget.poem.isLiked != widget.poem.isLiked ||
         oldWidget.poem.bookmarkCount != widget.poem.bookmarkCount ||
@@ -143,6 +146,9 @@ class _PoemCardState extends State<PoemCard> {
               const SnackBar(content: Text('Report submitted')),
             );
           }
+        } else if (state.actionType == 'content_updated') {
+          if (state.lastToggledPoemId != widget.poem.id) return;
+          setState(() {});
         }
       },
       child: GestureDetector(

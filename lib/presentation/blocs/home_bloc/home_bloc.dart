@@ -115,6 +115,15 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final updatedLatest = state.latestDuas.map((d) {
       if (d.id != event.duaId) return d;
       return d.copyWith(
+        title: event.title,
+        arabicText: event.arabicText,
+        transliteration: event.transliteration,
+        translation: event.translation,
+        description: event.description,
+        whenToRecite: event.whenToRecite,
+        occasion: event.occasion,
+        repetitionCount: event.repetitionCount,
+        updatedAt: event.updatedAt,
         isLiked: event.isLiked,
         likeCount: event.likeCount,
         isFavorited: event.isFavorited,
@@ -126,6 +135,15 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final updatedMy = state.myDuas.map((d) {
       if (d.id != event.duaId) return d;
       return d.copyWith(
+        title: event.title,
+        arabicText: event.arabicText,
+        transliteration: event.transliteration,
+        translation: event.translation,
+        description: event.description,
+        whenToRecite: event.whenToRecite,
+        occasion: event.occasion,
+        repetitionCount: event.repetitionCount,
+        updatedAt: event.updatedAt,
         isLiked: event.isLiked,
         likeCount: event.likeCount,
         isFavorited: event.isFavorited,
@@ -141,6 +159,13 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final updatedLatest = state.latestPoems.map((p) {
       if (p.id != event.poemId) return p;
       return p.copyWith(
+        title: event.title,
+        content: event.content,
+        transliteration: event.transliteration,
+        translation: event.translation,
+        description: event.description,
+        author: event.author,
+        updatedAt: event.updatedAt,
         isLiked: event.isLiked,
         likeCount: event.likeCount,
         isFavorited: event.isFavorited,
@@ -152,6 +177,13 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final updatedMy = state.myPoems.map((p) {
       if (p.id != event.poemId) return p;
       return p.copyWith(
+        title: event.title,
+        content: event.content,
+        transliteration: event.transliteration,
+        translation: event.translation,
+        description: event.description,
+        author: event.author,
+        updatedAt: event.updatedAt,
         isLiked: event.isLiked,
         likeCount: event.likeCount,
         isFavorited: event.isFavorited,

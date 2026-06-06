@@ -95,6 +95,10 @@ class DuaModel {
   }
 
   DuaModel copyWith({
+    String? title,
+    String? arabicText,
+    String? transliteration,
+    String? translation,
     String? userName,
     String? userAvatar,
     int? views,
@@ -108,14 +112,15 @@ class DuaModel {
     int? repetitionCount,
     int? reportCount,
     int? activeReportCount,
+    String? updatedAt,
   }) {
     return DuaModel(
       id: id,
-      title: title,
+      title: title ?? this.title,
       verified: verified,
-      arabicText: arabicText,
-      transliteration: transliteration,
-      translation: translation,
+      arabicText: arabicText ?? this.arabicText,
+      transliteration: transliteration ?? this.transliteration,
+      translation: translation ?? this.translation,
       description: description ?? this.description,
       whenToRecite: whenToRecite ?? this.whenToRecite,
       occasion: occasion ?? this.occasion,
@@ -134,7 +139,7 @@ class DuaModel {
       reportCount: reportCount ?? this.reportCount,
       activeReportCount: activeReportCount ?? this.activeReportCount,
       createdAt: createdAt,
-      updatedAt: updatedAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }

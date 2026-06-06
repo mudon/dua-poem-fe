@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../app/dependency_injection.dart';
+import '../../../data/models/signalr/poem_content_update_model.dart';
 import '../../../data/repositories/poem_repository.dart';
 import '../../../data/services/signalr_service.dart';
 import 'poem_event.dart';
@@ -23,6 +24,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     on<SignalRReportsCountUpdated>(_onSignalRReportsCountUpdated);
     on<SignalRReportReturned>(_onSignalRReportReturned);
     on<ClearReturnedReports>(_onClearReturnedReports);
+    on<SignalRPoemContentUpdated>(_onSignalRPoemContentUpdated);
     _listenToSignalR();
     _listenToNotifications();
   }
@@ -55,6 +57,21 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
         add(SignalRReportsCountUpdated(id, update.reportsCount));
       } catch (_) {}
     });
+
+    getIt<SignalRService>().onPoemContentUpdated.listen((update) {
+      try {
+        add(SignalRPoemContentUpdated(
+          poemId: update.id,
+          title: update.title,
+          content: update.content,
+          transliteration: update.transliteration,
+          translation: update.translation,
+          description: update.description,
+          author: update.author,
+          updatedAt: update.updatedAt,
+        ));
+      } catch (_) {}
+    });
   }
 
   void _listenToNotifications() {
@@ -70,6 +87,26 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
         }
       } catch (_) {}
     });
+  }
+
+  void _onSignalRPoemContentUpdated(SignalRPoemContentUpdated event, Emitter<PoemState> emit) {
+    print('[SignalR] PoemBloc received SignalRPoemContentUpdated: poemId=${event.poemId}, title=${event.title}');
+    final newContentUpdates = Map<String, PoemContentUpdateModel?>.from(state.contentUpdates);
+    newContentUpdates[event.poemId] = PoemContentUpdateModel(
+      id: event.poemId,
+      title: event.title,
+      content: event.content,
+      transliteration: event.transliteration,
+      translation: event.translation,
+      description: event.description,
+      author: event.author,
+      updatedAt: event.updatedAt,
+    );
+    emit(state.copyWith(
+      contentUpdates: newContentUpdates,
+      actionType: 'content_updated',
+      lastToggledPoemId: event.poemId,
+    ));
   }
 
   void _onSignalRReportReturned(SignalRReportReturned event, Emitter<PoemState> emit) {

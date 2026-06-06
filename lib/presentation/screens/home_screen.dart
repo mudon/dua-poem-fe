@@ -174,6 +174,21 @@ class _HomeFeedState extends State<_HomeFeed> {
               if (newCount != null) {
                 context.read<HomeBloc>().add(UpdateDua(duaId: id, reportCount: newCount));
               }
+            } else if (state.actionType == 'content_updated') {
+              final update = state.contentUpdates[id];
+              if (update == null) return;
+              context.read<HomeBloc>().add(UpdateDua(
+                duaId: id,
+                title: update.title,
+                arabicText: update.arabicText,
+                transliteration: update.transliteration,
+                translation: update.translation,
+                description: update.description,
+                whenToRecite: update.whenToRecite,
+                occasion: update.occasion,
+                repetitionCount: update.repetitionCount,
+                updatedAt: update.updatedAt,
+              ));
             }
           },
         ),
@@ -247,6 +262,19 @@ class _HomeFeedState extends State<_HomeFeed> {
               if (newCount != null) {
                 context.read<HomeBloc>().add(UpdatePoem(poemId: id, reportCount: newCount));
               }
+            } else if (state.actionType == 'content_updated') {
+              final update = state.contentUpdates[id];
+              if (update == null) return;
+              context.read<HomeBloc>().add(UpdatePoem(
+                poemId: id,
+                title: update.title,
+                content: update.content,
+                transliteration: update.transliteration,
+                translation: update.translation,
+                description: update.description,
+                author: update.author,
+                updatedAt: update.updatedAt,
+              ));
             }
           },
         ),

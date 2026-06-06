@@ -96,6 +96,19 @@ class MyPoemsScreen extends StatelessWidget {
                 if (newCount != null) {
                   ctx.read<HomeBloc>().add(UpdatePoem(poemId: id, reportCount: newCount));
                 }
+              } else if (state.actionType == 'content_updated') {
+                final update = state.contentUpdates[id];
+                if (update == null) return;
+                ctx.read<HomeBloc>().add(UpdatePoem(
+                  poemId: id,
+                  title: update.title,
+                  content: update.content,
+                  transliteration: update.transliteration,
+                  translation: update.translation,
+                  description: update.description,
+                  author: update.author,
+                  updatedAt: update.updatedAt,
+                ));
               }
             },
             child: BlocBuilder<HomeBloc, HomeState>(

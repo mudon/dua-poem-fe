@@ -61,6 +61,15 @@ class UpdateDua extends HomeEvent {
   final int? bookmarkCount;
   final int? views;
   final int? reportCount;
+  final String? title;
+  final String? arabicText;
+  final String? transliteration;
+  final String? translation;
+  final String? description;
+  final String? whenToRecite;
+  final String? occasion;
+  final int? repetitionCount;
+  final String? updatedAt;
   UpdateDua({
     required this.duaId,
     this.isLiked,
@@ -69,6 +78,15 @@ class UpdateDua extends HomeEvent {
     this.bookmarkCount,
     this.views,
     this.reportCount,
+    this.title,
+    this.arabicText,
+    this.transliteration,
+    this.translation,
+    this.description,
+    this.whenToRecite,
+    this.occasion,
+    this.repetitionCount,
+    this.updatedAt,
   });
 }
 
@@ -80,6 +98,13 @@ class UpdatePoem extends HomeEvent {
   final int? bookmarkCount;
   final int? views;
   final int? reportCount;
+  final String? title;
+  final String? content;
+  final String? transliteration;
+  final String? translation;
+  final String? description;
+  final String? author;
+  final String? updatedAt;
   UpdatePoem({
     required this.poemId,
     this.isLiked,
@@ -88,5 +113,12 @@ class UpdatePoem extends HomeEvent {
     this.bookmarkCount,
     this.views,
     this.reportCount,
+    this.title,
+    this.content,
+    this.transliteration,
+    this.translation,
+    this.description,
+    this.author,
+    this.updatedAt,
   });
 }

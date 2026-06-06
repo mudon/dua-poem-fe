@@ -89,6 +89,10 @@ class PoemModel {
   }
 
   PoemModel copyWith({
+    String? title,
+    String? content,
+    String? transliteration,
+    String? translation,
     String? userName,
     String? userAvatar,
     int? views,
@@ -98,17 +102,17 @@ class PoemModel {
     bool? isFavorited,
     String? description,
     String? author,
-    String? transliteration,
     int? reportCount,
     int? activeReportCount,
+    String? updatedAt,
   }) {
     return PoemModel(
       id: id,
-      title: title,
+      title: title ?? this.title,
       verified: verified,
-      content: content,
+      content: content ?? this.content,
       transliteration: transliteration ?? this.transliteration,
-      translation: translation,
+      translation: translation ?? this.translation,
       description: description ?? this.description,
       author: author ?? this.author,
       category: category,
@@ -125,7 +129,7 @@ class PoemModel {
       reportCount: reportCount ?? this.reportCount,
       activeReportCount: activeReportCount ?? this.activeReportCount,
       createdAt: createdAt,
-      updatedAt: updatedAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }
