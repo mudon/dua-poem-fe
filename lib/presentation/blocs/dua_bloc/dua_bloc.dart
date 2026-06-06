@@ -25,6 +25,8 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     on<SignalRReportReturned>(_onSignalRReportReturned);
     on<ClearReturnedReports>(_onClearReturnedReports);
     on<UpdateDua>(_onUpdateDua);
+    on<DeleteDua>(_onDeleteDua);
+    on<SignalRDuaDeleted>(_onSignalRDuaDeleted);
     on<SignalRDuaContentUpdated>(_onSignalRDuaContentUpdated);
     _listenToSignalR();
     _listenToNotifications();
@@ -73,6 +75,12 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
           repetitionCount: update.repetitionCount,
           updatedAt: update.updatedAt,
         ));
+      } catch (_) {}
+    });
+
+    getIt<SignalRService>().onDuaDeleted.listen((duaId) {
+      try {
+        add(SignalRDuaDeleted(duaId));
       } catch (_) {}
     });
   }
@@ -156,6 +164,21 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
 
   void _onClearReturnedReports(ClearReturnedReports event, Emitter<DuaState> emit) {
     emit(state.copyWith(returnedReportIds: const {}));
+  }
+
+  Future<void> _onDeleteDua(DeleteDua event, Emitter<DuaState> emit) async {
+    emit(state.copyWith(isProcessing: true));
+    final result = await _duaRepo.deleteDua(event.duaId);
+    emit(state.copyWith(isProcessing: false));
+    if (result.isSuccess) {
+      emit(state.copyWith(actionType: 'deleted', lastToggledDuaId: event.duaId));
+    } else {
+      emit(state.copyWith(error: result.error, actionType: 'delete_error'));
+    }
+  }
+
+  void _onSignalRDuaDeleted(SignalRDuaDeleted event, Emitter<DuaState> emit) {
+    emit(state.copyWith(actionType: 'deleted', lastToggledDuaId: event.duaId));
   }
 
   void _onSignalRLikeCountUpdated(SignalRLikeCountUpdated event, Emitter<DuaState> emit) {

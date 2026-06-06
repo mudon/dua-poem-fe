@@ -30,6 +30,8 @@ class SignalRService {
   final _leaderboardController = StreamController<List<LeaderboardUpdateModel>>.broadcast();
   final _duaContentController = StreamController<DuaContentUpdateModel>.broadcast();
   final _poemContentController = StreamController<PoemContentUpdateModel>.broadcast();
+  final _duaDeletedController = StreamController<String>.broadcast();
+  final _poemDeletedController = StreamController<String>.broadcast();
   bool _isConnected = false;
   Future<void>? _connectFuture;
 
@@ -41,6 +43,8 @@ class SignalRService {
   Stream<List<LeaderboardUpdateModel>> get onLeaderboardUpdated => _leaderboardController.stream;
   Stream<DuaContentUpdateModel> get onDuaContentUpdated => _duaContentController.stream;
   Stream<PoemContentUpdateModel> get onPoemContentUpdated => _poemContentController.stream;
+  Stream<String> get onDuaDeleted => _duaDeletedController.stream;
+  Stream<String> get onPoemDeleted => _poemDeletedController.stream;
 
   String get _hubBaseUrl =>
       ApiConfig.baseUrl.replaceAll('/api', '');
@@ -156,6 +160,20 @@ class SignalRService {
       if (args == null || args.isEmpty) return;
       final data = args[0] as Map<String, dynamic>;
       _poemContentController.add(PoemContentUpdateModel.fromJson(data));
+    });
+
+    connection.on('DuaDeleted', (args) {
+      if (args == null || args.isEmpty) return;
+      final data = args[0] as Map<String, dynamic>;
+      final duaId = data['duaId'].toString();
+      _duaDeletedController.add(duaId);
+    });
+
+    connection.on('PoemDeleted', (args) {
+      if (args == null || args.isEmpty) return;
+      final data = args[0] as Map<String, dynamic>;
+      final poemId = data['poemId'].toString();
+      _poemDeletedController.add(poemId);
     });
 
     connection.onclose((Exception? error) {

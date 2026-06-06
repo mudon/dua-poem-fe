@@ -109,6 +109,8 @@ class MyPoemsScreen extends StatelessWidget {
                   author: update.author,
                   updatedAt: update.updatedAt,
                 ));
+              } else if (state.actionType == 'deleted') {
+                ctx.read<HomeBloc>().add(RemovePoem(id));
               }
             },
             child: BlocBuilder<HomeBloc, HomeState>(

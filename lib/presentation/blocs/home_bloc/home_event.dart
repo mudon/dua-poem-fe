@@ -90,6 +90,16 @@ class UpdateDua extends HomeEvent {
   });
 }
 
+class RemoveDua extends HomeEvent {
+  final String duaId;
+  RemoveDua(this.duaId);
+}
+
+class RemovePoem extends HomeEvent {
+  final String poemId;
+  RemovePoem(this.poemId);
+}
+
 class UpdatePoem extends HomeEvent {
   final String poemId;
   final bool? isLiked;

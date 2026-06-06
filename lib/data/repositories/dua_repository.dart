@@ -106,6 +106,15 @@ class DuaRepository {
     }
   }
 
+  Future<ApiResult<void>> deleteDua(String id) async {
+    try {
+      await _duaService.deleteDua(id);
+      return ApiResult.success(null);
+    } catch (e) {
+      return ApiResult.failure(e.toString());
+    }
+  }
+
   Future<ApiResult<void>> reportDua(String duaId, String reason, String description) async {
     try {
       await _duaService.reportDua(duaId, reason, description);

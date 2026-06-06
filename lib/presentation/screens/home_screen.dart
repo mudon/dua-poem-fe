@@ -189,6 +189,8 @@ class _HomeFeedState extends State<_HomeFeed> {
                 repetitionCount: update.repetitionCount,
                 updatedAt: update.updatedAt,
               ));
+            } else if (state.actionType == 'deleted') {
+              context.read<HomeBloc>().add(RemoveDua(id));
             }
           },
         ),
@@ -275,6 +277,8 @@ class _HomeFeedState extends State<_HomeFeed> {
                 author: update.author,
                 updatedAt: update.updatedAt,
               ));
+            } else if (state.actionType == 'deleted') {
+              context.read<HomeBloc>().add(RemovePoem(id));
             }
           },
         ),

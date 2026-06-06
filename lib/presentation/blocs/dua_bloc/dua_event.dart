@@ -56,8 +56,6 @@ class SignalRReportReturned extends DuaEvent {
   SignalRReportReturned(this.duaId);
 }
 
-class ClearReturnedReports extends DuaEvent {}
-
 class UpdateDua extends DuaEvent {
   final String duaId;
   final String title;
@@ -71,6 +69,18 @@ class UpdateDua extends DuaEvent {
     this.transliteration,
     this.translation,
   });
+}
+
+class DeleteDua extends DuaEvent {
+  final String duaId;
+  DeleteDua(this.duaId);
+}
+
+class ClearReturnedReports extends DuaEvent {}
+
+class SignalRDuaDeleted extends DuaEvent {
+  final String duaId;
+  SignalRDuaDeleted(this.duaId);
 }
 
 class SignalRDuaContentUpdated extends DuaEvent {

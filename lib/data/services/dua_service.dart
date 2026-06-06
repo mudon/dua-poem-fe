@@ -86,6 +86,10 @@ class DuaService {
     return DuaModel.fromApiJson(response.data as Map<String, dynamic>);
   }
 
+  Future<void> deleteDua(String id) async {
+    await _dioClient.dio.delete('/duas/$id');
+  }
+
   Future<void> reportDua(String duaId, String reason, String description) async {
     await _dioClient.dio.post('/duas/$duaId/reports', data: {
       'reason': reason,

@@ -106,6 +106,15 @@ class PoemRepository {
     }
   }
 
+  Future<ApiResult<void>> deletePoem(String id) async {
+    try {
+      await _poemService.deletePoem(id);
+      return ApiResult.success(null);
+    } catch (e) {
+      return ApiResult.failure(e.toString());
+    }
+  }
+
   Future<ApiResult<void>> reportPoem(String poemId, String reason, String description) async {
     try {
       await _poemService.reportPoem(poemId, reason, description);

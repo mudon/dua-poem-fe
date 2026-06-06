@@ -25,6 +25,8 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     on<SignalRReportReturned>(_onSignalRReportReturned);
     on<ClearReturnedReports>(_onClearReturnedReports);
     on<UpdatePoem>(_onUpdatePoem);
+    on<DeletePoem>(_onDeletePoem);
+    on<SignalRPoemDeleted>(_onSignalRPoemDeleted);
     on<SignalRPoemContentUpdated>(_onSignalRPoemContentUpdated);
     _listenToSignalR();
     _listenToNotifications();
@@ -71,6 +73,12 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
           author: update.author,
           updatedAt: update.updatedAt,
         ));
+      } catch (_) {}
+    });
+
+    getIt<SignalRService>().onPoemDeleted.listen((poemId) {
+      try {
+        add(SignalRPoemDeleted(poemId));
       } catch (_) {}
     });
   }
@@ -150,6 +158,21 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
 
   void _onClearReturnedReports(ClearReturnedReports event, Emitter<PoemState> emit) {
     emit(state.copyWith(returnedReportIds: const {}));
+  }
+
+  Future<void> _onDeletePoem(DeletePoem event, Emitter<PoemState> emit) async {
+    emit(state.copyWith(isProcessing: true));
+    final result = await _poemRepo.deletePoem(event.poemId);
+    emit(state.copyWith(isProcessing: false));
+    if (result.isSuccess) {
+      emit(state.copyWith(actionType: 'deleted', lastToggledPoemId: event.poemId));
+    } else {
+      emit(state.copyWith(error: result.error, actionType: 'delete_error'));
+    }
+  }
+
+  void _onSignalRPoemDeleted(SignalRPoemDeleted event, Emitter<PoemState> emit) {
+    emit(state.copyWith(actionType: 'deleted', lastToggledPoemId: event.poemId));
   }
 
   void _onSignalRLikeCountUpdated(SignalRLikeCountUpdated event, Emitter<PoemState> emit) {

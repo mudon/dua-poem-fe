@@ -111,6 +111,8 @@ class MyDuasScreen extends StatelessWidget {
                   repetitionCount: update.repetitionCount,
                   updatedAt: update.updatedAt,
                 ));
+              } else if (state.actionType == 'deleted') {
+                ctx.read<HomeBloc>().add(RemoveDua(id));
               }
             },
             child: BlocBuilder<HomeBloc, HomeState>(

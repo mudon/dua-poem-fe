@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../data/models/user_model.dart';
 import '../../data/models/poem_model.dart';
 import '../../data/models/report_model.dart';
@@ -130,6 +131,27 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
     }
   }
 
+  Future<void> _deletePoem() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Poem'),
+        content: const Text('Are you sure you want to delete this poem? This cannot be undone.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: const Color(0xFFC25A3F)),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      getIt<PoemBloc>().add(DeletePoem(_poem!.id));
+    }
+  }
+
   void _showEditSheet() {
     showModalBottomSheet(
       context: context,
@@ -204,6 +226,14 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                                 });
                                 _loadReports();
                               }
+                            }
+                            if (state.actionType == 'deleted' && state.lastToggledPoemId == widget.poemId) {
+                              if (context.mounted) context.pop();
+                            }
+                            if (state.actionType == 'delete_error') {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(state.error ?? 'Failed to delete')),
+                              );
                             }
                           },
                       child: SingleChildScrollView(
@@ -365,6 +395,21 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFFE8F0E2),
                                       foregroundColor: const Color(0xFF3F7849),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton.icon(
+                                    onPressed: _deletePoem,
+                                    icon: const Icon(Icons.delete_outline, size: 16),
+                                    label: const Text('Delete', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFFEF1EC),
+                                      foregroundColor: const Color(0xFFC25A3F),
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
                                       padding: const EdgeInsets.symmetric(vertical: 14),
                                     ),
