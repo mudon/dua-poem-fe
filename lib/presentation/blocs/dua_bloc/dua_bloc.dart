@@ -24,6 +24,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     on<SignalRReportsCountUpdated>(_onSignalRReportsCountUpdated);
     on<SignalRReportReturned>(_onSignalRReportReturned);
     on<ClearReturnedReports>(_onClearReturnedReports);
+    on<UpdateDua>(_onUpdateDua);
     on<SignalRDuaContentUpdated>(_onSignalRDuaContentUpdated);
     _listenToSignalR();
     _listenToNotifications();
@@ -89,6 +90,41 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
         }
       } catch (_) {}
     });
+  }
+
+  Future<void> _onUpdateDua(UpdateDua event, Emitter<DuaState> emit) async {
+    emit(state.copyWith(isProcessing: true));
+    final data = <String, dynamic>{
+      'title': event.title,
+      'arabicText': event.arabicText ?? '',
+      'transliteration': event.transliteration,
+      'translation': event.translation,
+    };
+    final result = await _duaRepo.updateDua(event.duaId, data);
+    emit(state.copyWith(isProcessing: false));
+    if (result.isSuccess) {
+      final updated = result.data!;
+      final newContentUpdates = Map<String, DuaContentUpdateModel?>.from(state.contentUpdates);
+      newContentUpdates[event.duaId] = DuaContentUpdateModel(
+        id: updated.id,
+        title: updated.title,
+        arabicText: updated.arabicText,
+        transliteration: updated.transliteration,
+        translation: updated.translation,
+        description: updated.description,
+        whenToRecite: updated.whenToRecite,
+        occasion: updated.occasion,
+        repetitionCount: updated.repetitionCount ?? 0,
+        updatedAt: updated.updatedAt ?? '',
+      );
+      emit(state.copyWith(
+        contentUpdates: newContentUpdates,
+        actionType: 'content_updated',
+        lastToggledDuaId: event.duaId,
+      ));
+    } else {
+      emit(state.copyWith(error: result.error, actionType: 'update_error'));
+    }
   }
 
   void _onSignalRDuaContentUpdated(SignalRDuaContentUpdated event, Emitter<DuaState> emit) {

@@ -58,6 +58,21 @@ class SignalRReportReturned extends DuaEvent {
 
 class ClearReturnedReports extends DuaEvent {}
 
+class UpdateDua extends DuaEvent {
+  final String duaId;
+  final String title;
+  final String? arabicText;
+  final String? transliteration;
+  final String? translation;
+  UpdateDua({
+    required this.duaId,
+    required this.title,
+    this.arabicText,
+    this.transliteration,
+    this.translation,
+  });
+}
+
 class SignalRDuaContentUpdated extends DuaEvent {
   final String duaId;
   final String title;

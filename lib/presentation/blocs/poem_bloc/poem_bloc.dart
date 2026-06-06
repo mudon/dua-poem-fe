@@ -24,6 +24,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     on<SignalRReportsCountUpdated>(_onSignalRReportsCountUpdated);
     on<SignalRReportReturned>(_onSignalRReportReturned);
     on<ClearReturnedReports>(_onClearReturnedReports);
+    on<UpdatePoem>(_onUpdatePoem);
     on<SignalRPoemContentUpdated>(_onSignalRPoemContentUpdated);
     _listenToSignalR();
     _listenToNotifications();
@@ -87,6 +88,39 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
         }
       } catch (_) {}
     });
+  }
+
+  Future<void> _onUpdatePoem(UpdatePoem event, Emitter<PoemState> emit) async {
+    emit(state.copyWith(isProcessing: true));
+    final data = <String, dynamic>{
+      'title': event.title,
+      'content': event.content ?? '',
+      'transliteration': event.transliteration,
+      'translation': event.translation,
+    };
+    final result = await _poemRepo.updatePoem(event.poemId, data);
+    emit(state.copyWith(isProcessing: false));
+    if (result.isSuccess) {
+      final updated = result.data!;
+      final newContentUpdates = Map<String, PoemContentUpdateModel?>.from(state.contentUpdates);
+      newContentUpdates[event.poemId] = PoemContentUpdateModel(
+        id: updated.id,
+        title: updated.title,
+        content: updated.content,
+        transliteration: updated.transliteration,
+        translation: updated.translation,
+        description: updated.description,
+        author: updated.author,
+        updatedAt: updated.updatedAt ?? '',
+      );
+      emit(state.copyWith(
+        contentUpdates: newContentUpdates,
+        actionType: 'content_updated',
+        lastToggledPoemId: event.poemId,
+      ));
+    } else {
+      emit(state.copyWith(error: result.error, actionType: 'update_error'));
+    }
   }
 
   void _onSignalRPoemContentUpdated(SignalRPoemContentUpdated event, Emitter<PoemState> emit) {

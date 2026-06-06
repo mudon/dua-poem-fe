@@ -81,6 +81,11 @@ class PoemService {
     return PoemModel.fromApiJson(response.data as Map<String, dynamic>);
   }
 
+  Future<PoemModel> updatePoem(String id, Map<String, dynamic> data) async {
+    final response = await _dioClient.dio.put('/poems/$id', data: data);
+    return PoemModel.fromApiJson(response.data as Map<String, dynamic>);
+  }
+
   Future<void> reportPoem(String poemId, String reason, String description) async {
     await _dioClient.dio.post('/poems/$poemId/reports', data: {
       'reason': reason,

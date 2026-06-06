@@ -130,6 +130,21 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
     );
   }
 
+  void _showEditSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _DuaEditSheet(
+        duaId: _dua!.id,
+        initialTitle: _dua!.title,
+        initialArabicText: _dua!.arabicText ?? '',
+        initialTransliteration: _dua!.transliteration ?? '',
+        initialTranslation: _dua!.translation,
+      ),
+    );
+  }
+
   void _showReportsPopup(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -358,6 +373,21 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                                     ),
                                   ),
                                 if (_dua!.userId == widget.currentUser.id) ...[
+                                  const SizedBox(height: 10),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton.icon(
+                                      onPressed: _showEditSheet,
+                                      icon: const Icon(Icons.edit_outlined, size: 16),
+                                      label: const Text('Edit', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFFE8F0E2),
+                                        foregroundColor: const Color(0xFF3F7849),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
+                                        padding: const EdgeInsets.symmetric(vertical: 14),
+                                      ),
+                                    ),
+                                  ),
                                   const SizedBox(height: 10),
                                   Badge(
                                     label: Text('$_pendingCount', style: const TextStyle(color: Colors.white, fontSize: 11)),
@@ -730,6 +760,183 @@ class _DuaFixSheetState extends State<_DuaFixSheet> {
                 child: _submitting
                     ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF3F7849)))
                     : const Text('Submit Fix', style: TextStyle(fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DuaEditSheet extends StatefulWidget {
+  final String duaId;
+  final String initialTitle;
+  final String initialArabicText;
+  final String initialTransliteration;
+  final String initialTranslation;
+
+  const _DuaEditSheet({
+    required this.duaId,
+    required this.initialTitle,
+    required this.initialArabicText,
+    required this.initialTransliteration,
+    required this.initialTranslation,
+  });
+
+  @override
+  State<_DuaEditSheet> createState() => _DuaEditSheetState();
+}
+
+class _DuaEditSheetState extends State<_DuaEditSheet> {
+  final _titleCtrl = TextEditingController();
+  final _arabicCtrl = TextEditingController();
+  final _transliterationCtrl = TextEditingController();
+  final _translationCtrl = TextEditingController();
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleCtrl.text = widget.initialTitle;
+    _arabicCtrl.text = widget.initialArabicText;
+    _transliterationCtrl.text = widget.initialTransliteration;
+    _translationCtrl.text = widget.initialTranslation;
+  }
+
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    _arabicCtrl.dispose();
+    _transliterationCtrl.dispose();
+    _translationCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    if (_titleCtrl.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Title is required')),
+      );
+      return;
+    }
+    setState(() => _saving = true);
+    getIt<DuaBloc>().add(UpdateDua(
+      duaId: widget.duaId,
+      title: _titleCtrl.text,
+      arabicText: _arabicCtrl.text,
+      transliteration: _transliterationCtrl.text,
+      translation: _translationCtrl.text,
+    ));
+    Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+      decoration: const BoxDecoration(
+        color: Color(0xFFFEFCF5),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 20, offset: Offset(0, -6))],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(
+              color: Color(0xFFFEFAF2),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              border: Border(bottom: BorderSide(color: Color(0xFFEFE8DE))),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF7C9A6E)),
+                    const SizedBox(width: 8),
+                    const Text('Edit Dua', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                  ],
+                ),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: const Icon(Icons.close, color: Color(0xFFA18E76)),
+                ),
+              ],
+            ),
+          ),
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: _titleCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Title',
+                      filled: true,
+                      fillColor: Color(0xFFF7F3ED),
+                      border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(16))),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _arabicCtrl,
+                    textDirection: TextDirection.rtl,
+                    decoration: const InputDecoration(
+                      labelText: 'Arabic Text',
+                      filled: true,
+                      fillColor: Color(0xFFF7F3ED),
+                      border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(16))),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _transliterationCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Transliteration',
+                      filled: true,
+                      fillColor: Color(0xFFF7F3ED),
+                      border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(16))),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _translationCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Translation',
+                      filled: true,
+                      fillColor: Color(0xFFF7F3ED),
+                      border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(16))),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                    maxLines: 2,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _saving ? null : _save,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFE8F0E2),
+                  foregroundColor: const Color(0xFF3F7849),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
+                  padding: const EdgeInsets.symmetric(vertical: 14)),
+                child: _saving
+                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF3F7849)))
+                    : const Text('Save', style: TextStyle(fontWeight: FontWeight.w600)),
               ),
             ),
           ),

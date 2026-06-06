@@ -130,6 +130,21 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
     }
   }
 
+  void _showEditSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _PoemEditSheet(
+        poemId: _poem!.id,
+        initialTitle: _poem!.title,
+        initialContent: _poem!.content ?? '',
+        initialTransliteration: _poem!.transliteration ?? '',
+        initialTranslation: _poem!.translation,
+      ),
+    );
+  }
+
   void _showReportsPopup(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -340,6 +355,21 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                                 ),
                               ),
                               if (_poem!.userId == widget.currentUser.id) ...[
+                                const SizedBox(height: 8),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton.icon(
+                                    onPressed: _showEditSheet,
+                                    icon: const Icon(Icons.edit_outlined, size: 16),
+                                    label: const Text('Edit', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFE8F0E2),
+                                      foregroundColor: const Color(0xFF3F7849),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                    ),
+                                  ),
+                                ),
                                 const SizedBox(height: 8),
                                 Badge(
                                   label: Text('$_pendingCount', style: const TextStyle(color: Colors.white, fontSize: 11)),
@@ -711,6 +741,182 @@ class _PoemFixSheetState extends State<_PoemFixSheet> {
                 child: _submitting
                     ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF3F7849)))
                     : const Text('Submit Fix', style: TextStyle(fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PoemEditSheet extends StatefulWidget {
+  final String poemId;
+  final String initialTitle;
+  final String initialContent;
+  final String initialTransliteration;
+  final String initialTranslation;
+
+  const _PoemEditSheet({
+    required this.poemId,
+    required this.initialTitle,
+    required this.initialContent,
+    required this.initialTransliteration,
+    required this.initialTranslation,
+  });
+
+  @override
+  State<_PoemEditSheet> createState() => _PoemEditSheetState();
+}
+
+class _PoemEditSheetState extends State<_PoemEditSheet> {
+  final _titleCtrl = TextEditingController();
+  final _contentCtrl = TextEditingController();
+  final _transliterationCtrl = TextEditingController();
+  final _translationCtrl = TextEditingController();
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleCtrl.text = widget.initialTitle;
+    _contentCtrl.text = widget.initialContent;
+    _transliterationCtrl.text = widget.initialTransliteration;
+    _translationCtrl.text = widget.initialTranslation;
+  }
+
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    _contentCtrl.dispose();
+    _transliterationCtrl.dispose();
+    _translationCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    if (_titleCtrl.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Title is required')),
+      );
+      return;
+    }
+    setState(() => _saving = true);
+    getIt<PoemBloc>().add(UpdatePoem(
+      poemId: widget.poemId,
+      title: _titleCtrl.text,
+      content: _contentCtrl.text,
+      transliteration: _transliterationCtrl.text,
+      translation: _translationCtrl.text,
+    ));
+    Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+      decoration: const BoxDecoration(
+        color: Color(0xFFFEFCF5),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 20, offset: Offset(0, -6))],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(
+              color: Color(0xFFFEFAF2),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              border: Border(bottom: BorderSide(color: Color(0xFFEFE8DE))),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF7C9A6E)),
+                    const SizedBox(width: 8),
+                    const Text('Edit Poem', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                  ],
+                ),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: const Icon(Icons.close, color: Color(0xFFA18E76)),
+                ),
+              ],
+            ),
+          ),
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: _titleCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Title',
+                      filled: true,
+                      fillColor: Color(0xFFF7F3ED),
+                      border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(16))),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _contentCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Poem text',
+                      filled: true,
+                      fillColor: Color(0xFFF7F3ED),
+                      border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(16))),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                    maxLines: 4,
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _transliterationCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Transliteration',
+                      filled: true,
+                      fillColor: Color(0xFFF7F3ED),
+                      border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(16))),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _translationCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Translation',
+                      filled: true,
+                      fillColor: Color(0xFFF7F3ED),
+                      border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(16))),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                    maxLines: 2,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _saving ? null : _save,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFE8F0E2),
+                  foregroundColor: const Color(0xFF3F7849),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
+                  padding: const EdgeInsets.symmetric(vertical: 14)),
+                child: _saving
+                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF3F7849)))
+                    : const Text('Save', style: TextStyle(fontWeight: FontWeight.w600)),
               ),
             ),
           ),

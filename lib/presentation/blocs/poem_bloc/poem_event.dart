@@ -58,6 +58,21 @@ class SignalRReportReturned extends PoemEvent {
 
 class ClearReturnedReports extends PoemEvent {}
 
+class UpdatePoem extends PoemEvent {
+  final String poemId;
+  final String title;
+  final String? content;
+  final String? transliteration;
+  final String? translation;
+  UpdatePoem({
+    required this.poemId,
+    required this.title,
+    this.content,
+    this.transliteration,
+    this.translation,
+  });
+}
+
 class SignalRPoemContentUpdated extends PoemEvent {
   final String poemId;
   final String title;

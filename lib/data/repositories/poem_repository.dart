@@ -97,6 +97,15 @@ class PoemRepository {
     }
   }
 
+  Future<ApiResult<PoemModel>> updatePoem(String id, Map<String, dynamic> data) async {
+    try {
+      final poem = await _poemService.updatePoem(id, data);
+      return ApiResult.success(poem);
+    } catch (e) {
+      return ApiResult.failure(e.toString());
+    }
+  }
+
   Future<ApiResult<void>> reportPoem(String poemId, String reason, String description) async {
     try {
       await _poemService.reportPoem(poemId, reason, description);

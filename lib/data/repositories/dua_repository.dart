@@ -97,6 +97,15 @@ class DuaRepository {
     }
   }
 
+  Future<ApiResult<DuaModel>> updateDua(String id, Map<String, dynamic> data) async {
+    try {
+      final dua = await _duaService.updateDua(id, data);
+      return ApiResult.success(dua);
+    } catch (e) {
+      return ApiResult.failure(e.toString());
+    }
+  }
+
   Future<ApiResult<void>> reportDua(String duaId, String reason, String description) async {
     try {
       await _duaService.reportDua(duaId, reason, description);

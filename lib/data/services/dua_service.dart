@@ -81,6 +81,11 @@ class DuaService {
     return DuaModel.fromApiJson(response.data as Map<String, dynamic>);
   }
 
+  Future<DuaModel> updateDua(String id, Map<String, dynamic> data) async {
+    final response = await _dioClient.dio.put('/duas/$id', data: data);
+    return DuaModel.fromApiJson(response.data as Map<String, dynamic>);
+  }
+
   Future<void> reportDua(String duaId, String reason, String description) async {
     await _dioClient.dio.post('/duas/$duaId/reports', data: {
       'reason': reason,
