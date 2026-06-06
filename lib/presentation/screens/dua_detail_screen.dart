@@ -153,27 +153,46 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                 ? const Center(child: Text('Dua not found'))
                 : BlocProvider.value(
                     value: getIt<DuaBloc>(),
-                      child: BlocListener<DuaBloc, DuaState>(
-                        listener: (context, state) {
-                          if (state.error != null) {
-                            setState(() {
-                              if (state.actionType == 'like') {
-                                _isLiked = !_isLiked;
-                                _likeCount += _isLiked ? 1 : -1;
-                              } else if (state.actionType == 'bookmark') {
-                                _isBookmarked = !_isBookmarked;
-                                _bookmarkCount += _isBookmarked ? 1 : -1;
+                        child: BlocListener<DuaBloc, DuaState>(
+                          listener: (context, state) {
+                            if (state.error != null) {
+                              setState(() {
+                                if (state.actionType == 'like') {
+                                  _isLiked = !_isLiked;
+                                  _likeCount += _isLiked ? 1 : -1;
+                                } else if (state.actionType == 'bookmark') {
+                                  _isBookmarked = !_isBookmarked;
+                                  _bookmarkCount += _isBookmarked ? 1 : -1;
+                                }
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(state.error!)),
+                              );
+                            }
+                            final count = state.likeCounts[widget.duaId];
+                            if (count != null && count != _likeCount) {
+                              setState(() => _likeCount = count);
+                            }
+                            if (state.actionType == 'content_updated' && state.lastToggledDuaId == widget.duaId) {
+                              final update = state.contentUpdates[widget.duaId];
+                              if (update != null && _dua != null) {
+                                setState(() {
+                                  _dua = _dua!.copyWith(
+                                    title: update.title,
+                                    arabicText: update.arabicText,
+                                    transliteration: update.transliteration,
+                                    translation: update.translation,
+                                    description: update.description,
+                                    whenToRecite: update.whenToRecite,
+                                    occasion: update.occasion,
+                                    repetitionCount: update.repetitionCount,
+                                    updatedAt: update.updatedAt,
+                                  );
+                                });
+                                _loadReports();
                               }
-                            });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(state.error!)),
-                            );
-                          }
-                          final count = state.likeCounts[widget.duaId];
-                          if (count != null && count != _likeCount) {
-                            setState(() => _likeCount = count);
-                          }
-                        },
+                            }
+                          },
                       child: SingleChildScrollView(
                       padding: const EdgeInsets.all(16),
                       child: Column(

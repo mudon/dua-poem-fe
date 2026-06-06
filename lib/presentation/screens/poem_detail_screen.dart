@@ -154,26 +154,43 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                 : BlocProvider.value(
                     value: getIt<PoemBloc>(),
                       child: BlocListener<PoemBloc, PoemState>(
-                        listener: (context, state) {
-                          if (state.error != null) {
-                            setState(() {
-                              if (state.actionType == 'like') {
-                                _isLiked = !_isLiked;
-                                _likeCount += _isLiked ? 1 : -1;
-                              } else if (state.actionType == 'bookmark') {
-                                _isBookmarked = !_isBookmarked;
-                                _bookmarkCount += _isBookmarked ? 1 : -1;
+                          listener: (context, state) {
+                            if (state.error != null) {
+                              setState(() {
+                                if (state.actionType == 'like') {
+                                  _isLiked = !_isLiked;
+                                  _likeCount += _isLiked ? 1 : -1;
+                                } else if (state.actionType == 'bookmark') {
+                                  _isBookmarked = !_isBookmarked;
+                                  _bookmarkCount += _isBookmarked ? 1 : -1;
+                                }
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(state.error!)),
+                              );
+                            }
+                            final count = state.likeCounts[widget.poemId];
+                            if (count != null && count != _likeCount) {
+                              setState(() => _likeCount = count);
+                            }
+                            if (state.actionType == 'content_updated' && state.lastToggledPoemId == widget.poemId) {
+                              final update = state.contentUpdates[widget.poemId];
+                              if (update != null && _poem != null) {
+                                setState(() {
+                                  _poem = _poem!.copyWith(
+                                    title: update.title,
+                                    content: update.content,
+                                    transliteration: update.transliteration,
+                                    translation: update.translation,
+                                    description: update.description,
+                                    author: update.author,
+                                    updatedAt: update.updatedAt,
+                                  );
+                                });
+                                _loadReports();
                               }
-                            });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(state.error!)),
-                            );
-                          }
-                          final count = state.likeCounts[widget.poemId];
-                          if (count != null && count != _likeCount) {
-                            setState(() => _likeCount = count);
-                          }
-                        },
+                            }
+                          },
                       child: SingleChildScrollView(
                     padding: const EdgeInsets.all(16),
                     child: Column(
