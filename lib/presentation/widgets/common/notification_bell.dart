@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/dependency_injection.dart';
+import '../../../core/themes/app_theme.dart';
 import '../../../data/models/notification_model.dart';
+import '../../blocs/auth_bloc/auth_bloc.dart';
+import '../../blocs/auth_bloc/auth_state.dart';
 import '../../blocs/notification_bloc/notification_bloc.dart';
 import '../../blocs/notification_bloc/notification_event.dart';
 import '../../blocs/notification_bloc/notification_state.dart';
@@ -220,28 +223,50 @@ class _NotificationBellState extends State<NotificationBell> {
                     itemBuilder: (_, i) {
                       final n = items[i];
                       final isReturnedFix = n.type == 'report_reopened';
-                      String? navigatePath;
+                      String? fixNavigatePath;
                       if (isReturnedFix && n.data != null) {
                         try {
                           final parsed = jsonDecode(n.data!) as Map<String, dynamic>;
                           final duaId = parsed['duaId'] as String?;
                           final poemId = parsed['poemId'] as String?;
-                          if (duaId != null) navigatePath = '/dua/$duaId';
-                          if (poemId != null) navigatePath = '/poem/$poemId';
+                          if (duaId != null) fixNavigatePath = '/dua/$duaId';
+                          if (poemId != null) fixNavigatePath = '/poem/$poemId';
                         } catch (_) {}
                       }
                       return _NotificationItem(
                         notification: n,
                         icon: _iconForType(n.type),
                         timeAgo: _timeAgo(n.createdAt),
-                        onTap: n.isRead
-                            ? null
-                            : () => getIt<NotificationBloc>().add(MarkAsRead(n.id)),
-                        actionLabel: navigatePath != null ? 'Submit Fix' : null,
-                        onActionTap: navigatePath != null
+                        onTap: () {
+                          if (!n.isRead) getIt<NotificationBloc>().add(MarkAsRead(n.id));
+                          final authState = context.read<AuthBloc>().state;
+                          if (authState is! Authenticated) return;
+                          _dismiss();
+                          final user = authState.user;
+                          String? duaId;
+                          String? poemId;
+                          if (n.data != null) {
+                            try {
+                              final parsed = jsonDecode(n.data!) as Map<String, dynamic>;
+                              duaId = parsed['duaId'] as String?;
+                              poemId = parsed['poemId'] as String?;
+                            } catch (_) {}
+                          }
+                          if (duaId != null) {
+                            context.push('/dua/$duaId', extra: user);
+                          } else if (poemId != null) {
+                            context.push('/poem/$poemId', extra: user);
+                          } else {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const _ContentNotFoundScreen()));
+                          }
+                        },
+                        actionLabel: fixNavigatePath != null ? 'Submit Fix' : null,
+                        onActionTap: fixNavigatePath != null
                             ? () {
+                                final authState = context.read<AuthBloc>().state;
+                                if (authState is! Authenticated) return;
                                 _dismiss();
-                                context.push(navigatePath!, extra: null);
+                                context.push(fixNavigatePath!, extra: authState.user);
                               }
                             : null,
                       );
@@ -365,6 +390,37 @@ class _NotificationItem extends StatelessWidget {
                 fontWeight: notification.isRead ? FontWeight.w400 : FontWeight.w500,
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ContentNotFoundScreen extends StatelessWidget {
+  const _ContentNotFoundScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF4F0E8),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: const Row(
+                  children: [
+                    Icon(Icons.arrow_back, color: AppTheme.sage, size: 20),
+                    SizedBox(width: 8),
+                    Text('Back', style: TextStyle(color: AppTheme.sage, fontWeight: FontWeight.w500, fontSize: 15)),
+                  ],
+                ),
+              ),
+            ),
+            const Expanded(child: Center(child: Text('Content not found'))),
           ],
         ),
       ),
