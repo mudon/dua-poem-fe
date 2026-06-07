@@ -59,8 +59,7 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
     final reports = <ReportModel>[];
     int pending = 0;
     if (result.isSuccess && result.data != null) {
-      for (final r in result.data!) {
-        final report = ReportModel.fromJson(r as Map<String, dynamic>);
+      for (final report in result.data!.data) {
         reports.add(report);
         if (report.status != 'resolved' && report.status != 'dismissed') {
           pending++;
@@ -79,8 +78,7 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
     if (!context.mounted) return;
     final pendingReports = <ReportModel>[];
     if (reportsResult.isSuccess && reportsResult.data != null) {
-      for (final r in reportsResult.data!) {
-        final report = ReportModel.fromJson(r as Map<String, dynamic>);
+      for (final report in reportsResult.data!.data) {
         if (report.status == 'pending') {
           pendingReports.add(report);
         }

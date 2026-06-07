@@ -1,6 +1,7 @@
 import '../../core/network/dio_client.dart';
 import '../models/dua_model.dart';
 import '../models/paged_response.dart';
+import '../models/report_model.dart';
 
 class DuaService {
   final DioClient _dioClient;
@@ -43,11 +44,12 @@ class DuaService {
     }
   }
 
-  Future<List<DuaModel>> getFavorites() async {
-    final response = await _dioClient.dio.get('/favorites');
-    return (response.data as List)
-        .map((e) => DuaModel.fromApiJson(e as Map<String, dynamic>))
-        .toList();
+  Future<PagedResponse<DuaModel>> getFavorites({int limit = 20, String? cursor}) async {
+    final queryParams = <String, dynamic>{};
+    queryParams['limit'] = limit;
+    if (cursor != null) queryParams['cursor'] = cursor;
+    final response = await _dioClient.dio.get('/favorites', queryParameters: queryParams);
+    return PagedResponse.fromJson(response.data as Map<String, dynamic>, DuaModel.fromApiJson);
   }
 
   Future<List<DuaModel>> getByCategory(int categoryId) async {
@@ -101,9 +103,12 @@ class DuaService {
     return response.data as Map<String, dynamic>;
   }
 
-  Future<List<dynamic>> getDuaReports(String duaId) async {
-    final response = await _dioClient.dio.get('/duas/$duaId/reports');
-    return response.data as List;
+  Future<PagedResponse<ReportModel>> getDuaReports(String duaId, {int limit = 50, String? cursor}) async {
+    final queryParams = <String, dynamic>{};
+    queryParams['limit'] = limit;
+    if (cursor != null) queryParams['cursor'] = cursor;
+    final response = await _dioClient.dio.get('/duas/$duaId/reports', queryParameters: queryParams);
+    return PagedResponse.fromJson(response.data as Map<String, dynamic>, ReportModel.fromJson);
   }
 
   Future<Map<String, dynamic>> getDuaRevisionDetail(String revisionId) async {

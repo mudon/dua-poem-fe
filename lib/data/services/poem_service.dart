@@ -1,6 +1,7 @@
 import '../../core/network/dio_client.dart';
-import '../models/poem_model.dart';
 import '../models/paged_response.dart';
+import '../models/poem_model.dart';
+import '../models/report_model.dart';
 
 class PoemService {
   final DioClient _dioClient;
@@ -43,11 +44,12 @@ class PoemService {
     }
   }
 
-  Future<List<PoemModel>> getPoemFavorites() async {
-    final response = await _dioClient.dio.get('/poems/favorites');
-    return (response.data as List)
-        .map((e) => PoemModel.fromApiJson(e as Map<String, dynamic>))
-        .toList();
+  Future<PagedResponse<PoemModel>> getPoemFavorites({int limit = 20, String? cursor}) async {
+    final queryParams = <String, dynamic>{};
+    queryParams['limit'] = limit;
+    if (cursor != null) queryParams['cursor'] = cursor;
+    final response = await _dioClient.dio.get('/poems/favorites', queryParameters: queryParams);
+    return PagedResponse.fromJson(response.data as Map<String, dynamic>, PoemModel.fromApiJson);
   }
 
   Future<List<PoemModel>> getByCategory(int categoryId) async {
@@ -101,9 +103,12 @@ class PoemService {
     return response.data as Map<String, dynamic>;
   }
 
-  Future<List<dynamic>> getPoemReports(String poemId) async {
-    final response = await _dioClient.dio.get('/poems/$poemId/reports');
-    return response.data as List;
+  Future<PagedResponse<ReportModel>> getPoemReports(String poemId, {int limit = 50, String? cursor}) async {
+    final queryParams = <String, dynamic>{};
+    queryParams['limit'] = limit;
+    if (cursor != null) queryParams['cursor'] = cursor;
+    final response = await _dioClient.dio.get('/poems/$poemId/reports', queryParameters: queryParams);
+    return PagedResponse.fromJson(response.data as Map<String, dynamic>, ReportModel.fromJson);
   }
 
   Future<Map<String, dynamic>> getPoemRevisionDetail(String revisionId) async {

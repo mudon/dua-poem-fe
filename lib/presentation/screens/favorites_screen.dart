@@ -31,18 +31,44 @@ class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProv
   List<PoemModel> _favoritePoems = [];
   bool _loadingDuas = true;
   bool _loadingPoems = true;
+  bool _loadingMoreDuas = false;
+  bool _loadingMorePoems = false;
+  String? _duaCursor;
+  String? _poemCursor;
+  bool _hasMoreDuas = true;
+  bool _hasMorePoems = true;
+  final ScrollController _duaScroll = ScrollController();
+  final ScrollController _poemScroll = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _duaScroll.addListener(_onDuaScroll);
+    _poemScroll.addListener(_onPoemScroll);
     _loadFavorites();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _duaScroll.dispose();
+    _poemScroll.dispose();
     super.dispose();
+  }
+
+  void _onDuaScroll() {
+    if (_duaScroll.position.pixels >= _duaScroll.position.maxScrollExtent - 200
+        && !_loadingMoreDuas && _hasMoreDuas) {
+      _loadMoreDuas();
+    }
+  }
+
+  void _onPoemScroll() {
+    if (_poemScroll.position.pixels >= _poemScroll.position.maxScrollExtent - 200
+        && !_loadingMorePoems && _hasMorePoems) {
+      _loadMorePoems();
+    }
   }
 
   Future<void> _loadFavorites() async {
@@ -57,7 +83,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProv
     final result = await repo.getFavorites();
     if (mounted) {
       setState(() {
-        _favoriteDuas = result.data ?? [];
+        _favoriteDuas = result.data?.data ?? [];
+        _duaCursor = result.data?.nextCursor;
+        _hasMoreDuas = result.data?.hasMore ?? false;
         _loadingDuas = false;
       });
     }
@@ -68,8 +96,40 @@ class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProv
     final result = await repo.getPoemFavorites();
     if (mounted) {
       setState(() {
-        _favoritePoems = result.data ?? [];
+        _favoritePoems = result.data?.data ?? [];
+        _poemCursor = result.data?.nextCursor;
+        _hasMorePoems = result.data?.hasMore ?? false;
         _loadingPoems = false;
+      });
+    }
+  }
+
+  Future<void> _loadMoreDuas() async {
+    if (_loadingMoreDuas || !_hasMoreDuas || _duaCursor == null) return;
+    setState(() => _loadingMoreDuas = true);
+    final repo = getIt<DuaRepository>();
+    final result = await repo.getFavorites(cursor: _duaCursor);
+    if (mounted) {
+      setState(() {
+        _favoriteDuas.addAll(result.data?.data ?? []);
+        _duaCursor = result.data?.nextCursor;
+        _hasMoreDuas = result.data?.hasMore ?? false;
+        _loadingMoreDuas = false;
+      });
+    }
+  }
+
+  Future<void> _loadMorePoems() async {
+    if (_loadingMorePoems || !_hasMorePoems || _poemCursor == null) return;
+    setState(() => _loadingMorePoems = true);
+    final repo = getIt<PoemRepository>();
+    final result = await repo.getPoemFavorites(cursor: _poemCursor);
+    if (mounted) {
+      setState(() {
+        _favoritePoems.addAll(result.data?.data ?? []);
+        _poemCursor = result.data?.nextCursor;
+        _hasMorePoems = result.data?.hasMore ?? false;
+        _loadingMorePoems = false;
       });
     }
   }
@@ -229,16 +289,34 @@ class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProv
                 : _favoriteDuas.isEmpty
                     ? const Center(child: Text('No favorited duas yet'))
                     : ListView.builder(
-                        itemCount: _favoriteDuas.length,
-                        itemBuilder: (_, i) => DuaCard(key: ValueKey(_favoriteDuas[i].id), dua: _favoriteDuas[i], currentUser: widget.currentUser ?? _emptyUser),
+                        controller: _duaScroll,
+                        itemCount: _favoriteDuas.length + (_hasMoreDuas ? 1 : 0),
+                        itemBuilder: (_, i) {
+                          if (i == _favoriteDuas.length) {
+                            return const Padding(
+                              padding: EdgeInsets.all(16),
+                              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                            );
+                          }
+                          return DuaCard(key: ValueKey(_favoriteDuas[i].id), dua: _favoriteDuas[i], currentUser: widget.currentUser ?? _emptyUser);
+                        },
                       ),
             _loadingPoems
                 ? const Center(child: CircularProgressIndicator())
                 : _favoritePoems.isEmpty
                     ? const Center(child: Text('No favorited poems yet'))
                     : ListView.builder(
-                        itemCount: _favoritePoems.length,
-                        itemBuilder: (_, i) => PoemCard(key: ValueKey(_favoritePoems[i].id), poem: _favoritePoems[i], currentUser: widget.currentUser ?? _emptyUser),
+                        controller: _poemScroll,
+                        itemCount: _favoritePoems.length + (_hasMorePoems ? 1 : 0),
+                        itemBuilder: (_, i) {
+                          if (i == _favoritePoems.length) {
+                            return const Padding(
+                              padding: EdgeInsets.all(16),
+                              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                            );
+                          }
+                          return PoemCard(key: ValueKey(_favoritePoems[i].id), poem: _favoritePoems[i], currentUser: widget.currentUser ?? _emptyUser);
+                        },
                       ),
           ],
         ),

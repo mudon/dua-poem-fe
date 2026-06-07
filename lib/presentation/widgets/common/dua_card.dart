@@ -361,12 +361,7 @@ class _DuaCardState extends State<DuaCard> {
     final repo = getIt<DuaRepository>();
     final result = await repo.getReports(widget.dua.id);
     if (!mounted) return;
-    final reports = <ReportModel>[];
-    if (result.isSuccess && result.data != null) {
-      for (final r in result.data!) {
-        reports.add(ReportModel.fromJson(r as Map<String, dynamic>));
-      }
-    }
+    final reports = result.data?.data ?? <ReportModel>[];
     if (!context.mounted) return;
     showModalBottomSheet(
       context: context,

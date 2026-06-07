@@ -1,6 +1,7 @@
 import '../../core/network/api_result.dart';
 import '../models/dua_model.dart';
 import '../models/paged_response.dart';
+import '../models/report_model.dart';
 import '../services/dua_service.dart';
 
 class DuaRepository {
@@ -53,10 +54,10 @@ class DuaRepository {
     }
   }
 
-  Future<ApiResult<List<DuaModel>>> getFavorites() async {
+  Future<ApiResult<PagedResponse<DuaModel>>> getFavorites({int limit = 20, String? cursor}) async {
     try {
-      final duas = await _duaService.getFavorites();
-      return ApiResult.success(duas);
+      final result = await _duaService.getFavorites(limit: limit, cursor: cursor);
+      return ApiResult.success(result);
     } catch (e) {
       return ApiResult.failure(e.toString());
     }
@@ -134,10 +135,10 @@ class DuaRepository {
     }
   }
 
-  Future<ApiResult<List<dynamic>>> getReports(String duaId) async {
+  Future<ApiResult<PagedResponse<ReportModel>>> getReports(String duaId, {int limit = 50, String? cursor}) async {
     try {
-      final reports = await _duaService.getDuaReports(duaId);
-      return ApiResult.success(reports);
+      final result = await _duaService.getDuaReports(duaId, limit: limit, cursor: cursor);
+      return ApiResult.success(result);
     } catch (e) {
       return ApiResult.failure(e.toString());
     }

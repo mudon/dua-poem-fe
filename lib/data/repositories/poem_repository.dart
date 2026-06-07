@@ -1,6 +1,7 @@
 import '../../core/network/api_result.dart';
 import '../models/paged_response.dart';
 import '../models/poem_model.dart';
+import '../models/report_model.dart';
 import '../services/poem_service.dart';
 
 class PoemRepository {
@@ -53,10 +54,10 @@ class PoemRepository {
     }
   }
 
-  Future<ApiResult<List<PoemModel>>> getPoemFavorites() async {
+  Future<ApiResult<PagedResponse<PoemModel>>> getPoemFavorites({int limit = 20, String? cursor}) async {
     try {
-      final poems = await _poemService.getPoemFavorites();
-      return ApiResult.success(poems);
+      final result = await _poemService.getPoemFavorites(limit: limit, cursor: cursor);
+      return ApiResult.success(result);
     } catch (e) {
       return ApiResult.failure(e.toString());
     }
@@ -134,10 +135,10 @@ class PoemRepository {
     }
   }
 
-  Future<ApiResult<List<dynamic>>> getReports(String poemId) async {
+  Future<ApiResult<PagedResponse<ReportModel>>> getReports(String poemId, {int limit = 50, String? cursor}) async {
     try {
-      final reports = await _poemService.getPoemReports(poemId);
-      return ApiResult.success(reports);
+      final result = await _poemService.getPoemReports(poemId, limit: limit, cursor: cursor);
+      return ApiResult.success(result);
     } catch (e) {
       return ApiResult.failure(e.toString());
     }

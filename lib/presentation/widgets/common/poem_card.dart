@@ -359,16 +359,11 @@ class _PoemCardState extends State<PoemCard> {
     context.read<PoemBloc>().add(ToggleBookmark(widget.poem.id, wasBookmarked, _bookmarkCount));
   }
 
-  void _showReportsPopup() async {
+  Future<void> _showReportsPopup() async {
     final repo = getIt<PoemRepository>();
     final result = await repo.getReports(widget.poem.id);
     if (!mounted) return;
-    final reports = <ReportModel>[];
-    if (result.isSuccess && result.data != null) {
-      for (final r in result.data!) {
-        reports.add(ReportModel.fromJson(r as Map<String, dynamic>));
-      }
-    }
+    final reports = result.data?.data ?? <ReportModel>[];
     if (!mounted) return;
     showModalBottomSheet(
       context: context,
