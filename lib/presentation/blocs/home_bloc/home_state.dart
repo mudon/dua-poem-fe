@@ -12,8 +12,8 @@ class HomeState {
   final String searchQuery;
   final List<DuaModel> searchDuas;
   final List<PoemModel> searchPoems;
-  final int searchDuaOffset;
-  final int searchPoemOffset;
+  final String? searchDuaCursor;
+  final String? searchPoemCursor;
   final bool hasMoreSearchDuas;
   final bool hasMoreSearchPoems;
   final bool loadingMoreSearch;
@@ -21,8 +21,8 @@ class HomeState {
   final bool myDuasLoading;
   final List<PoemModel> myPoems;
   final bool myPoemsLoading;
-  final int duaOffset;
-  final int poemOffset;
+  final String? duaCursor;
+  final String? poemCursor;
   final bool hasMoreDuas;
   final bool hasMorePoems;
   final bool loadingMoreDuas;
@@ -39,8 +39,8 @@ class HomeState {
     this.searchQuery = '',
     this.searchDuas = const [],
     this.searchPoems = const [],
-    this.searchDuaOffset = 0,
-    this.searchPoemOffset = 0,
+    this.searchDuaCursor,
+    this.searchPoemCursor,
     this.hasMoreSearchDuas = true,
     this.hasMoreSearchPoems = true,
     this.loadingMoreSearch = false,
@@ -48,8 +48,8 @@ class HomeState {
     this.myDuasLoading = false,
     this.myPoems = const [],
     this.myPoemsLoading = false,
-    this.duaOffset = 0,
-    this.poemOffset = 0,
+    this.duaCursor,
+    this.poemCursor,
     this.hasMoreDuas = true,
     this.hasMorePoems = true,
     this.loadingMoreDuas = false,
@@ -67,8 +67,8 @@ class HomeState {
     String? searchQuery,
     List<DuaModel>? searchDuas,
     List<PoemModel>? searchPoems,
-    int? searchDuaOffset,
-    int? searchPoemOffset,
+    String? searchDuaCursor,
+    String? searchPoemCursor,
     bool? hasMoreSearchDuas,
     bool? hasMoreSearchPoems,
     bool? loadingMoreSearch,
@@ -76,8 +76,8 @@ class HomeState {
     bool? myDuasLoading,
     List<PoemModel>? myPoems,
     bool? myPoemsLoading,
-    int? duaOffset,
-    int? poemOffset,
+    String? duaCursor,
+    String? poemCursor,
     bool? hasMoreDuas,
     bool? hasMorePoems,
     bool? loadingMoreDuas,
@@ -94,8 +94,8 @@ class HomeState {
       searchQuery: searchQuery ?? this.searchQuery,
       searchDuas: searchDuas ?? this.searchDuas,
       searchPoems: searchPoems ?? this.searchPoems,
-      searchDuaOffset: searchDuaOffset ?? this.searchDuaOffset,
-      searchPoemOffset: searchPoemOffset ?? this.searchPoemOffset,
+      searchDuaCursor: searchDuaCursor ?? this.searchDuaCursor,
+      searchPoemCursor: searchPoemCursor ?? this.searchPoemCursor,
       hasMoreSearchDuas: hasMoreSearchDuas ?? this.hasMoreSearchDuas,
       hasMoreSearchPoems: hasMoreSearchPoems ?? this.hasMoreSearchPoems,
       loadingMoreSearch: loadingMoreSearch ?? this.loadingMoreSearch,
@@ -103,8 +103,8 @@ class HomeState {
       myDuasLoading: myDuasLoading ?? this.myDuasLoading,
       myPoems: myPoems ?? this.myPoems,
       myPoemsLoading: myPoemsLoading ?? this.myPoemsLoading,
-      duaOffset: duaOffset ?? this.duaOffset,
-      poemOffset: poemOffset ?? this.poemOffset,
+      duaCursor: duaCursor ?? this.duaCursor,
+      poemCursor: poemCursor ?? this.poemCursor,
       hasMoreDuas: hasMoreDuas ?? this.hasMoreDuas,
       hasMorePoems: hasMorePoems ?? this.hasMorePoems,
       loadingMoreDuas: loadingMoreDuas ?? this.loadingMoreDuas,

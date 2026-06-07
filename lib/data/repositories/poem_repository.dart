@@ -1,4 +1,5 @@
 import '../../core/network/api_result.dart';
+import '../models/paged_response.dart';
 import '../models/poem_model.dart';
 import '../services/poem_service.dart';
 
@@ -7,10 +8,10 @@ class PoemRepository {
 
   PoemRepository(this._poemService);
 
-  Future<ApiResult<List<PoemModel>>> getLatestPoems({int? limit, int? offset}) async {
+  Future<ApiResult<PagedResponse<PoemModel>>> getLatestPoems({int limit = 20, String? cursor}) async {
     try {
-      final poems = await _poemService.getLatestPoems(limit: limit, offset: offset);
-      return ApiResult.success(poems);
+      final result = await _poemService.getLatestPoems(limit: limit, cursor: cursor);
+      return ApiResult.success(result);
     } catch (e) {
       return ApiResult.failure(e.toString());
     }
@@ -79,10 +80,10 @@ class PoemRepository {
     }
   }
 
-  Future<ApiResult<List<PoemModel>>> search(String query, {int limit = 20, int offset = 0}) async {
+  Future<ApiResult<PagedResponse<PoemModel>>> search(String query, {int limit = 20, String? cursor}) async {
     try {
-      final results = await _poemService.search(query, limit: limit, offset: offset);
-      return ApiResult.success(results);
+      final result = await _poemService.search(query, limit: limit, cursor: cursor);
+      return ApiResult.success(result);
     } catch (e) {
       return ApiResult.failure(e.toString());
     }

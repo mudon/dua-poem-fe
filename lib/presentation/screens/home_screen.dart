@@ -93,10 +93,10 @@ class _HomeFeedState extends State<_HomeFeed> {
       }
       return;
     }
-    if (s.showDuasTab && s.hasMoreDuas && !s.loadingMoreDuas) {
-      homeBloc.add(FetchMoreDuas(limit: 20, offset: s.latestDuas.length));
-    } else if (!s.showDuasTab && s.hasMorePoems && !s.loadingMorePoems) {
-      homeBloc.add(FetchMorePoems(limit: 20, offset: s.latestPoems.length));
+    if (s.showDuasTab && s.hasMoreDuas && !s.loadingMoreDuas && s.duaCursor != null) {
+      homeBloc.add(FetchMoreDuas(limit: 20, cursor: s.duaCursor!));
+    } else if (!s.showDuasTab && s.hasMorePoems && !s.loadingMorePoems && s.poemCursor != null) {
+      homeBloc.add(FetchMorePoems(limit: 20, cursor: s.poemCursor!));
     }
   }
 

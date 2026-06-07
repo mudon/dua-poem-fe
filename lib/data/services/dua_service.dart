@@ -1,19 +1,18 @@
 import '../../core/network/dio_client.dart';
 import '../models/dua_model.dart';
+import '../models/paged_response.dart';
 
 class DuaService {
   final DioClient _dioClient;
 
   DuaService(this._dioClient);
 
-  Future<List<DuaModel>> getLatestDuas({int? limit, int? offset}) async {
+  Future<PagedResponse<DuaModel>> getLatestDuas({int limit = 20, String? cursor}) async {
     final queryParams = <String, dynamic>{};
-    if (limit != null) queryParams['limit'] = limit;
-    if (offset != null) queryParams['offset'] = offset;
-    final response = await _dioClient.dio.get('/duas', queryParameters: queryParams.isNotEmpty ? queryParams : null);
-    return (response.data as List)
-        .map((e) => DuaModel.fromApiJson(e as Map<String, dynamic>))
-        .toList();
+    queryParams['limit'] = limit;
+    if (cursor != null) queryParams['cursor'] = cursor;
+    final response = await _dioClient.dio.get('/duas', queryParameters: queryParams);
+    return PagedResponse.fromJson(response.data as Map<String, dynamic>, DuaModel.fromApiJson);
   }
 
   Future<List<DuaModel>> getUserDuas(String userId) async {
@@ -65,11 +64,11 @@ class DuaService {
         .toList();
   }
 
-  Future<List<DuaModel>> search(String query, {int limit = 20, int offset = 0}) async {
-    final response = await _dioClient.dio.get('/duas/search', queryParameters: {'q': query, 'limit': limit, 'offset': offset});
-    return (response.data as List)
-        .map((e) => DuaModel.fromApiJson(e as Map<String, dynamic>))
-        .toList();
+  Future<PagedResponse<DuaModel>> search(String query, {int limit = 20, String? cursor}) async {
+    final params = <String, dynamic>{'q': query, 'limit': limit};
+    if (cursor != null) params['cursor'] = cursor;
+    final response = await _dioClient.dio.get('/duas/search', queryParameters: params);
+    return PagedResponse.fromJson(response.data as Map<String, dynamic>, DuaModel.fromApiJson);
   }
 
   Future<void> recordView(String duaId) async {

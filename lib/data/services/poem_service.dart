@@ -1,19 +1,18 @@
 import '../../core/network/dio_client.dart';
 import '../models/poem_model.dart';
+import '../models/paged_response.dart';
 
 class PoemService {
   final DioClient _dioClient;
 
   PoemService(this._dioClient);
 
-  Future<List<PoemModel>> getLatestPoems({int? limit, int? offset}) async {
+  Future<PagedResponse<PoemModel>> getLatestPoems({int limit = 20, String? cursor}) async {
     final queryParams = <String, dynamic>{};
-    if (limit != null) queryParams['limit'] = limit;
-    if (offset != null) queryParams['offset'] = offset;
-    final response = await _dioClient.dio.get('/poems', queryParameters: queryParams.isNotEmpty ? queryParams : null);
-    return (response.data as List)
-        .map((e) => PoemModel.fromApiJson(e as Map<String, dynamic>))
-        .toList();
+    queryParams['limit'] = limit;
+    if (cursor != null) queryParams['cursor'] = cursor;
+    final response = await _dioClient.dio.get('/poems', queryParameters: queryParams);
+    return PagedResponse.fromJson(response.data as Map<String, dynamic>, PoemModel.fromApiJson);
   }
 
   Future<List<PoemModel>> getUserPoems(String userId) async {
@@ -65,11 +64,11 @@ class PoemService {
         .toList();
   }
 
-  Future<List<PoemModel>> search(String query, {int limit = 20, int offset = 0}) async {
-    final response = await _dioClient.dio.get('/poems/search', queryParameters: {'q': query, 'limit': limit, 'offset': offset});
-    return (response.data as List)
-        .map((e) => PoemModel.fromApiJson(e as Map<String, dynamic>))
-        .toList();
+  Future<PagedResponse<PoemModel>> search(String query, {int limit = 20, String? cursor}) async {
+    final params = <String, dynamic>{'q': query, 'limit': limit};
+    if (cursor != null) params['cursor'] = cursor;
+    final response = await _dioClient.dio.get('/poems/search', queryParameters: params);
+    return PagedResponse.fromJson(response.data as Map<String, dynamic>, PoemModel.fromApiJson);
   }
 
   Future<void> recordView(String poemId) async {

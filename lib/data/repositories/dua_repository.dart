@@ -1,5 +1,6 @@
 import '../../core/network/api_result.dart';
 import '../models/dua_model.dart';
+import '../models/paged_response.dart';
 import '../services/dua_service.dart';
 
 class DuaRepository {
@@ -7,10 +8,10 @@ class DuaRepository {
 
   DuaRepository(this._duaService);
 
-  Future<ApiResult<List<DuaModel>>> getLatestDuas({int? limit, int? offset}) async {
+  Future<ApiResult<PagedResponse<DuaModel>>> getLatestDuas({int limit = 20, String? cursor}) async {
     try {
-      final duas = await _duaService.getLatestDuas(limit: limit, offset: offset);
-      return ApiResult.success(duas);
+      final result = await _duaService.getLatestDuas(limit: limit, cursor: cursor);
+      return ApiResult.success(result);
     } catch (e) {
       return ApiResult.failure(e.toString());
     }
@@ -79,10 +80,10 @@ class DuaRepository {
     }
   }
 
-  Future<ApiResult<List<DuaModel>>> search(String query, {int limit = 20, int offset = 0}) async {
+  Future<ApiResult<PagedResponse<DuaModel>>> search(String query, {int limit = 20, String? cursor}) async {
     try {
-      final results = await _duaService.search(query, limit: limit, offset: offset);
-      return ApiResult.success(results);
+      final result = await _duaService.search(query, limit: limit, cursor: cursor);
+      return ApiResult.success(result);
     } catch (e) {
       return ApiResult.failure(e.toString());
     }

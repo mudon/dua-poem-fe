@@ -1,6 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../data/models/dua_model.dart';
-import '../../../data/models/poem_model.dart';
 import '../../../data/repositories/dua_repository.dart';
 import '../../../data/repositories/poem_repository.dart';
 import 'home_event.dart';
@@ -21,7 +19,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<ClearSearch>((event, emit) => emit(state.copyWith(
       isSearching: false, isSearchLoading: false, loadingMoreSearch: false,
       searchQuery: '', searchDuas: [], searchPoems: [],
-      searchDuaOffset: 0, searchPoemOffset: 0, hasMoreSearchDuas: true, hasMoreSearchPoems: true,
+      searchDuaCursor: null, searchPoemCursor: null, hasMoreSearchDuas: true, hasMoreSearchPoems: true,
     )));
     on<FetchMyDuas>(_fetchMyDuas);
     on<FetchMyPoems>(_fetchMyPoems);
@@ -32,13 +30,15 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   Future<void> _fetchDuas(FetchLatestDuas event, Emitter<HomeState> emit) async {
-    emit(state.copyWith(isLoading: true, duaOffset: event.offset));
-    final result = await _duaRepo.getLatestDuas(limit: event.limit, offset: event.offset);
+    emit(state.copyWith(isLoading: true));
+    final result = await _duaRepo.getLatestDuas(limit: event.limit);
     if (result.isSuccess) {
+      final paged = result.data!;
       emit(state.copyWith(
         isLoading: false,
-        latestDuas: result.data!,
-        hasMoreDuas: result.data!.length >= event.limit,
+        latestDuas: paged.data,
+        duaCursor: paged.nextCursor,
+        hasMoreDuas: paged.hasMore,
       ));
     } else {
       emit(state.copyWith(isLoading: false, error: result.error));
@@ -46,13 +46,15 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   Future<void> _fetchPoems(FetchLatestPoems event, Emitter<HomeState> emit) async {
-    emit(state.copyWith(isLoading: true, poemOffset: event.offset));
-    final result = await _poemRepo.getLatestPoems(limit: event.limit, offset: event.offset);
+    emit(state.copyWith(isLoading: true));
+    final result = await _poemRepo.getLatestPoems(limit: event.limit);
     if (result.isSuccess) {
+      final paged = result.data!;
       emit(state.copyWith(
         isLoading: false,
-        latestPoems: result.data!,
-        hasMorePoems: result.data!.length >= event.limit,
+        latestPoems: paged.data,
+        poemCursor: paged.nextCursor,
+        hasMorePoems: paged.hasMore,
       ));
     } else {
       emit(state.copyWith(isLoading: false, error: result.error));
@@ -62,14 +64,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   Future<void> _fetchMoreDuas(FetchMoreDuas event, Emitter<HomeState> emit) async {
     if (state.loadingMoreDuas || !state.hasMoreDuas) return;
     emit(state.copyWith(loadingMoreDuas: true));
-    final result = await _duaRepo.getLatestDuas(limit: event.limit, offset: event.offset);
+    final result = await _duaRepo.getLatestDuas(limit: event.limit, cursor: event.cursor);
     if (result.isSuccess) {
-      final items = result.data!;
+      final paged = result.data!;
       emit(state.copyWith(
         loadingMoreDuas: false,
-        latestDuas: [...state.latestDuas, ...items],
-        duaOffset: event.offset + items.length,
-        hasMoreDuas: items.length >= event.limit,
+        latestDuas: [...state.latestDuas, ...paged.data],
+        duaCursor: paged.nextCursor,
+        hasMoreDuas: paged.hasMore,
       ));
     } else {
       emit(state.copyWith(loadingMoreDuas: false, error: result.error));
@@ -79,14 +81,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   Future<void> _fetchMorePoems(FetchMorePoems event, Emitter<HomeState> emit) async {
     if (state.loadingMorePoems || !state.hasMorePoems) return;
     emit(state.copyWith(loadingMorePoems: true));
-    final result = await _poemRepo.getLatestPoems(limit: event.limit, offset: event.offset);
+    final result = await _poemRepo.getLatestPoems(limit: event.limit, cursor: event.cursor);
     if (result.isSuccess) {
-      final items = result.data!;
+      final paged = result.data!;
       emit(state.copyWith(
         loadingMorePoems: false,
-        latestPoems: [...state.latestPoems, ...items],
-        poemOffset: event.offset + items.length,
-        hasMorePoems: items.length >= event.limit,
+        latestPoems: [...state.latestPoems, ...paged.data],
+        poemCursor: paged.nextCursor,
+        hasMorePoems: paged.hasMore,
       ));
     } else {
       emit(state.copyWith(loadingMorePoems: false, error: result.error));
@@ -221,28 +223,29 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
     emit(state.copyWith(
       searchQuery: event.query, isSearching: true, isSearchLoading: true, error: null,
-      searchDuas: [], searchPoems: [], searchDuaOffset: 0, searchPoemOffset: 0,
+      searchDuas: [], searchPoems: [],
+      searchDuaCursor: null, searchPoemCursor: null,
       hasMoreSearchDuas: true, hasMoreSearchPoems: true,
     ));
 
     final queryAtCall = event.query;
     final limit = 20;
-    final duasResult = await _duaRepo.search(event.query, limit: limit, offset: 0);
-    final poemsResult = await _poemRepo.search(event.query, limit: limit, offset: 0);
+    final duasResult = await _duaRepo.search(event.query, limit: limit);
+    final poemsResult = await _poemRepo.search(event.query, limit: limit);
 
     if (queryAtCall != state.searchQuery) return;
 
-    final duas = duasResult.isSuccess ? duasResult.data! : <DuaModel>[];
-    final poems = poemsResult.isSuccess ? poemsResult.data! : <PoemModel>[];
+    final duasPaged = duasResult.isSuccess ? duasResult.data! : null;
+    final poemsPaged = poemsResult.isSuccess ? poemsResult.data! : null;
 
     emit(state.copyWith(
       isSearchLoading: false,
-      searchDuas: duas,
-      searchPoems: poems,
-      searchDuaOffset: duas.length,
-      searchPoemOffset: poems.length,
-      hasMoreSearchDuas: duas.length >= limit,
-      hasMoreSearchPoems: poems.length >= limit,
+      searchDuas: duasPaged?.data ?? [],
+      searchPoems: poemsPaged?.data ?? [],
+      searchDuaCursor: duasPaged?.nextCursor,
+      searchPoemCursor: poemsPaged?.nextCursor,
+      hasMoreSearchDuas: duasPaged?.hasMore ?? false,
+      hasMoreSearchPoems: poemsPaged?.hasMore ?? false,
       error: (!duasResult.isSuccess || !poemsResult.isSuccess) ? 'Search failed for some results' : null,
     ));
   }
@@ -255,37 +258,37 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final queryAtCall = event.query;
 
     if (event.showDuasTab) {
-      if (!state.hasMoreSearchDuas) {
+      if (!state.hasMoreSearchDuas || state.searchDuaCursor == null) {
         emit(state.copyWith(loadingMoreSearch: false));
         return;
       }
-      final result = await _duaRepo.search(event.query, limit: event.limit, offset: state.searchDuaOffset);
+      final result = await _duaRepo.search(event.query, limit: event.limit, cursor: state.searchDuaCursor);
       if (queryAtCall != state.searchQuery) { emit(state.copyWith(loadingMoreSearch: false)); return; }
       if (result.isSuccess) {
-        final items = result.data!;
+        final paged = result.data!;
         emit(state.copyWith(
           loadingMoreSearch: false,
-          searchDuas: [...state.searchDuas, ...items],
-          searchDuaOffset: state.searchDuaOffset + items.length,
-          hasMoreSearchDuas: items.length >= event.limit,
+          searchDuas: [...state.searchDuas, ...paged.data],
+          searchDuaCursor: paged.nextCursor,
+          hasMoreSearchDuas: paged.hasMore,
         ));
       } else {
         emit(state.copyWith(loadingMoreSearch: false));
       }
     } else {
-      if (!state.hasMoreSearchPoems) {
+      if (!state.hasMoreSearchPoems || state.searchPoemCursor == null) {
         emit(state.copyWith(loadingMoreSearch: false));
         return;
       }
-      final result = await _poemRepo.search(event.query, limit: event.limit, offset: state.searchPoemOffset);
+      final result = await _poemRepo.search(event.query, limit: event.limit, cursor: state.searchPoemCursor);
       if (queryAtCall != state.searchQuery) { emit(state.copyWith(loadingMoreSearch: false)); return; }
       if (result.isSuccess) {
-        final items = result.data!;
+        final paged = result.data!;
         emit(state.copyWith(
           loadingMoreSearch: false,
-          searchPoems: [...state.searchPoems, ...items],
-          searchPoemOffset: state.searchPoemOffset + items.length,
-          hasMoreSearchPoems: items.length >= event.limit,
+          searchPoems: [...state.searchPoems, ...paged.data],
+          searchPoemCursor: paged.nextCursor,
+          hasMoreSearchPoems: paged.hasMore,
         ));
       } else {
         emit(state.copyWith(loadingMoreSearch: false));
