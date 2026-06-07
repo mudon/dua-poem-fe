@@ -27,6 +27,11 @@ class ToggleHomeTab extends HomeEvent {
   ToggleHomeTab(this.showDuas);
 }
 
+class ToggleMyPostsTab extends HomeEvent {
+  final bool showDuas;
+  ToggleMyPostsTab(this.showDuas);
+}
+
 class SearchRequested extends HomeEvent {
   final String query;
   SearchRequested(this.query);

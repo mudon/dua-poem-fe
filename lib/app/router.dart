@@ -5,8 +5,7 @@ import '../presentation/blocs/auth_bloc/auth_bloc.dart';
 import '../presentation/blocs/auth_bloc/auth_state.dart';
 import '../presentation/screens/auth_screen.dart';
 import '../presentation/screens/home_screen.dart';
-import '../presentation/screens/my_duas_screen.dart';
-import '../presentation/screens/my_poems_screen.dart';
+import '../presentation/screens/my_posts_screen.dart';
 import '../presentation/screens/profile_screen.dart';
 import '../presentation/screens/main_shell.dart';
 import '../presentation/screens/favorites_screen.dart';
@@ -81,16 +80,8 @@ class AppRouter {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/duas',
-                builder: (_, _) => const MyDuasScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/poems',
-                builder: (_, _) => const MyPoemsScreen(),
+                path: '/my-posts',
+                builder: (_, _) => const MyPostsScreen(),
               ),
             ],
           ),

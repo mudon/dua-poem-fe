@@ -14,6 +14,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<FetchMoreDuas>(_fetchMoreDuas);
     on<FetchMorePoems>(_fetchMorePoems);
     on<ToggleHomeTab>((event, emit) => emit(state.copyWith(showDuasTab: event.showDuas)));
+    on<ToggleMyPostsTab>((event, emit) => emit(state.copyWith(showMyPostsDuasTab: event.showDuas)));
     on<SearchRequested>(_search);
     on<FetchMoreSearchResults>(_searchMore);
     on<ClearSearch>((event, emit) => emit(state.copyWith(
