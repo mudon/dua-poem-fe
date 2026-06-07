@@ -1,18 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/user_model.dart';
-import '../../data/models/dua_model.dart';
-import '../../data/models/poem_model.dart';
 import '../../data/models/user_stats_model.dart';
-import '../../data/repositories/dua_repository.dart';
-import '../../data/repositories/poem_repository.dart';
 import '../../data/services/user_service.dart';
-import '../../core/themes/app_theme.dart';
 import '../blocs/auth_bloc/auth_bloc.dart';
 import '../blocs/auth_bloc/auth_event.dart';
 import '../blocs/auth_bloc/auth_state.dart';
-import '../widgets/common/dua_card.dart';
-import '../widgets/common/poem_card.dart';
 import '../widgets/common/notification_bell.dart';
 import '../../app/dependency_injection.dart';
 
@@ -24,9 +17,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  int _selectedTab = 0;
-  List<DuaModel> _userDuas = [];
-  List<PoemModel> _userPoems = [];
   UserStatsModel? _stats;
   bool _loading = true;
 
@@ -42,15 +32,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final user = authState.user;
     try {
       final stats = await getIt<UserService>().getStats(user.id);
-      final duasResult = await getIt<DuaRepository>().getUserDuas(user.id);
-      final duas = duasResult.isSuccess ? duasResult.data! : <DuaModel>[];
-      final poemsResult = await getIt<PoemRepository>().getUserPoems(user.id);
-      final poems = poemsResult.isSuccess ? poemsResult.data! : <PoemModel>[];
       if (mounted) {
         setState(() {
           _stats = stats;
-          _userDuas = duas;
-          _userPoems = poems;
           _loading = false;
         });
       }
@@ -191,28 +175,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 16),
                 Container(height: 1, color: const Color(0xFFF0EAE0)),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    _ProfileTab(label: 'Details', isActive: _selectedTab == 0, onTap: () => setState(() => _selectedTab = 0)),
-                    const SizedBox(width: 16),
-                    _ProfileTab(label: 'Duas (${_userDuas.length})', isActive: _selectedTab == 1, onTap: () => setState(() => _selectedTab = 1)),
-                    const SizedBox(width: 16),
-                    _ProfileTab(label: 'Poems (${_userPoems.length})', isActive: _selectedTab == 2, onTap: () => setState(() => _selectedTab = 2)),
-                  ],
-                ),
                 const SizedBox(height: 16),
                 if (_loading)
                   const Center(child: Padding(
                     padding: EdgeInsets.all(32),
                     child: CircularProgressIndicator(),
                   ))
-                else if (_selectedTab == 0)
-                  _buildDetailsTab(user)
-                else if (_selectedTab == 1)
-                  _buildDuas(user)
                 else
-                  _buildPoems(user),
+                  _buildDetailsTab(user),
                 const SizedBox(height: 16),
                 Container(height: 1, color: const Color(0xFFF0EAE0)),
                 const SizedBox(height: 12),
@@ -251,9 +221,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(height: 12),
         _DetailField(label: 'Member since', value: user.joinedDate),
         const SizedBox(height: 12),
-        _DetailField(label: 'Duas created', value: '${stats?.duasCreated ?? _userDuas.length}'),
+        _DetailField(label: 'Duas created', value: '${stats?.duasCreated ?? 0}'),
         const SizedBox(height: 12),
-        _DetailField(label: 'Poems created', value: '${stats?.poemsCreated ?? _userPoems.length}'),
+        _DetailField(label: 'Poems created', value: '${stats?.poemsCreated ?? 0}'),
         if (stats != null && stats.badges.isNotEmpty) ...[
           const SizedBox(height: 16),
           const Text('Badges', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF9A8C79))),
@@ -275,63 +245,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildDuas(UserModel user) {
-    if (_userDuas.isEmpty) {
-      return const Center(child: Padding(
-        padding: EdgeInsets.all(32),
-        child: Text('No duas yet', style: TextStyle(color: Color(0xFF9A8C79))),
-      ));
-    }
-    return Column(
-      children: _userDuas.map((d) => DuaCard(dua: d, currentUser: user)).toList(),
-    );
-  }
-
-  Widget _buildPoems(UserModel user) {
-    if (_userPoems.isEmpty) {
-      return const Center(child: Padding(
-        padding: EdgeInsets.all(32),
-        child: Text('No poems yet', style: TextStyle(color: Color(0xFF9A8C79))),
-      ));
-    }
-    return Column(
-      children: _userPoems.map((p) => PoemCard(poem: p, currentUser: user)).toList(),
-    );
-  }
-}
-
-class _ProfileTab extends StatelessWidget {
-  final String label;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  const _ProfileTab({required this.label, required this.isActive, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: isActive ? AppTheme.sage : Colors.transparent,
-              width: 2,
-            ),
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: isActive ? AppTheme.sage : const Color(0xFF9A8C79),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class _DetailField extends StatelessWidget {

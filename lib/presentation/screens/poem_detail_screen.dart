@@ -185,7 +185,24 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
         child: _loading
             ? const Center(child: CircularProgressIndicator())
             : _poem == null
-                ? const Center(child: Text('Poem not found'))
+                ? Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: const Row(
+                              children: [
+                                Icon(Icons.arrow_back, color: AppTheme.sage, size: 20),
+                                SizedBox(width: 8),
+                                Text('Back', style: TextStyle(color: AppTheme.sage, fontWeight: FontWeight.w500, fontSize: 15)),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const Expanded(child: Center(child: Text('Poem not found'))),
+                      ],
+                    )
                 : BlocProvider.value(
                     value: getIt<PoemBloc>(),
                       child: BlocListener<PoemBloc, PoemState>(
