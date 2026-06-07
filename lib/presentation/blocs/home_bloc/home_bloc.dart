@@ -22,7 +22,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       searchDuaCursor: null, searchPoemCursor: null, hasMoreSearchDuas: true, hasMoreSearchPoems: true,
     )));
     on<FetchMyDuas>(_fetchMyDuas);
+    on<FetchMoreMyDuas>(_fetchMoreMyDuas);
     on<FetchMyPoems>(_fetchMyPoems);
+    on<FetchMoreMyPoems>(_fetchMoreMyPoems);
     on<UpdateDua>(_onUpdateDua);
     on<UpdatePoem>(_onUpdatePoem);
     on<RemoveDua>(_onRemoveDua);
@@ -98,21 +100,67 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   Future<void> _fetchMyDuas(FetchMyDuas event, Emitter<HomeState> emit) async {
     emit(state.copyWith(myDuasLoading: true));
     final result = await _duaRepo.getUserDuas(event.userId);
-    emit(state.copyWith(
-      myDuasLoading: false,
-      myDuas: result.isSuccess ? result.data! : [],
-      error: !result.isSuccess ? result.error : null,
-    ));
+    if (result.isSuccess) {
+      final paged = result.data!;
+      emit(state.copyWith(
+        myDuasLoading: false,
+        myDuas: paged.data,
+        myDuasCursor: paged.nextCursor,
+        hasMoreMyDuas: paged.hasMore,
+      ));
+    } else {
+      emit(state.copyWith(myDuasLoading: false, myDuas: [], error: result.error));
+    }
+  }
+
+  Future<void> _fetchMoreMyDuas(FetchMoreMyDuas event, Emitter<HomeState> emit) async {
+    if (state.loadingMoreMyDuas || !state.hasMoreMyDuas || state.myDuasCursor == null) return;
+    emit(state.copyWith(loadingMoreMyDuas: true));
+    final result = await _duaRepo.getUserDuas(event.userId, cursor: event.cursor);
+    if (result.isSuccess) {
+      final paged = result.data!;
+      emit(state.copyWith(
+        loadingMoreMyDuas: false,
+        myDuas: [...state.myDuas, ...paged.data],
+        myDuasCursor: paged.nextCursor,
+        hasMoreMyDuas: paged.hasMore,
+      ));
+    } else {
+      emit(state.copyWith(loadingMoreMyDuas: false, error: result.error));
+    }
   }
 
   Future<void> _fetchMyPoems(FetchMyPoems event, Emitter<HomeState> emit) async {
     emit(state.copyWith(myPoemsLoading: true));
     final result = await _poemRepo.getUserPoems(event.userId);
-    emit(state.copyWith(
-      myPoemsLoading: false,
-      myPoems: result.isSuccess ? result.data! : [],
-      error: !result.isSuccess ? result.error : null,
-    ));
+    if (result.isSuccess) {
+      final paged = result.data!;
+      emit(state.copyWith(
+        myPoemsLoading: false,
+        myPoems: paged.data,
+        myPoemsCursor: paged.nextCursor,
+        hasMoreMyPoems: paged.hasMore,
+      ));
+    } else {
+      emit(state.copyWith(myPoemsLoading: false, myPoems: [], error: result.error));
+    }
+  }
+
+  Future<void> _fetchMoreMyPoems(FetchMoreMyPoems event, Emitter<HomeState> emit) async {
+    if (state.loadingMoreMyPoems || !state.hasMoreMyPoems || state.myPoemsCursor == null) return;
+    emit(state.copyWith(loadingMoreMyPoems: true));
+    final result = await _poemRepo.getUserPoems(event.userId, cursor: event.cursor);
+    if (result.isSuccess) {
+      final paged = result.data!;
+      emit(state.copyWith(
+        loadingMoreMyPoems: false,
+        myPoems: [...state.myPoems, ...paged.data],
+        myPoemsCursor: paged.nextCursor,
+        hasMoreMyPoems: paged.hasMore,
+      ));
+    } else {
+      emit(state.copyWith(loadingMoreMyPoems: false, error: result.error));
+    }
   }
 
   void _onUpdateDua(UpdateDua event, Emitter<HomeState> emit) {

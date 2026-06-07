@@ -18,10 +18,10 @@ class DuaRepository {
     }
   }
 
-  Future<ApiResult<List<DuaModel>>> getUserDuas(String userId) async {
+  Future<ApiResult<PagedResponse<DuaModel>>> getUserDuas(String userId, {int limit = 20, String? cursor}) async {
     try {
-      final duas = await _duaService.getUserDuas(userId);
-      return ApiResult.success(duas);
+      final result = await _duaService.getUserDuas(userId, limit: limit, cursor: cursor);
+      return ApiResult.success(result);
     } catch (e) {
       return ApiResult.failure(e.toString());
     }

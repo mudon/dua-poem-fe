@@ -30,16 +30,55 @@ class UserDetailScreen extends StatefulWidget {
 
 class _UserDetailScreenState extends State<UserDetailScreen> {
   int _selectedTab = 0;
-  List<DuaModel> _userDuas = [];
-  List<PoemModel> _userPoems = [];
+
   UserModel? _profile;
   UserStatsModel? _stats;
   bool _loading = true;
+
+  List<DuaModel> _userDuas = [];
+  String? _duaCursor;
+  bool _hasMoreDuas = true;
+  bool _loadingDuas = false;
+
+  List<PoemModel> _userPoems = [];
+  String? _poemCursor;
+  bool _hasMorePoems = true;
+  bool _loadingPoems = false;
+
+  final ScrollController _duaScrollController = ScrollController();
+  final ScrollController _poemScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _duaScrollController.addListener(_onDuaScroll);
+    _poemScrollController.addListener(_onPoemScroll);
+  }
+
+  @override
+  void dispose() {
+    _duaScrollController.removeListener(_onDuaScroll);
+    _poemScrollController.removeListener(_onPoemScroll);
+    _duaScrollController.dispose();
+    _poemScrollController.dispose();
+    super.dispose();
+  }
+
+  void _onDuaScroll() {
+    if (_duaScrollController.position.pixels >= _duaScrollController.position.maxScrollExtent - 200) {
+      if (!_loadingDuas && _hasMoreDuas && _duaCursor != null) {
+        _loadMoreDuas();
+      }
+    }
+  }
+
+  void _onPoemScroll() {
+    if (_poemScrollController.position.pixels >= _poemScrollController.position.maxScrollExtent - 200) {
+      if (!_loadingPoems && _hasMorePoems && _poemCursor != null) {
+        _loadMorePoems();
+      }
+    }
   }
 
   Future<void> _loadData() async {
@@ -55,19 +94,72 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
         setState(() {
           _profile = profile;
           _stats = stats;
-          _userDuas = (duasResult.isSuccess ? duasResult.data! : <DuaModel>[]).map((d) => d.copyWith(
-            userName: profile.fullName,
-            userAvatar: profile.firstName.isNotEmpty ? profile.firstName[0].toUpperCase() : '?',
-          )).toList();
-          _userPoems = (poemsResult.isSuccess ? poemsResult.data! : <PoemModel>[]).map((p) => p.copyWith(
-            userName: profile.fullName,
-            userAvatar: profile.firstName.isNotEmpty ? profile.firstName[0].toUpperCase() : '?',
-          )).toList();
+
+          if (duasResult.isSuccess) {
+            final paged = duasResult.data!;
+            _userDuas = paged.data.map((d) => d.copyWith(
+              userName: profile.fullName,
+              userAvatar: profile.firstName.isNotEmpty ? profile.firstName[0].toUpperCase() : '?',
+            )).toList();
+            _duaCursor = paged.nextCursor;
+            _hasMoreDuas = paged.hasMore;
+          }
+
+          if (poemsResult.isSuccess) {
+            final paged = poemsResult.data!;
+            _userPoems = paged.data.map((p) => p.copyWith(
+              userName: profile.fullName,
+              userAvatar: profile.firstName.isNotEmpty ? profile.firstName[0].toUpperCase() : '?',
+            )).toList();
+            _poemCursor = paged.nextCursor;
+            _hasMorePoems = paged.hasMore;
+          }
+
           _loading = false;
         });
       }
     } catch (_) {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _loadMoreDuas() async {
+    if (_loadingDuas || !_hasMoreDuas || _duaCursor == null) return;
+    setState(() => _loadingDuas = true);
+    final result = await getIt<DuaRepository>().getUserDuas(widget.userId, cursor: _duaCursor);
+    if (mounted && result.isSuccess) {
+      final paged = result.data!;
+      setState(() {
+        _userDuas.addAll(paged.data.map((d) => d.copyWith(
+          userName: _profile?.fullName ?? widget.userDisplayName,
+          userAvatar: _profile?.firstName.isNotEmpty == true ? _profile!.firstName[0].toUpperCase() : '?',
+        )));
+        _duaCursor = paged.nextCursor;
+        _hasMoreDuas = paged.hasMore;
+        _loadingDuas = false;
+      });
+    } else {
+      if (mounted) setState(() => _loadingDuas = false);
+    }
+  }
+
+  Future<void> _loadMorePoems() async {
+    if (_loadingPoems || !_hasMorePoems || _poemCursor == null) return;
+    setState(() => _loadingPoems = true);
+    final result = await getIt<PoemRepository>().getUserPoems(widget.userId, cursor: _poemCursor);
+    if (mounted && result.isSuccess) {
+      final paged = result.data!;
+      setState(() {
+        _userPoems.addAll(paged.data.map((p) => p.copyWith(
+          userName: _profile?.fullName ?? widget.userDisplayName,
+          userAvatar: _profile?.firstName.isNotEmpty == true ? _profile!.firstName[0].toUpperCase() : '?',
+        )));
+        _poemCursor = paged.nextCursor;
+        _hasMorePoems = paged.hasMore;
+        _loadingPoems = false;
+      });
+    } else {
+      if (mounted) setState(() => _loadingPoems = false);
     }
   }
 
@@ -207,85 +299,80 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
         child: Scaffold(
         backgroundColor: const Color(0xFFF4F0E8),
         body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.arrow_back, color: AppTheme.sage, size: 20),
-                      SizedBox(width: 8),
-                      Text('Back', style: TextStyle(color: AppTheme.sage, fontWeight: FontWeight.w500, fontSize: 15)),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(28),
-                  ),
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+          child: _loading
+              ? const Center(child: CircularProgressIndicator())
+              : Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                      child: GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.arrow_back, color: AppTheme.sage, size: 20),
+                            SizedBox(width: 8),
+                            Text('Back', style: TextStyle(color: AppTheme.sage, fontWeight: FontWeight.w500, fontSize: 15)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(28),
+                      ),
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          CircleAvatar(
-                            radius: 35,
-                            backgroundColor: const Color(0xFFDCE8D3),
-                            child: Text(
-                              _profile?.firstName.isNotEmpty == true
-                                  ? _profile!.firstName[0].toUpperCase()
-                                  : (name.isNotEmpty ? name[0].toUpperCase() : '?'),
-                              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: Color(0xFF4A5B3E)),
-                            ),
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 35,
+                                backgroundColor: const Color(0xFFDCE8D3),
+                                child: Text(
+                                  _profile?.firstName.isNotEmpty == true
+                                      ? _profile!.firstName[0].toUpperCase()
+                                      : (name.isNotEmpty ? name[0].toUpperCase() : '?'),
+                                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: Color(0xFF4A5B3E)),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Text(name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
-                              ],
-                            ),
+                          const SizedBox(height: 16),
+                          Container(height: 1, color: const Color(0xFFF0EAE0)),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              _UserTab(label: 'Details', isActive: _selectedTab == 0, onTap: () => setState(() => _selectedTab = 0)),
+                              const SizedBox(width: 16),
+                              _UserTab(label: 'Duas (${_stats?.duasCreated ?? _userDuas.length})', isActive: _selectedTab == 1, onTap: () => setState(() => _selectedTab = 1)),
+                              const SizedBox(width: 16),
+                              _UserTab(label: 'Poems (${_stats?.poemsCreated ?? _userPoems.length})', isActive: _selectedTab == 2, onTap: () => setState(() => _selectedTab = 2)),
+                            ],
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
-                      Container(height: 1, color: const Color(0xFFF0EAE0)),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          _UserTab(label: 'Details', isActive: _selectedTab == 0, onTap: () => setState(() => _selectedTab = 0)),
-                          const SizedBox(width: 16),
-                          _UserTab(label: 'Duas (${_userDuas.length})', isActive: _selectedTab == 1, onTap: () => setState(() => _selectedTab = 1)),
-                          const SizedBox(width: 16),
-                          _UserTab(label: 'Poems (${_userPoems.length})', isActive: _selectedTab == 2, onTap: () => setState(() => _selectedTab = 2)),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      if (_loading)
-                        const Center(child: Padding(
-                          padding: EdgeInsets.all(32),
-                          child: CircularProgressIndicator(),
-                        ))
-                      else if (_selectedTab == 0)
-                        _buildDetails()
-                      else if (_selectedTab == 1)
-                        _buildDuas(currentUser)
-                      else
-                        _buildPoems(currentUser),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: _selectedTab == 0
+                          ? SingleChildScrollView(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: _buildDetails(),
+                            )
+                          : _selectedTab == 1
+                              ? _buildDuasList(currentUser)
+                              : _buildPoemsList(currentUser),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
         ),
         ),
       ),
@@ -294,60 +381,90 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
 
   Widget _buildDetails() {
     final stats = _stats;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _UserDetailField(label: 'About', value: _profile?.bio?.isNotEmpty == true ? _profile!.bio! : 'No bio'),
-        const SizedBox(height: 12),
-        _UserDetailField(label: 'Role', value: _profile?.role ?? 'user'),
-        const SizedBox(height: 12),
-        _UserDetailField(label: 'Member since', value: _profile?.joinedDate ?? 'Unknown'),
-        const SizedBox(height: 12),
-        _UserDetailField(label: 'Duas created', value: '${stats?.duasCreated ?? _userDuas.length}'),
-        const SizedBox(height: 12),
-        _UserDetailField(label: 'Poems created', value: '${stats?.poemsCreated ?? _userPoems.length}'),
-        if (stats != null && stats.badges.isNotEmpty) ...[
-          const SizedBox(height: 16),
-          const Text('Badges', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF9A8C79))),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: stats.badges.map((b) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: const Color(0xFFDCE8D3),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(b.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFF4A5B3E))),
-            )).toList(),
-          ),
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _UserDetailField(label: 'About', value: _profile?.bio?.isNotEmpty == true ? _profile!.bio! : 'No bio'),
+          const SizedBox(height: 12),
+          _UserDetailField(label: 'Role', value: _profile?.role ?? 'user'),
+          const SizedBox(height: 12),
+          _UserDetailField(label: 'Member since', value: _profile?.joinedDate ?? 'Unknown'),
+          const SizedBox(height: 12),
+          _UserDetailField(label: 'Duas created', value: '${stats?.duasCreated ?? _userDuas.length}'),
+          const SizedBox(height: 12),
+          _UserDetailField(label: 'Poems created', value: '${stats?.poemsCreated ?? _userPoems.length}'),
+          if (stats != null && stats.badges.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            const Text('Badges', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF9A8C79))),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: stats.badges.map((b) => Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDCE8D3),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(b.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFF4A5B3E))),
+              )).toList(),
+            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 
-  Widget _buildDuas(UserModel currentUser) {
+  Widget _buildDuasList(UserModel currentUser) {
     if (_userDuas.isEmpty) {
-      return const Center(child: Padding(
-        padding: EdgeInsets.all(32),
-        child: Text('No duas yet', style: TextStyle(color: Color(0xFF9A8C79))),
-      ));
+      return const Center(child: Text('No duas yet', style: TextStyle(color: Color(0xFF9A8C79))));
     }
-    return Column(
-      children: _userDuas.map((d) => DuaCard(dua: d, currentUser: currentUser)).toList(),
+    return ListView.builder(
+      controller: _duaScrollController,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: _userDuas.length + (_hasMoreDuas ? 1 : 0),
+      itemBuilder: (_, i) {
+        if (i >= _userDuas.length) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          );
+        }
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: DuaCard(dua: _userDuas[i], currentUser: currentUser),
+        );
+      },
     );
   }
 
-  Widget _buildPoems(UserModel currentUser) {
+  Widget _buildPoemsList(UserModel currentUser) {
     if (_userPoems.isEmpty) {
-      return const Center(child: Padding(
-        padding: EdgeInsets.all(32),
-        child: Text('No poems yet', style: TextStyle(color: Color(0xFF9A8C79))),
-      ));
+      return const Center(child: Text('No poems yet', style: TextStyle(color: Color(0xFF9A8C79))));
     }
-    return Column(
-      children: _userPoems.map((p) => PoemCard(poem: p, currentUser: currentUser)).toList(),
+    return ListView.builder(
+      controller: _poemScrollController,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: _userPoems.length + (_hasMorePoems ? 1 : 0),
+      itemBuilder: (_, i) {
+        if (i >= _userPoems.length) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          );
+        }
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: PoemCard(poem: _userPoems[i], currentUser: currentUser),
+        );
+      },
     );
   }
 }

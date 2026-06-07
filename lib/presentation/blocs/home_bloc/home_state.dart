@@ -19,8 +19,14 @@ class HomeState {
   final bool loadingMoreSearch;
   final List<DuaModel> myDuas;
   final bool myDuasLoading;
+  final String? myDuasCursor;
+  final bool hasMoreMyDuas;
+  final bool loadingMoreMyDuas;
   final List<PoemModel> myPoems;
   final bool myPoemsLoading;
+  final String? myPoemsCursor;
+  final bool hasMoreMyPoems;
+  final bool loadingMoreMyPoems;
   final String? duaCursor;
   final String? poemCursor;
   final bool hasMoreDuas;
@@ -46,8 +52,14 @@ class HomeState {
     this.loadingMoreSearch = false,
     this.myDuas = const [],
     this.myDuasLoading = false,
+    this.myDuasCursor,
+    this.hasMoreMyDuas = true,
+    this.loadingMoreMyDuas = false,
     this.myPoems = const [],
     this.myPoemsLoading = false,
+    this.myPoemsCursor,
+    this.hasMoreMyPoems = true,
+    this.loadingMoreMyPoems = false,
     this.duaCursor,
     this.poemCursor,
     this.hasMoreDuas = true,
@@ -74,8 +86,14 @@ class HomeState {
     bool? loadingMoreSearch,
     List<DuaModel>? myDuas,
     bool? myDuasLoading,
+    String? myDuasCursor,
+    bool? hasMoreMyDuas,
+    bool? loadingMoreMyDuas,
     List<PoemModel>? myPoems,
     bool? myPoemsLoading,
+    String? myPoemsCursor,
+    bool? hasMoreMyPoems,
+    bool? loadingMoreMyPoems,
     String? duaCursor,
     String? poemCursor,
     bool? hasMoreDuas,
@@ -101,8 +119,14 @@ class HomeState {
       loadingMoreSearch: loadingMoreSearch ?? this.loadingMoreSearch,
       myDuas: myDuas ?? this.myDuas,
       myDuasLoading: myDuasLoading ?? this.myDuasLoading,
+      myDuasCursor: myDuasCursor ?? this.myDuasCursor,
+      hasMoreMyDuas: hasMoreMyDuas ?? this.hasMoreMyDuas,
+      loadingMoreMyDuas: loadingMoreMyDuas ?? this.loadingMoreMyDuas,
       myPoems: myPoems ?? this.myPoems,
       myPoemsLoading: myPoemsLoading ?? this.myPoemsLoading,
+      myPoemsCursor: myPoemsCursor ?? this.myPoemsCursor,
+      hasMoreMyPoems: hasMoreMyPoems ?? this.hasMoreMyPoems,
+      loadingMoreMyPoems: loadingMoreMyPoems ?? this.loadingMoreMyPoems,
       duaCursor: duaCursor ?? this.duaCursor,
       poemCursor: poemCursor ?? this.poemCursor,
       hasMoreDuas: hasMoreDuas ?? this.hasMoreDuas,

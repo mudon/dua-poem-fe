@@ -18,10 +18,10 @@ class PoemRepository {
     }
   }
 
-  Future<ApiResult<List<PoemModel>>> getUserPoems(String userId) async {
+  Future<ApiResult<PagedResponse<PoemModel>>> getUserPoems(String userId, {int limit = 20, String? cursor}) async {
     try {
-      final poems = await _poemService.getUserPoems(userId);
-      return ApiResult.success(poems);
+      final result = await _poemService.getUserPoems(userId, limit: limit, cursor: cursor);
+      return ApiResult.success(result);
     } catch (e) {
       return ApiResult.failure(e.toString());
     }

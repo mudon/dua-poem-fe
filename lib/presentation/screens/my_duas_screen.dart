@@ -28,8 +28,40 @@ void _showCreateDuaSheet(BuildContext context) {
   );
 }
 
-class MyDuasScreen extends StatelessWidget {
+class MyDuasScreen extends StatefulWidget {
   const MyDuasScreen({super.key});
+
+  @override
+  State<MyDuasScreen> createState() => _MyDuasScreenState();
+}
+
+class _MyDuasScreenState extends State<MyDuasScreen> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      final homeState = context.read<HomeBloc>().state;
+      if (!homeState.loadingMoreMyDuas && homeState.hasMoreMyDuas && homeState.myDuasCursor != null) {
+        context.read<HomeBloc>().add(FetchMoreMyDuas(
+          userId: (context.read<AuthBloc>().state as Authenticated).user.id,
+          cursor: homeState.myDuasCursor!,
+        ));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -158,8 +190,17 @@ class MyDuasScreen extends StatelessWidget {
                           : duas.isEmpty
                               ? const Center(child: Text('No duas yet', style: TextStyle(color: Color(0xFF9A8C79))))
                               : ListView.builder(
-                                  itemCount: duas.length,
-                                  itemBuilder: (_, i) => DuaCard(key: ValueKey(duas[i].id), dua: duas[i], currentUser: user),
+                                  controller: _scrollController,
+                                  itemCount: duas.length + (state.hasMoreMyDuas ? 1 : 0),
+                                  itemBuilder: (_, i) {
+                                    if (i >= duas.length) {
+                                      return const Padding(
+                                        padding: EdgeInsets.all(16),
+                                        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                                      );
+                                    }
+                                    return DuaCard(key: ValueKey(duas[i].id), dua: duas[i], currentUser: user);
+                                  },
                                 ),
                     ),
                   ],
@@ -173,4 +214,3 @@ class MyDuasScreen extends StatelessWidget {
     );
   }
 }
-

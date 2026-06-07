@@ -16,11 +16,12 @@ class DuaService {
     return PagedResponse.fromJson(response.data as Map<String, dynamic>, DuaModel.fromApiJson);
   }
 
-  Future<List<DuaModel>> getUserDuas(String userId) async {
-    final response = await _dioClient.dio.get('/duas/user/$userId');
-    return (response.data as List)
-        .map((e) => DuaModel.fromApiJson(e as Map<String, dynamic>))
-        .toList();
+  Future<PagedResponse<DuaModel>> getUserDuas(String userId, {int limit = 20, String? cursor}) async {
+    final queryParams = <String, dynamic>{};
+    queryParams['limit'] = limit;
+    if (cursor != null) queryParams['cursor'] = cursor;
+    final response = await _dioClient.dio.get('/duas/user/$userId', queryParameters: queryParams);
+    return PagedResponse.fromJson(response.data as Map<String, dynamic>, DuaModel.fromApiJson);
   }
 
   Future<DuaModel> getDuaDetail(String id) async {

@@ -28,8 +28,40 @@ void _showCreatePoemSheet(BuildContext context) {
   );
 }
 
-class MyPoemsScreen extends StatelessWidget {
+class MyPoemsScreen extends StatefulWidget {
   const MyPoemsScreen({super.key});
+
+  @override
+  State<MyPoemsScreen> createState() => _MyPoemsScreenState();
+}
+
+class _MyPoemsScreenState extends State<MyPoemsScreen> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      final homeState = context.read<HomeBloc>().state;
+      if (!homeState.loadingMoreMyPoems && homeState.hasMoreMyPoems && homeState.myPoemsCursor != null) {
+        context.read<HomeBloc>().add(FetchMoreMyPoems(
+          userId: (context.read<AuthBloc>().state as Authenticated).user.id,
+          cursor: homeState.myPoemsCursor!,
+        ));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -156,8 +188,17 @@ class MyPoemsScreen extends StatelessWidget {
                           : poems.isEmpty
                               ? const Center(child: Text('No poems yet', style: TextStyle(color: Color(0xFF9A8C79))))
                               : ListView.builder(
-                                  itemCount: poems.length,
-                                  itemBuilder: (_, i) => PoemCard(key: ValueKey(poems[i].id), poem: poems[i], currentUser: user),
+                                  controller: _scrollController,
+                                  itemCount: poems.length + (state.hasMoreMyPoems ? 1 : 0),
+                                  itemBuilder: (_, i) {
+                                    if (i >= poems.length) {
+                                      return const Padding(
+                                        padding: EdgeInsets.all(16),
+                                        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                                      );
+                                    }
+                                    return PoemCard(key: ValueKey(poems[i].id), poem: poems[i], currentUser: user);
+                                  },
                                 ),
                     ),
                   ],
@@ -171,4 +212,3 @@ class MyPoemsScreen extends StatelessWidget {
     );
   }
 }
-

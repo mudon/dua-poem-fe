@@ -46,9 +46,21 @@ class FetchMyDuas extends HomeEvent {
   FetchMyDuas(this.userId);
 }
 
+class FetchMoreMyDuas extends HomeEvent {
+  final String userId;
+  final String cursor;
+  FetchMoreMyDuas({required this.userId, required this.cursor});
+}
+
 class FetchMyPoems extends HomeEvent {
   final String userId;
   FetchMyPoems(this.userId);
+}
+
+class FetchMoreMyPoems extends HomeEvent {
+  final String userId;
+  final String cursor;
+  FetchMoreMyPoems({required this.userId, required this.cursor});
 }
 
 class UpdateDua extends HomeEvent {
