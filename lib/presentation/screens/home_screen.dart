@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import '../../core/themes/app_theme.dart';
 import '../blocs/auth_bloc/auth_bloc.dart';
 import '../blocs/auth_bloc/auth_state.dart';
@@ -15,7 +14,6 @@ import '../widgets/common/dua_card.dart';
 import '../widgets/common/poem_card.dart';
 import '../widgets/common/home_tab_bar.dart';
 import '../widgets/common/notification_bell.dart';
-import '../widgets/forms/create_flow_sheet.dart';
 import '../../data/repositories/dua_repository.dart';
 import '../../data/repositories/poem_repository.dart';
 
@@ -34,22 +32,15 @@ class HomeScreen extends StatelessWidget {
         RepositoryProvider.of<DuaRepository>(context),
         RepositoryProvider.of<PoemRepository>(context),
       )..add(FetchLatestDuas())..add(FetchLatestPoems()),
-      child: Builder(
-        builder: (inner) => Scaffold(
-          backgroundColor: const Color(0xFFF4F0E8),
-          floatingActionButton: FloatingActionButton(
-            backgroundColor: AppTheme.sage,
-            onPressed: () => _showCreatePicker(inner),
-            child: const Icon(Icons.add, color: Colors.white),
-          ),
-          body: SafeArea(
-            child: Column(
-              children: [
-                _HeaderBar(user: user),
-                const HomeTabBar(),
-                const Expanded(child: _HomeFeed()),
-              ],
-            ),
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF4F0E8),
+        body: SafeArea(
+          child: Column(
+            children: [
+              _HeaderBar(user: user),
+              const HomeTabBar(),
+              const Expanded(child: _HomeFeed()),
+            ],
           ),
         ),
       ),
@@ -380,24 +371,6 @@ class _HomeFeedState extends State<_HomeFeed> {
   }
 }
 
-void _showCreatePicker(BuildContext context) {
-  final homeBloc = context.read<HomeBloc>();
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (_) => CreateFlowSheet(
-      onDuaCreated: () {
-        homeBloc.add(FetchLatestDuas());
-        homeBloc.add(FetchLatestPoems());
-      },
-      onPoemCreated: () {
-        homeBloc.add(FetchLatestDuas());
-        homeBloc.add(FetchLatestPoems());
-      },
-    ),
-  );
-}
 
 class _SearchBar extends StatefulWidget {
   @override
