@@ -6,6 +6,7 @@ import '../../data/models/poem_model.dart';
 import '../../data/models/user_stats_model.dart';
 import '../../data/services/user_service.dart';
 import '../../data/repositories/dua_repository.dart';
+import '../widgets/common/badge_grid.dart';
 import '../../data/repositories/poem_repository.dart';
 import '../../core/themes/app_theme.dart';
 import '../blocs/dua_bloc/dua_bloc.dart';
@@ -400,22 +401,11 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
           _UserDetailField(label: 'Duas created', value: '${stats?.duasCreated ?? _userDuas.length}'),
           const SizedBox(height: 12),
           _UserDetailField(label: 'Poems created', value: '${stats?.poemsCreated ?? _userPoems.length}'),
-          if (stats != null && stats.badges.isNotEmpty) ...[
+          if (stats != null && stats.allBadges.isNotEmpty) ...[
             const SizedBox(height: 16),
             const Text('Badges', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF9A8C79))),
             const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: stats.badges.map((b) => Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFDCE8D3),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(b.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFF4A5B3E))),
-              )).toList(),
-            ),
+            BadgeGrid(allBadges: stats.allBadges),
           ],
         ],
       ),

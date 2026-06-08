@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../app/dependency_injection.dart';
 import '../../../data/models/signalr/badge_awarded_model.dart';
+import '../../../data/models/signalr/badge_revoked_model.dart';
 import '../../../data/services/signalr_service.dart';
-
 
 class BadgeAwardPopup extends StatefulWidget {
   final Widget child;
@@ -14,22 +14,24 @@ class BadgeAwardPopup extends StatefulWidget {
 }
 
 class _BadgeAwardPopupState extends State<BadgeAwardPopup> with SingleTickerProviderStateMixin {
-  StreamSubscription<BadgeAwardedModel>? _sub;
+  StreamSubscription<BadgeAwardedModel>? _awardSub;
+  StreamSubscription<BadgeRevokedModel>? _revokeSub;
   OverlayEntry? _overlay;
   Timer? _dismissTimer;
 
   @override
   void initState() {
     super.initState();
-    _sub = getIt<SignalRService>().onBadgeAwarded.listen(_onBadgeAwarded);
+    _awardSub = getIt<SignalRService>().onBadgeAwarded.listen((b) => _onBadge(b.name));
+    _revokeSub = getIt<SignalRService>().onBadgeRevoked.listen((b) => _onBadge(b.name, isAward: false));
   }
 
-  void _onBadgeAwarded(BadgeAwardedModel badge) {
+  void _onBadge(String name, {bool isAward = true}) {
     _dismissTimer?.cancel();
     _overlay?.remove();
     _overlay = null;
 
-    _overlay = OverlayEntry(builder: (_) => _BadgeToast(slug: badge.slug, name: badge.name));
+    _overlay = OverlayEntry(builder: (_) => _BadgeToast(name: name, isAward: isAward));
     Overlay.of(context).insert(_overlay!);
     HapticFeedback.mediumImpact();
 
@@ -43,7 +45,8 @@ class _BadgeAwardPopupState extends State<BadgeAwardPopup> with SingleTickerProv
 
   @override
   void dispose() {
-    _sub?.cancel();
+    _awardSub?.cancel();
+    _revokeSub?.cancel();
     _dismissTimer?.cancel();
     _removeOverlay();
     super.dispose();
@@ -54,9 +57,9 @@ class _BadgeAwardPopupState extends State<BadgeAwardPopup> with SingleTickerProv
 }
 
 class _BadgeToast extends StatefulWidget {
-  final String slug;
   final String name;
-  const _BadgeToast({required this.slug, required this.name});
+  final bool isAward;
+  const _BadgeToast({required this.name, required this.isAward});
   @override
   State<_BadgeToast> createState() => _BadgeToastState();
 }
@@ -88,6 +91,7 @@ class _BadgeToastState extends State<_BadgeToast> with SingleTickerProviderState
   @override
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).padding.bottom + 100;
+    final isAward = widget.isAward;
     return Stack(
       children: [
         GestureDetector(
@@ -109,15 +113,17 @@ class _BadgeToastState extends State<_BadgeToast> with SingleTickerProviderState
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF3A7D44), Color(0xFF2D6A3B)],
+                    gradient: LinearGradient(
+                      colors: isAward
+                          ? [const Color(0xFF3A7D44), const Color(0xFF2D6A3B)]
+                          : [const Color(0xFFC25A3F), const Color(0xFFA1442C)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF2D6A3B).withValues(alpha: 0.3),
+                        color: (isAward ? const Color(0xFF2D6A3B) : const Color(0xFFA1442C)).withValues(alpha: 0.3),
                         blurRadius: 16,
                         offset: const Offset(0, 6),
                       ),
@@ -132,7 +138,11 @@ class _BadgeToastState extends State<_BadgeToast> with SingleTickerProviderState
                           color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        child: const Icon(Icons.emoji_events, color: Colors.white, size: 24),
+                        child: Icon(
+                          isAward ? Icons.emoji_events : Icons.lock_outline,
+                          color: Colors.white,
+                          size: 24,
+                        ),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -140,9 +150,9 @@ class _BadgeToastState extends State<_BadgeToast> with SingleTickerProviderState
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'New Badge Earned!',
-                              style: TextStyle(
+                            Text(
+                              isAward ? 'New Badge Earned!' : 'Badge Lost',
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -168,7 +178,11 @@ class _BadgeToastState extends State<_BadgeToast> with SingleTickerProviderState
                           color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(18),
                         ),
-                        child: const Icon(Icons.star, color: Color(0xFFFFD700), size: 18),
+                        child: Icon(
+                          isAward ? Icons.star : Icons.block,
+                          color: isAward ? const Color(0xFFFFD700) : Colors.white70,
+                          size: 18,
+                        ),
                       ),
                     ],
                   ),

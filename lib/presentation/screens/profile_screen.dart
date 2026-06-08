@@ -6,10 +6,12 @@ import '../../data/models/user_stats_model.dart';
 import '../../data/services/user_service.dart';
 import '../../data/services/signalr_service.dart';
 import '../../data/models/signalr/badge_awarded_model.dart';
+import '../../data/models/signalr/badge_revoked_model.dart';
 import '../blocs/auth_bloc/auth_bloc.dart';
 import '../blocs/auth_bloc/auth_event.dart';
 import '../blocs/auth_bloc/auth_state.dart';
 import '../widgets/common/notification_bell.dart';
+import '../widgets/common/badge_grid.dart';
 import '../../app/dependency_injection.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -23,17 +25,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
   UserStatsModel? _stats;
   bool _loading = true;
   StreamSubscription<BadgeAwardedModel>? _badgeSub;
+  StreamSubscription<BadgeRevokedModel>? _badgeRevokeSub;
 
   @override
   void initState() {
     super.initState();
     _loadData();
     _badgeSub = getIt<SignalRService>().onBadgeAwarded.listen((_) => _loadData());
+    _badgeRevokeSub = getIt<SignalRService>().onBadgeRevoked.listen((_) => _loadData());
   }
 
   @override
   void dispose() {
     _badgeSub?.cancel();
+    _badgeRevokeSub?.cancel();
     super.dispose();
   }
 
@@ -235,22 +240,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _DetailField(label: 'Duas created', value: '${stats?.duasCreated ?? 0}'),
         const SizedBox(height: 12),
         _DetailField(label: 'Poems created', value: '${stats?.poemsCreated ?? 0}'),
-        if (stats != null && stats.badges.isNotEmpty) ...[
+        if (stats != null && stats.allBadges.isNotEmpty) ...[
           const SizedBox(height: 16),
           const Text('Badges', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF9A8C79))),
           const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: stats.badges.map((b) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: const Color(0xFFDCE8D3),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(b.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFF4A5B3E))),
-            )).toList(),
-          ),
+          BadgeGrid(allBadges: stats.allBadges),
         ],
       ],
     );
