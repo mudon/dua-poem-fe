@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'dart:async';
 import '../../data/models/user_model.dart';
 import '../../data/models/user_stats_model.dart';
 import '../../data/services/user_service.dart';
+import '../../data/services/signalr_service.dart';
+import '../../data/models/signalr/badge_awarded_model.dart';
 import '../blocs/auth_bloc/auth_bloc.dart';
 import '../blocs/auth_bloc/auth_event.dart';
 import '../blocs/auth_bloc/auth_state.dart';
@@ -19,11 +22,19 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   UserStatsModel? _stats;
   bool _loading = true;
+  StreamSubscription<BadgeAwardedModel>? _badgeSub;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _badgeSub = getIt<SignalRService>().onBadgeAwarded.listen((_) => _loadData());
+  }
+
+  @override
+  void dispose() {
+    _badgeSub?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadData() async {

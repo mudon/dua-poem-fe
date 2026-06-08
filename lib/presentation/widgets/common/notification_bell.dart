@@ -51,6 +51,8 @@ class _NotificationBellState extends State<NotificationBell> {
         return Icons.edit_note;
       case 'report_reopened':
         return Icons.refresh;
+      case 'badge_awarded':
+        return Icons.emoji_events;
       default:
         return Icons.notifications_outlined;
     }

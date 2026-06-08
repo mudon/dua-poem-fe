@@ -8,6 +8,7 @@ import '../blocs/dua_bloc/dua_bloc.dart';
 import '../blocs/poem_bloc/poem_bloc.dart';
 import '../blocs/notification_bloc/notification_bloc.dart';
 import '../blocs/notification_bloc/notification_event.dart';
+import '../widgets/common/badge_award_popup.dart';
 import '../../app/dependency_injection.dart';
 
 class MainShell extends StatefulWidget {
@@ -55,6 +56,7 @@ class _MainShellState extends State<MainShell> {
         BlocProvider.value(value: getIt<PoemBloc>()),
         BlocProvider.value(value: getIt<NotificationBloc>()),
       ],
+        child: BadgeAwardPopup(
         child: Scaffold(
         body: widget.navigationShell,
         bottomNavigationBar: Container(
@@ -73,6 +75,7 @@ class _MainShellState extends State<MainShell> {
             items: _buildNavItems(),
           ),
         ),
+      ),
       ),
     );
   }

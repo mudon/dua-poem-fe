@@ -10,6 +10,7 @@ import '../models/signalr/notification_update_model.dart';
 import '../models/signalr/leaderboard_update_model.dart';
 import '../models/signalr/dua_content_update_model.dart';
 import '../models/signalr/poem_content_update_model.dart';
+import '../models/signalr/badge_awarded_model.dart';
 
 class SignalRService {
   HubConnection? _duaHubConnection;
@@ -22,6 +23,7 @@ class SignalRService {
   HubConnection? _poemReportHubConnection;
   HubConnection? _notificationHubConnection;
   HubConnection? _leaderboardHubConnection;
+  HubConnection? _badgeHubConnection;
   final _likesController = StreamController<LikesUpdateModel>.broadcast();
   final _favoritesController = StreamController<FavoritesUpdateModel>.broadcast();
   final _viewsController = StreamController<ViewsUpdateModel>.broadcast();
@@ -30,6 +32,7 @@ class SignalRService {
   final _leaderboardController = StreamController<List<LeaderboardUpdateModel>>.broadcast();
   final _duaContentController = StreamController<DuaContentUpdateModel>.broadcast();
   final _poemContentController = StreamController<PoemContentUpdateModel>.broadcast();
+  final _badgeController = StreamController<BadgeAwardedModel>.broadcast();
   final _duaDeletedController = StreamController<String>.broadcast();
   final _poemDeletedController = StreamController<String>.broadcast();
   bool _isConnected = false;
@@ -41,6 +44,7 @@ class SignalRService {
   Stream<ReportsUpdateModel> get onReportsCountUpdated => _reportsController.stream;
   Stream<NotificationUpdateModel> get onNotificationReceived => _notificationController.stream;
   Stream<List<LeaderboardUpdateModel>> get onLeaderboardUpdated => _leaderboardController.stream;
+  Stream<BadgeAwardedModel> get onBadgeAwarded => _badgeController.stream;
   Stream<DuaContentUpdateModel> get onDuaContentUpdated => _duaContentController.stream;
   Stream<PoemContentUpdateModel> get onPoemContentUpdated => _poemContentController.stream;
   Stream<String> get onDuaDeleted => _duaDeletedController.stream;
@@ -89,6 +93,11 @@ class SignalRService {
         await _connectHub('/hubs/leaderboard', token);
       } catch (e) {
         print('[SignalR] Failed to connect /hubs/leaderboard: $e');
+      }
+      try {
+        await _connectHub('/hubs/badges', token);
+      } catch (e) {
+        print('[SignalR] Failed to connect /hubs/badges: $e');
       }
       _isConnected = true;
     } catch (e) {
@@ -169,6 +178,12 @@ class SignalRService {
       _duaDeletedController.add(duaId);
     });
 
+    connection.on('BadgeAwarded', (args) {
+      if (args == null || args.isEmpty) return;
+      final data = args[0] as Map<String, dynamic>;
+      _badgeController.add(BadgeAwardedModel.fromJson(data));
+    });
+
     connection.on('PoemDeleted', (args) {
       if (args == null || args.isEmpty) return;
       final data = args[0] as Map<String, dynamic>;
@@ -188,6 +203,7 @@ class SignalRService {
       if (hubPath.contains('poem-reports')) _poemReportHubConnection = null;
       if (hubPath.contains('notifications')) _notificationHubConnection = null;
       if (hubPath.contains('leaderboard')) _leaderboardHubConnection = null;
+      if (hubPath.contains('badges')) _badgeHubConnection = null;
     });
 
     await connection.start();
@@ -203,6 +219,7 @@ class SignalRService {
     if (hubPath.contains('poem-reports')) _poemReportHubConnection = connection;
     if (hubPath.contains('notifications')) _notificationHubConnection = connection;
     if (hubPath.contains('leaderboard')) _leaderboardHubConnection = connection;
+    if (hubPath.contains('badges')) _badgeHubConnection = connection;
   }
 
   Future<void> joinDuaGroup(String duaId) async {
@@ -402,6 +419,11 @@ class SignalRService {
     } catch (e) {
       print('[SignalR] disconnect leaderboard hub error: $e');
     }
+    try {
+      await _badgeHubConnection?.stop();
+    } catch (e) {
+      print('[SignalR] disconnect badge hub error: $e');
+    }
     _duaHubConnection = null;
     _poemHubConnection = null;
     _duaFavHubConnection = null;
@@ -412,6 +434,7 @@ class SignalRService {
     _poemReportHubConnection = null;
     _notificationHubConnection = null;
     _leaderboardHubConnection = null;
+    _badgeHubConnection = null;
   }
 
   void dispose() {
@@ -422,6 +445,7 @@ class SignalRService {
     _reportsController.close();
     _notificationController.close();
     _leaderboardController.close();
+    _badgeController.close();
     _duaContentController.close();
     _poemContentController.close();
   }
