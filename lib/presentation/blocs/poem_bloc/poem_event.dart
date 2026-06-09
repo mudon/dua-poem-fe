@@ -76,6 +76,8 @@ class DeletePoem extends PoemEvent {
   DeletePoem(this.poemId);
 }
 
+class PoemCreated extends PoemEvent {}
+
 class ClearReturnedReports extends PoemEvent {}
 
 class SignalRPoemDeleted extends PoemEvent {

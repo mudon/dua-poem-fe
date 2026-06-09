@@ -76,6 +76,8 @@ class DeleteDua extends DuaEvent {
   DeleteDua(this.duaId);
 }
 
+class DuaCreated extends DuaEvent {}
+
 class ClearReturnedReports extends DuaEvent {}
 
 class SignalRDuaDeleted extends DuaEvent {

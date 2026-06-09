@@ -6,6 +6,8 @@ import '../../../data/models/tag_model.dart';
 import '../../../data/services/category_service.dart';
 import '../../../data/services/poem_service.dart';
 import '../../../data/services/tag_service.dart';
+import '../../blocs/poem_bloc/poem_bloc.dart';
+import '../../blocs/poem_bloc/poem_event.dart';
 
 class CreatePoemSheet extends StatefulWidget {
   final VoidCallback? onCreated;
@@ -73,6 +75,7 @@ class _CreatePoemSheetState extends State<CreatePoemSheet> {
       if (_selectedCategory != null) data['categoryId'] = _selectedCategory!.id;
       if (_selectedTagIds.isNotEmpty) data['tagIds'] = _selectedTagIds.toList();
       await getIt<PoemService>().createPoem(data);
+      getIt<PoemBloc>().add(PoemCreated());
       if (mounted) {
         widget.onCreated?.call();
         Navigator.of(context).pop();

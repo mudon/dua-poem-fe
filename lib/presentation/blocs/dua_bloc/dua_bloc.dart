@@ -24,6 +24,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     on<SignalRReportsCountUpdated>(_onSignalRReportsCountUpdated);
     on<SignalRReportReturned>(_onSignalRReportReturned);
     on<ClearReturnedReports>(_onClearReturnedReports);
+    on<DuaCreated>(_onDuaCreated);
     on<UpdateDua>(_onUpdateDua);
     on<DeleteDua>(_onDeleteDua);
     on<SignalRDuaDeleted>(_onSignalRDuaDeleted);
@@ -164,6 +165,10 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
 
   void _onClearReturnedReports(ClearReturnedReports event, Emitter<DuaState> emit) {
     emit(state.copyWith(returnedReportIds: const {}));
+  }
+
+  void _onDuaCreated(DuaCreated event, Emitter<DuaState> emit) {
+    emit(state.copyWith(actionType: 'created', lastToggledDuaId: ''));
   }
 
   Future<void> _onDeleteDua(DeleteDua event, Emitter<DuaState> emit) async {

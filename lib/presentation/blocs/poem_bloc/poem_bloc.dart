@@ -24,6 +24,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     on<SignalRReportsCountUpdated>(_onSignalRReportsCountUpdated);
     on<SignalRReportReturned>(_onSignalRReportReturned);
     on<ClearReturnedReports>(_onClearReturnedReports);
+    on<PoemCreated>(_onPoemCreated);
     on<UpdatePoem>(_onUpdatePoem);
     on<DeletePoem>(_onDeletePoem);
     on<SignalRPoemDeleted>(_onSignalRPoemDeleted);
@@ -158,6 +159,10 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
 
   void _onClearReturnedReports(ClearReturnedReports event, Emitter<PoemState> emit) {
     emit(state.copyWith(returnedReportIds: const {}));
+  }
+
+  void _onPoemCreated(PoemCreated event, Emitter<PoemState> emit) {
+    emit(state.copyWith(actionType: 'created', lastToggledPoemId: ''));
   }
 
   Future<void> _onDeletePoem(DeletePoem event, Emitter<PoemState> emit) async {

@@ -36,7 +36,6 @@ class _CreateFlowSheetState extends State<CreateFlowSheet> {
           onBack: _goBack,
           onCreated: () {
             widget.onDuaCreated?.call();
-            Navigator.of(context).pop();
           },
         );
       case _FlowStep.poemForm:
@@ -44,7 +43,6 @@ class _CreateFlowSheetState extends State<CreateFlowSheet> {
           onBack: _goBack,
           onCreated: () {
             widget.onPoemCreated?.call();
-            Navigator.of(context).pop();
           },
         );
     }

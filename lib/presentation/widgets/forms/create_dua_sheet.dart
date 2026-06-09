@@ -6,6 +6,8 @@ import '../../../data/models/tag_model.dart';
 import '../../../data/services/category_service.dart';
 import '../../../data/services/dua_service.dart';
 import '../../../data/services/tag_service.dart';
+import '../../blocs/dua_bloc/dua_bloc.dart';
+import '../../blocs/dua_bloc/dua_event.dart';
 
 class CreateDuaSheet extends StatefulWidget {
   final VoidCallback? onCreated;
@@ -98,6 +100,7 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
             .toList();
       }
       await getIt<DuaService>().createDua(data);
+      getIt<DuaBloc>().add(DuaCreated());
       if (mounted) {
         widget.onCreated?.call();
         Navigator.of(context).pop();

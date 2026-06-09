@@ -98,6 +98,10 @@ class _HomeFeedState extends State<_HomeFeed> {
         BlocListener<DuaBloc, DuaState>(
           listener: (context, state) {
             if (state.error != null) return;
+            if (state.actionType == 'created') {
+              context.read<HomeBloc>().add(FetchLatestDuas());
+              return;
+            }
             final id = state.lastToggledDuaId;
             if (id == null) return;
             final homeState = context.read<HomeBloc>().state;
@@ -188,6 +192,10 @@ class _HomeFeedState extends State<_HomeFeed> {
         BlocListener<PoemBloc, PoemState>(
           listener: (context, state) {
             if (state.error != null) return;
+            if (state.actionType == 'created') {
+              context.read<HomeBloc>().add(FetchLatestPoems());
+              return;
+            }
             final id = state.lastToggledPoemId;
             if (id == null) return;
             final homeState = context.read<HomeBloc>().state;
