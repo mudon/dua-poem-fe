@@ -53,6 +53,7 @@ class AppRouter {
 
       if (!isLoggedIn && !isAuthRoute) return '/auth';
       if (isLoggedIn && isAuthRoute) return '/home';
+      if (isLoggedIn && state.matchedLocation == '/') return '/home';
       return null;
     },
     routes: [

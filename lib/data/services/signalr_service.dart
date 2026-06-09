@@ -78,34 +78,27 @@ class SignalRService {
       return;
     }
 
-    try {
-      await _connectHub('/hubs/dua-likes', token);
-      await _connectHub('/hubs/poem-likes', token);
-      await _connectHub('/hubs/dua-favorites', token);
-      await _connectHub('/hubs/poem-favorites', token);
-      await _connectHub('/hubs/dua-views', token);
-      await _connectHub('/hubs/poem-views', token);
-      await _connectHub('/hubs/dua-reports', token);
-      await _connectHub('/hubs/poem-reports', token);
-      try {
-        await _connectHub('/hubs/notifications', token);
-      } catch (e) {
-        print('[SignalR] Failed to connect /hubs/notifications: $e');
-      }
-      try {
-        await _connectHub('/hubs/leaderboard', token);
-      } catch (e) {
-        print('[SignalR] Failed to connect /hubs/leaderboard: $e');
-      }
-      try {
-        await _connectHub('/hubs/badges', token);
-      } catch (e) {
-        print('[SignalR] Failed to connect /hubs/badges: $e');
-      }
-      _isConnected = true;
-    } catch (e) {
-      print('[SignalR] _connectInternal failed: $e');
-    }
+    final hubPaths = [
+      '/hubs/dua-likes',
+      '/hubs/poem-likes',
+      '/hubs/dua-favorites',
+      '/hubs/poem-favorites',
+      '/hubs/dua-views',
+      '/hubs/poem-views',
+      '/hubs/dua-reports',
+      '/hubs/poem-reports',
+      '/hubs/notifications',
+      '/hubs/leaderboard',
+      '/hubs/badges',
+    ];
+
+    await Future.wait(
+      hubPaths.map((path) => _connectHub(path, token).catchError((e) {
+        print('[SignalR] Failed to connect $path: $e');
+      })),
+    );
+
+    _isConnected = true;
   }
 
   Future<void> _connectHub(String hubPath, String token) async {

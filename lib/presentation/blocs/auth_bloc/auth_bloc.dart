@@ -63,7 +63,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onCheck(CheckAuthStatus event, Emitter<AuthState> emit) async {
     final isLogged = await _authRepo.isLoggedIn();
     if (isLogged) {
-      await _signalRService.connect();
+      try {
+        await _signalRService.connect();
+      } catch (_) {
+        // SignalR connection failure is non-fatal; API calls still work via token refresh
+      }
       const storage = FlutterSecureStorage();
       final cachedUser = await storage.read(key: 'cached_user');
       if (cachedUser != null) {
