@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../app/dependency_injection.dart';
+import '../../../core/network/dio_client.dart';
 import '../../../core/themes/app_theme.dart';
 import '../../../data/models/category_model.dart';
 import '../../../data/models/tag_model.dart';
@@ -37,6 +38,7 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
   bool _loadingCategories = true;
   bool _loadingTags = true;
   bool _submitting = false;
+  bool _translating = false;
 
   final List<_SourceEntry> _sources = [];
 
@@ -45,6 +47,7 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
     super.initState();
     _loadData();
     _repetitionCtrl.addListener(_onRepetitionChanged);
+    _translationCtrl.addListener(_onTranslationChanged);
   }
 
   void _onRepetitionChanged() {
@@ -52,6 +55,10 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
     if (v != null && v >= 1) {
       _repetitionCount = v;
     }
+  }
+
+  void _onTranslationChanged() {
+    if (mounted) setState(() {});
   }
 
   Future<void> _loadData() async {
@@ -118,6 +125,32 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
     }
   }
 
+  Future<void> _translateToArabic() async {
+    final text = _translationCtrl.text.trim();
+    if (text.isEmpty) return;
+    setState(() => _translating = true);
+    try {
+      final dio = getIt<DioClient>().dio;
+      final response = await dio.post('/translate', data: {
+        'text': text,
+        'source': 'en',
+        'target': 'ar',
+      });
+      final translated = response.data['translatedText'] as String?;
+      if (translated != null && translated.isNotEmpty) {
+        _arabicCtrl.text = translated;
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Translation failed: $e'), backgroundColor: AppTheme.errorRed),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _translating = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
@@ -143,6 +176,25 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
                     _buildSection('Arabic Text', _arabicCtrl, maxLines: 4, textDirection: TextDirection.rtl),
                     _buildSection('Transliteration', _transliterationCtrl),
                     _buildSection('Translation *', _translationCtrl, required: true, maxLines: 3),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _translationCtrl.text.trim().isEmpty
+                              ? null
+                              : _translateToArabic,
+                          icon: _translating
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2, color: Colors.white))
+                              : const Icon(Icons.translate, size: 18),
+                          label: const Text('Translate to Arabic'),
+                        ),
+                      ),
+                    ),
                     _buildSection('Description', _descriptionCtrl, maxLines: 3),
                     _buildSection('When to Recite', _whenToReciteCtrl),
                     _buildSection('Occasion', _occasionCtrl),
@@ -356,6 +408,7 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
     _titleCtrl.dispose();
     _arabicCtrl.dispose();
     _transliterationCtrl.dispose();
+    _translationCtrl.removeListener(_onTranslationChanged);
     _translationCtrl.dispose();
     _descriptionCtrl.dispose();
     _whenToReciteCtrl.dispose();
