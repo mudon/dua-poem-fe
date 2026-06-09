@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../app/dependency_injection.dart';
+import '../../../core/errors/error_helper.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/themes/app_theme.dart';
 import '../../../data/models/category_model.dart';
@@ -75,8 +76,11 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
           _loadingTags = false;
         });
       }
-    } catch (_) {
-      if (mounted) setState(() { _loadingCategories = false; _loadingTags = false; });
+    } catch (e) {
+      if (mounted) {
+        setState(() { _loadingCategories = false; _loadingTags = false; });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.userMessage), backgroundColor: Colors.red[400] ?? Colors.red));
+      }
     }
   }
 
@@ -111,16 +115,12 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
       if (mounted) {
         widget.onCreated?.call();
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Dua published')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Dua published')));
       }
     } catch (e) {
       if (mounted) {
         setState(() => _submitting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.errorRed),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.userMessage), backgroundColor: Colors.red[400] ?? Colors.red));
       }
     }
   }
@@ -142,9 +142,7 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Translation failed: $e'), backgroundColor: AppTheme.errorRed),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.userMessage), backgroundColor: Colors.red[400] ?? Colors.red));
       }
     } finally {
       if (mounted) setState(() => _translating = false);
@@ -178,21 +176,37 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
                     _buildSection('Translation *', _translationCtrl, required: true, maxLines: 3),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 12),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: _translationCtrl.text.trim().isEmpty
-                              ? null
-                              : _translateToArabic,
-                          icon: _translating
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                      strokeWidth: 2, color: Colors.white))
-                              : const Icon(Icons.translate, size: 18),
-                          label: const Text('Translate to Arabic'),
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Tooltip(
+                                message: 'Auto-translation may not be fully accurate. Please review before publishing.',
+                                child: Icon(Icons.info_outline, size: 16, color: AppTheme.earthBrown),
+                              ),
+                              const SizedBox(width: 6),
+                              Text('Auto-translate', style: TextStyle(fontSize: 12, color: AppTheme.earthBrown)),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: _translationCtrl.text.trim().isEmpty
+                                  ? null
+                                  : _translateToArabic,
+                              icon: _translating
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2, color: Colors.white))
+                                  : const Icon(Icons.translate, size: 18),
+                              label: const Text('Translate to Arabic'),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     _buildSection('Description', _descriptionCtrl, maxLines: 3),

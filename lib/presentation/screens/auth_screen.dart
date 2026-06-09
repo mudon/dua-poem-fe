@@ -47,9 +47,7 @@ class _AuthScreenState extends State<AuthScreen> {
           child: BlocConsumer<AuthBloc, AuthState>(
             listener: (context, state) {
               if (state is Authenticated) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Welcome, ${state.user.firstName}!')),
-                );
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Welcome, ${state.user.firstName}!')));
               }
             },
             builder: (context, state) {
@@ -119,7 +117,7 @@ class _AuthScreenState extends State<AuthScreen> {
                               padding: const EdgeInsets.only(bottom: 16),
                               child: AuthErrorWidget(
                                 message: errorMessage,
-                                onDismiss: () {},
+                                onDismiss: () => context.read<AuthBloc>().add(ClearAuthError()),
                               ),
                             ),
 
@@ -140,9 +138,7 @@ class _AuthScreenState extends State<AuthScreen> {
                             ),
                             const SizedBox(height: 12),
                             TextButton(
-                              onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Reset link would be sent (demo)')),
-                              ),
+                              onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reset link would be sent (demo)'))),
                               child: Text(AppStrings.forgotPassword, style: TextStyle(color: AppTheme.earthBrown)),
                             ),
                             const SizedBox(height: 8),
@@ -238,12 +234,8 @@ class _AuthScreenState extends State<AuthScreen> {
                           Text(AppStrings.orContinueWith, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
                           const SizedBox(height: 12),
                           SocialLoginButtons(
-                            onGoogleTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Google login demo')),
-                            ),
-                            onAppleTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Apple login demo')),
-                            ),
+                            onGoogleTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Google login demo'))),
+                            onAppleTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Apple login demo'))),
                           ),
                           const SizedBox(height: 16),
                           Container(

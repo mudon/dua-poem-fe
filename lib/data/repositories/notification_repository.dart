@@ -1,3 +1,4 @@
+import '../../core/errors/error_helper.dart';
 import '../../core/network/api_result.dart';
 import '../models/notification_model.dart';
 import '../services/notification_service.dart';
@@ -15,7 +16,7 @@ class NotificationRepository {
           .toList();
       return ApiResult.success(list);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -24,7 +25,7 @@ class NotificationRepository {
       final count = await _notificationService.getUnreadCount();
       return ApiResult.success(count);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -33,7 +34,7 @@ class NotificationRepository {
       await _notificationService.markAsRead(id);
       return ApiResult.success(null);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -42,7 +43,7 @@ class NotificationRepository {
       await _notificationService.markAllAsRead();
       return ApiResult.success(null);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 }

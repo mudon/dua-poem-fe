@@ -1,4 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../../core/errors/error_helper.dart';
 import '../../core/network/api_result.dart';
 import '../../core/network/dio_client.dart';
 import '../services/auth_service.dart';
@@ -18,7 +19,7 @@ class AuthRepository {
       final user = UserModel.fromJson(data['user']);
       return ApiResult.success(user);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -30,7 +31,7 @@ class AuthRepository {
       final user = UserModel.fromJson(data['user']);
       return ApiResult.success(user);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 

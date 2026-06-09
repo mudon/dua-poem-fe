@@ -1,3 +1,4 @@
+import '../../core/errors/error_helper.dart';
 import '../../core/network/api_result.dart';
 import '../models/admin/pending_revision_model.dart';
 import '../services/admin_service.dart';
@@ -15,7 +16,7 @@ class AdminRepository {
           .toList();
       return ApiResult.success(list);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -26,7 +27,7 @@ class AdminRepository {
           : await _adminService.getPoemRevisionDetail(revisionId);
       return ApiResult.success(data);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -39,7 +40,7 @@ class AdminRepository {
       }
       return ApiResult.success(null);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 }

@@ -1,3 +1,4 @@
+import '../../core/errors/error_helper.dart';
 import '../../core/network/api_result.dart';
 import '../models/paged_response.dart';
 import '../models/poem_model.dart';
@@ -14,7 +15,7 @@ class PoemRepository {
       final result = await _poemService.getLatestPoems(limit: limit, cursor: cursor);
       return ApiResult.success(result);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -23,7 +24,7 @@ class PoemRepository {
       final result = await _poemService.getUserPoems(userId, limit: limit, cursor: cursor);
       return ApiResult.success(result);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -32,7 +33,7 @@ class PoemRepository {
       final poem = await _poemService.getPoemDetail(id);
       return ApiResult.success(poem);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -41,7 +42,7 @@ class PoemRepository {
       await _poemService.toggleBookmark(poemId, currentlyFavorited);
       return ApiResult.success(null);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -50,7 +51,7 @@ class PoemRepository {
       await _poemService.toggleLike(poemId, currentlyLiked);
       return ApiResult.success(null);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -59,7 +60,7 @@ class PoemRepository {
       final result = await _poemService.getPoemFavorites(limit: limit, cursor: cursor);
       return ApiResult.success(result);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -68,7 +69,7 @@ class PoemRepository {
       final results = await _poemService.getByCategory(categoryId);
       return ApiResult.success(results);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -77,7 +78,7 @@ class PoemRepository {
       final results = await _poemService.getByTag(tagId);
       return ApiResult.success(results);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -86,7 +87,7 @@ class PoemRepository {
       final result = await _poemService.search(query, limit: limit, cursor: cursor);
       return ApiResult.success(result);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -95,7 +96,7 @@ class PoemRepository {
       await _poemService.recordView(poemId);
       return ApiResult.success(null);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -104,7 +105,7 @@ class PoemRepository {
       final poem = await _poemService.updatePoem(id, data);
       return ApiResult.success(poem);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -113,7 +114,7 @@ class PoemRepository {
       await _poemService.deletePoem(id);
       return ApiResult.success(null);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -122,7 +123,7 @@ class PoemRepository {
       await _poemService.reportPoem(poemId, reason, description);
       return ApiResult.success(null);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -131,7 +132,7 @@ class PoemRepository {
       final result = await _poemService.createRevision(poemId, data);
       return ApiResult.success(result);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -140,7 +141,7 @@ class PoemRepository {
       final result = await _poemService.getPoemReports(poemId, limit: limit, cursor: cursor);
       return ApiResult.success(result);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 }

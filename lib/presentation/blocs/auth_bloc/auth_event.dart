@@ -20,3 +20,5 @@ class UpdateProfileRequested extends AuthEvent {
   final String? bio;
   UpdateProfileRequested(this.firstName, this.lastName, {this.bio});
 }
+
+class ClearAuthError extends AuthEvent {}

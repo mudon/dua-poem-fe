@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../constants/api_config.dart';
+import '../errors/error_helper.dart';
 
 class DioClient {
   static const String accessTokenKey = 'access_token';
@@ -14,6 +15,7 @@ class DioClient {
     _dio.options.connectTimeout = const Duration(seconds: 30);
     _dio.options.receiveTimeout = const Duration(seconds: 30);
     _dio.interceptors.add(_AuthInterceptor(_secureStorage, _dio));
+    _dio.interceptors.add(_ErrorInterceptor());
     _dio.interceptors.add(LogInterceptor(requestBody: true, responseBody: true));
   }
 
@@ -82,5 +84,20 @@ class _AuthInterceptor extends Interceptor {
       }
     }
     handler.next(err);
+  }
+}
+
+class _ErrorInterceptor extends Interceptor {
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    final cleanMessage = ErrorHelper.getUserFriendlyMessage(err);
+    handler.next(DioException(
+      requestOptions: err.requestOptions,
+      response: err.response,
+      type: err.type,
+      error: err.error,
+      message: cleanMessage,
+      stackTrace: err.stackTrace,
+    ));
   }
 }

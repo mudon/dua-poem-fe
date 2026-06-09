@@ -1,3 +1,4 @@
+import '../../core/errors/error_helper.dart';
 import '../../core/network/api_result.dart';
 import '../models/dua_model.dart';
 import '../models/paged_response.dart';
@@ -14,7 +15,7 @@ class DuaRepository {
       final result = await _duaService.getLatestDuas(limit: limit, cursor: cursor);
       return ApiResult.success(result);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -23,7 +24,7 @@ class DuaRepository {
       final result = await _duaService.getUserDuas(userId, limit: limit, cursor: cursor);
       return ApiResult.success(result);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -32,7 +33,7 @@ class DuaRepository {
       final dua = await _duaService.getDuaDetail(id);
       return ApiResult.success(dua);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -41,7 +42,7 @@ class DuaRepository {
       await _duaService.toggleBookmark(duaId, currentlyFavorited);
       return ApiResult.success(null);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -50,7 +51,7 @@ class DuaRepository {
       await _duaService.toggleLike(duaId, currentlyLiked);
       return ApiResult.success(null);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -59,7 +60,7 @@ class DuaRepository {
       final result = await _duaService.getFavorites(limit: limit, cursor: cursor);
       return ApiResult.success(result);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -68,7 +69,7 @@ class DuaRepository {
       final results = await _duaService.getByCategory(categoryId);
       return ApiResult.success(results);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -77,7 +78,7 @@ class DuaRepository {
       final results = await _duaService.getByTag(tagId);
       return ApiResult.success(results);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -86,7 +87,7 @@ class DuaRepository {
       final result = await _duaService.search(query, limit: limit, cursor: cursor);
       return ApiResult.success(result);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -95,7 +96,7 @@ class DuaRepository {
       await _duaService.recordView(duaId);
       return ApiResult.success(null);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -104,7 +105,7 @@ class DuaRepository {
       final dua = await _duaService.updateDua(id, data);
       return ApiResult.success(dua);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -113,7 +114,7 @@ class DuaRepository {
       await _duaService.deleteDua(id);
       return ApiResult.success(null);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -122,7 +123,7 @@ class DuaRepository {
       await _duaService.reportDua(duaId, reason, description);
       return ApiResult.success(null);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -131,7 +132,7 @@ class DuaRepository {
       final result = await _duaService.createRevision(duaId, data);
       return ApiResult.success(result);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -140,7 +141,7 @@ class DuaRepository {
       final result = await _duaService.getDuaReports(duaId, limit: limit, cursor: cursor);
       return ApiResult.success(result);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 }

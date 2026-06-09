@@ -1,3 +1,4 @@
+import '../../core/errors/error_helper.dart';
 import '../../core/network/api_result.dart';
 import '../models/leaderboard_entry.dart';
 import '../services/leaderboard_service.dart';
@@ -18,7 +19,7 @@ class LeaderboardRepository {
           .toList();
       return ApiResult.success({'duas': duas, 'poems': poems});
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 }

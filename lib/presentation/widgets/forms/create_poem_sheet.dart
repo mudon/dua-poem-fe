@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../app/dependency_injection.dart';
+import '../../../core/errors/error_helper.dart';
 import '../../../core/themes/app_theme.dart';
 import '../../../data/models/category_model.dart';
 import '../../../data/models/tag_model.dart';
@@ -55,8 +56,11 @@ class _CreatePoemSheetState extends State<CreatePoemSheet> {
           _loadingTags = false;
         });
       }
-    } catch (_) {
-      if (mounted) setState(() { _loadingCategories = false; _loadingTags = false; });
+    } catch (e) {
+      if (mounted) {
+        setState(() { _loadingCategories = false; _loadingTags = false; });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.userMessage), backgroundColor: Colors.red[400] ?? Colors.red));
+      }
     }
   }
 
@@ -79,16 +83,12 @@ class _CreatePoemSheetState extends State<CreatePoemSheet> {
       if (mounted) {
         widget.onCreated?.call();
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Poem published')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Poem published')));
       }
     } catch (e) {
       if (mounted) {
         setState(() => _submitting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.errorRed),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.userMessage), backgroundColor: Colors.red[400] ?? Colors.red));
       }
     }
   }

@@ -1,3 +1,4 @@
+import '../../core/errors/error_helper.dart';
 import '../../core/network/api_result.dart';
 import '../models/category_model.dart';
 import '../services/category_service.dart';
@@ -12,7 +13,7 @@ class CategoryRepository {
       final categories = await _categoryService.getAll();
       return ApiResult.success(categories);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -21,7 +22,7 @@ class CategoryRepository {
       final category = await _categoryService.getById(id);
       return ApiResult.success(category);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -30,7 +31,7 @@ class CategoryRepository {
       final category = await _categoryService.create(name, description);
       return ApiResult.success(category);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -39,7 +40,7 @@ class CategoryRepository {
       final category = await _categoryService.update(id, name, description);
       return ApiResult.success(category);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 
@@ -48,7 +49,7 @@ class CategoryRepository {
       await _categoryService.delete(id);
       return ApiResult.success(null);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(e.userMessage);
     }
   }
 }
