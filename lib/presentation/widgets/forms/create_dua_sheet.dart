@@ -77,9 +77,9 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
     try {
       final data = <String, dynamic>{
         'title': _titleCtrl.text.trim(),
-        'arabicText': _arabicCtrl.text.trim(),
+        'arabicText': _arabicCtrl.text.trim().isEmpty ? null : _arabicCtrl.text.trim(),
         'transliteration': _transliterationCtrl.text.trim().isEmpty ? null : _transliterationCtrl.text.trim(),
-        'translation': _translationCtrl.text.trim().isEmpty ? null : _translationCtrl.text.trim(),
+        'translation': _translationCtrl.text.trim(),
         'description': _descriptionCtrl.text.trim().isEmpty ? null : _descriptionCtrl.text.trim(),
         'whenToRecite': _whenToReciteCtrl.text.trim().isEmpty ? null : _whenToReciteCtrl.text.trim(),
         'occasion': _occasionCtrl.text.trim().isEmpty ? null : _occasionCtrl.text.trim(),
@@ -137,9 +137,9 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
                   children: [
                     _buildSection('Title *', _titleCtrl, required: true),
-                    _buildSection('Arabic Text *', _arabicCtrl, required: true, maxLines: 4, textDirection: TextDirection.rtl),
+                    _buildSection('Arabic Text', _arabicCtrl, maxLines: 4, textDirection: TextDirection.rtl),
                     _buildSection('Transliteration', _transliterationCtrl),
-                    _buildSection('Translation', _translationCtrl, maxLines: 3),
+                    _buildSection('Translation *', _translationCtrl, required: true, maxLines: 3),
                     _buildSection('Description', _descriptionCtrl, maxLines: 3),
                     _buildSection('When to Recite', _whenToReciteCtrl),
                     _buildSection('Occasion', _occasionCtrl),
