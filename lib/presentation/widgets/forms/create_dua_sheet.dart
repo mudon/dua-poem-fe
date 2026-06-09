@@ -40,6 +40,7 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
   bool _loadingTags = true;
   bool _submitting = false;
   bool _translating = false;
+  String? _errorMessage;
 
   final List<_SourceEntry> _sources = [];
 
@@ -78,15 +79,14 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() { _loadingCategories = false; _loadingTags = false; });
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.userMessage), backgroundColor: Colors.red[400] ?? Colors.red));
+        setState(() { _loadingCategories = false; _loadingTags = false; _errorMessage = e.userMessage; });
       }
     }
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _submitting = true);
+    setState(() { _submitting = true; _errorMessage = null; });
     try {
       final data = <String, dynamic>{
         'title': _titleCtrl.text.trim(),
@@ -115,12 +115,10 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
       if (mounted) {
         widget.onCreated?.call();
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Dua published')));
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _submitting = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.userMessage), backgroundColor: Colors.red[400] ?? Colors.red));
+        setState(() { _submitting = false; _errorMessage = e.userMessage; });
       }
     }
   }
@@ -128,7 +126,7 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
   Future<void> _translateToArabic() async {
     final text = _translationCtrl.text.trim();
     if (text.isEmpty) return;
-    setState(() => _translating = true);
+    setState(() { _translating = true; _errorMessage = null; });
     try {
       final dio = getIt<DioClient>().dio;
       final response = await dio.post('/translate', data: {
@@ -142,7 +140,7 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.userMessage), backgroundColor: Colors.red[400] ?? Colors.red));
+        setState(() => _errorMessage = e.userMessage);
       }
     } finally {
       if (mounted) setState(() => _translating = false);
@@ -170,6 +168,7 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
                   controller: scrollController,
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
                   children: [
+                    if (_errorMessage != null) _buildErrorBanner(),
                     _buildSection('Title *', _titleCtrl, required: true),
                     _buildSection('Arabic Text', _arabicCtrl, maxLines: 4, textDirection: TextDirection.rtl),
                     _buildSection('Transliteration', _transliterationCtrl),
@@ -240,6 +239,31 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
           const Expanded(child: Text('New Dua', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.earthBrown))),
           IconButton(icon: const Icon(Icons.close, color: AppTheme.earthBrown), onPressed: () => Navigator.of(context).pop()),
         ],
+      ),
+    );
+  }
+
+  Widget _buildErrorBanner() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.red.shade50,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.red.shade200),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(_errorMessage!, style: TextStyle(color: Colors.red.shade800, fontSize: 13)),
+            ),
+            GestureDetector(
+              onTap: () => setState(() => _errorMessage = null),
+              child: Icon(Icons.close, size: 18, color: Colors.red.shade400),
+            ),
+          ],
+        ),
       ),
     );
   }
