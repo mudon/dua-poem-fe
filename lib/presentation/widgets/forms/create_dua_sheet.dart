@@ -269,6 +269,7 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
   }
 
   Widget _buildSection(String label, TextEditingController ctrl, {bool required = false, int maxLines = 1, TextDirection textDirection = TextDirection.ltr}) {
+    final cleanLabel = label.replaceAll(' *', '');
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: TextFormField(
@@ -276,11 +277,21 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
         maxLines: maxLines,
         textDirection: textDirection,
         decoration: InputDecoration(
-          labelText: label,
+          label: required
+              ? RichText(
+                  text: TextSpan(
+                    text: cleanLabel,
+                    style: TextStyle(color: Colors.grey.shade500),
+                    children: const [
+                      TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+                    ],
+                  ),
+                )
+              : Text(cleanLabel, style: TextStyle(color: Colors.grey.shade500)),
           filled: true,
           fillColor: AppTheme.softCream,
         ),
-        validator: required ? (v) => (v == null || v.trim().isEmpty) ? '$label is required' : null : null,
+        validator: required ? (v) => (v == null || v.trim().isEmpty) ? '$cleanLabel is required' : null : null,
       ),
     );
   }
@@ -353,17 +364,23 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
               ? const Text('Loading...', style: TextStyle(color: AppTheme.earthBrown))
               : Wrap(
                   spacing: 8, runSpacing: 6,
-                  children: _tags.map((t) => FilterChip(
-                    label: Text(t.name),
-                    selected: _selectedTagIds.contains(t.id),
-                    selectedColor: AppTheme.sageMist,
-                    checkmarkColor: AppTheme.sage,
-                    onSelected: (sel) {
-                      setState(() {
-                        if (sel) { _selectedTagIds.add(t.id); } else { _selectedTagIds.remove(t.id); }
-                      });
-                    },
-                  )).toList(),
+                  children: _tags.map((t) {
+                    final isSelected = _selectedTagIds.contains(t.id);
+                    return FilterChip(
+                      label: Text(t.name, style: TextStyle(fontSize: 13, color: isSelected ? AppTheme.earthBrown : Colors.grey.shade600)),
+                      selected: isSelected,
+                      onSelected: (sel) {
+                        setState(() {
+                          if (sel) { _selectedTagIds.add(t.id); } else { _selectedTagIds.remove(t.id); }
+                        });
+                      },
+                      backgroundColor: Colors.grey.shade50,
+                      selectedColor: AppTheme.earthBrown.withValues(alpha: 0.12),
+                      checkmarkColor: AppTheme.earthBrown,
+                      side: BorderSide.none,
+                      visualDensity: VisualDensity.compact,
+                    );
+                  }).toList(),
                 ),
         ],
       ),

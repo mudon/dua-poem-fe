@@ -23,6 +23,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc(this._authRepo, this._userService, this._signalRService) : super(AuthInitial()) {
     on<LoginRequested>(_onLogin);
     on<SignupRequested>(_onSignup);
+    on<VerifyEmailRequested>(_onVerifyEmail);
+    on<ResendOtpRequested>(_onResendOtp);
+    on<ReturnToAuth>(_onReturnToAuth);
+    on<ShowForgotPassword>(_onShowForgotPassword);
+    on<ForgotPasswordRequested>(_onForgotPassword);
+    on<ResetPasswordSubmitted>(_onResetPassword);
+    on<CancelForgotPassword>(_onCancelForgotPassword);
     on<LogoutRequested>(_onLogout);
     on<CheckAuthStatus>(_onCheck);
     on<UpdateProfileRequested>(_onUpdateProfile);
@@ -36,6 +43,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _saveUser(result.data!);
       await _signalRService.connect();
       emit(Authenticated(result.data!));
+    } else if (result.code == 'EMAIL_NOT_VERIFIED') {
+      emit(EmailNotVerified(event.email));
     } else {
       emit(AuthError(result.error!));
     }
@@ -45,12 +54,64 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading());
     final result = await _authRepo.signup(event.firstName, event.lastName, event.email, event.password);
     if (result.isSuccess) {
+      emit(EmailNotVerified(result.data!));
+    } else {
+      emit(AuthError(result.error!));
+    }
+  }
+
+  Future<void> _onVerifyEmail(VerifyEmailRequested event, Emitter<AuthState> emit) async {
+    emit(EmailNotVerified(event.email, isLoading: true));
+    final result = await _authRepo.verifyEmail(event.email, event.code);
+    if (result.isSuccess) {
       await _saveUser(result.data!);
       await _signalRService.connect();
       emit(Authenticated(result.data!));
     } else {
-      emit(AuthError(result.error!));
+      emit(EmailNotVerified(event.email, error: result.error));
     }
+  }
+
+  Future<void> _onResendOtp(ResendOtpRequested event, Emitter<AuthState> emit) async {
+    emit(EmailNotVerified(event.email, isLoading: true));
+    final result = await _authRepo.resendOtp(event.email);
+    if (result.isSuccess) {
+      emit(EmailNotVerified(event.email));
+    } else {
+      emit(EmailNotVerified(event.email, error: result.error));
+    }
+  }
+
+  void _onReturnToAuth(ReturnToAuth event, Emitter<AuthState> emit) {
+    emit(Unauthenticated());
+  }
+
+  void _onShowForgotPassword(ShowForgotPassword event, Emitter<AuthState> emit) {
+    emit(ForgotPasswordMode());
+  }
+
+  Future<void> _onForgotPassword(ForgotPasswordRequested event, Emitter<AuthState> emit) async {
+    emit(ForgotPasswordMode(email: event.email, isLoading: true));
+    final result = await _authRepo.forgotPassword(event.email);
+    if (result.isSuccess) {
+      emit(ForgotPasswordMode(email: event.email, step: ForgotPasswordStep.reset));
+    } else {
+      emit(ForgotPasswordMode(email: event.email, step: ForgotPasswordStep.email, error: result.error));
+    }
+  }
+
+  Future<void> _onResetPassword(ResetPasswordSubmitted event, Emitter<AuthState> emit) async {
+    emit(ForgotPasswordMode(email: event.email, step: ForgotPasswordStep.reset, isLoading: true));
+    final result = await _authRepo.resetPassword(event.email, event.code, event.newPassword);
+    if (result.isSuccess) {
+      emit(PasswordResetSuccess());
+    } else {
+      emit(ForgotPasswordMode(email: event.email, step: ForgotPasswordStep.reset, error: result.error));
+    }
+  }
+
+  void _onCancelForgotPassword(CancelForgotPassword event, Emitter<AuthState> emit) {
+    emit(Unauthenticated());
   }
 
   Future<void> _onLogout(LogoutRequested event, Emitter<AuthState> emit) async {

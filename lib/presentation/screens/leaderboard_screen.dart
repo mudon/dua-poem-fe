@@ -11,8 +11,6 @@ import '../../data/models/signalr/leaderboard_update_model.dart';
 import '../../data/services/signalr_service.dart';
 import '../blocs/auth_bloc/auth_bloc.dart';
 import '../blocs/auth_bloc/auth_state.dart';
-import '../../data/models/user_model.dart';
-
 class LeaderboardScreen extends StatefulWidget {
   const LeaderboardScreen({super.key});
 

@@ -22,3 +22,29 @@ class UpdateProfileRequested extends AuthEvent {
 }
 
 class ClearAuthError extends AuthEvent {}
+
+class VerifyEmailRequested extends AuthEvent {
+  final String email, code;
+  VerifyEmailRequested(this.email, this.code);
+}
+
+class ResendOtpRequested extends AuthEvent {
+  final String email;
+  ResendOtpRequested(this.email);
+}
+
+class ReturnToAuth extends AuthEvent {}
+
+class ShowForgotPassword extends AuthEvent {}
+
+class ForgotPasswordRequested extends AuthEvent {
+  final String email;
+  ForgotPasswordRequested(this.email);
+}
+
+class ResetPasswordSubmitted extends AuthEvent {
+  final String email, code, newPassword;
+  ResetPasswordSubmitted(this.email, this.code, this.newPassword);
+}
+
+class CancelForgotPassword extends AuthEvent {}
