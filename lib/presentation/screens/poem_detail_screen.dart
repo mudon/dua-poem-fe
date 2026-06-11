@@ -16,7 +16,11 @@ class PoemDetailScreen extends StatefulWidget {
   final String poemId;
   final UserModel currentUser;
 
-  const PoemDetailScreen({super.key, required this.poemId, required this.currentUser});
+  const PoemDetailScreen({
+    super.key,
+    required this.poemId,
+    required this.currentUser,
+  });
 
   @override
   State<PoemDetailScreen> createState() => _PoemDetailScreenState();
@@ -106,7 +110,9 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
           _loadReports();
           Navigator.pop(ctx);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Revision submitted — reports updated')),
+            const SnackBar(
+              content: Text('Revision submitted — reports updated'),
+            ),
           );
         },
       ),
@@ -134,12 +140,19 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Delete Poem'),
-        content: const Text('Are you sure you want to delete this poem? This cannot be undone.'),
+        content: const Text(
+          'Are you sure you want to delete this poem? This cannot be undone.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: const Color(0xFFC25A3F)),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFFC25A3F),
+            ),
             child: const Text('Delete'),
           ),
         ],
@@ -170,10 +183,8 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => _PoemReportListSheet(
-        reports: _reports,
-        itemTitle: _poem!.title,
-      ),
+      builder: (ctx) =>
+          _PoemReportListSheet(reports: _reports, itemTitle: _poem!.title),
     );
   }
 
@@ -185,73 +196,103 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
         child: _loading
             ? const Center(child: CircularProgressIndicator())
             : _poem == null
-                ? Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: GestureDetector(
-                            onTap: () => Navigator.pop(context),
-                            child: const Row(
-                              children: [
-                                Icon(Icons.arrow_back, color: AppTheme.sage, size: 20),
-                                SizedBox(width: 8),
-                                Text('Back', style: TextStyle(color: AppTheme.sage, fontWeight: FontWeight.w500, fontSize: 15)),
-                              ],
+            ? Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: const Row(
+                        children: [
+                          Icon(
+                            Icons.arrow_back,
+                            color: AppTheme.sage,
+                            size: 20,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            'Back',
+                            style: TextStyle(
+                              color: AppTheme.sage,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 15,
                             ),
                           ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const Expanded(child: Center(child: Text('Poem not found'))),
+                ],
+              )
+            : BlocProvider.value(
+                value: getIt<PoemBloc>(),
+                child: BlocListener<PoemBloc, PoemState>(
+                  listener: (context, state) {
+                    if (state.error != null) {
+                      setState(() {
+                        if (state.actionType == 'like') {
+                          _isLiked = !_isLiked;
+                          _likeCount += _isLiked ? 1 : -1;
+                        } else if (state.actionType == 'bookmark') {
+                          _isBookmarked = !_isBookmarked;
+                          _bookmarkCount += _isBookmarked ? 1 : -1;
+                        }
+                      });
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text(state.error!)));
+                    }
+                    final count = state.likeCounts[widget.poemId];
+                    if (count != null && count != _likeCount) {
+                      setState(() => _likeCount = count);
+                    }
+                    if (state.actionType == 'signalr_report') {
+                      final c = state.reportCounts[widget.poemId];
+                      if (c != null) {
+                        setState(() => _pendingCount = c);
+                      }
+                    }
+                    if (state.actionType == 'report') {
+                      if (state.error != null) {
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(state.error!)));
+                      } else {
+                        _loadReports();
+                      }
+                    }
+                    if (state.actionType == 'content_updated' &&
+                        state.lastToggledPoemId == widget.poemId) {
+                      final update = state.contentUpdates[widget.poemId];
+                      if (update != null && _poem != null) {
+                        setState(() {
+                          _poem = _poem!.copyWith(
+                            title: update.title,
+                            content: update.content,
+                            transliteration: update.transliteration,
+                            translation: update.translation,
+                            description: update.description,
+                            author: update.author,
+                            updatedAt: update.updatedAt,
+                          );
+                        });
+                        _loadReports();
+                      }
+                    }
+                    if (state.actionType == 'deleted' &&
+                        state.lastToggledPoemId == widget.poemId) {
+                      if (context.mounted) context.pop();
+                    }
+                    if (state.actionType == 'delete_error') {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(state.error ?? 'Failed to delete'),
                         ),
-                        const Expanded(child: Center(child: Text('Poem not found'))),
-                      ],
-                    )
-                : BlocProvider.value(
-                    value: getIt<PoemBloc>(),
-                      child: BlocListener<PoemBloc, PoemState>(
-                          listener: (context, state) {
-                            if (state.error != null) {
-                              setState(() {
-                                if (state.actionType == 'like') {
-                                  _isLiked = !_isLiked;
-                                  _likeCount += _isLiked ? 1 : -1;
-                                } else if (state.actionType == 'bookmark') {
-                                  _isBookmarked = !_isBookmarked;
-                                  _bookmarkCount += _isBookmarked ? 1 : -1;
-                                }
-                              });
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(state.error!)),
-                              );
-                            }
-                            final count = state.likeCounts[widget.poemId];
-                            if (count != null && count != _likeCount) {
-                              setState(() => _likeCount = count);
-                            }
-                            if (state.actionType == 'content_updated' && state.lastToggledPoemId == widget.poemId) {
-                              final update = state.contentUpdates[widget.poemId];
-                              if (update != null && _poem != null) {
-                                setState(() {
-                                  _poem = _poem!.copyWith(
-                                    title: update.title,
-                                    content: update.content,
-                                    transliteration: update.transliteration,
-                                    translation: update.translation,
-                                    description: update.description,
-                                    author: update.author,
-                                    updatedAt: update.updatedAt,
-                                  );
-                                });
-                                _loadReports();
-                              }
-                            }
-                            if (state.actionType == 'deleted' && state.lastToggledPoemId == widget.poemId) {
-                              if (context.mounted) context.pop();
-                            }
-                            if (state.actionType == 'delete_error') {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(state.error ?? 'Failed to delete')),
-                              );
-                            }
-                          },
-                      child: SingleChildScrollView(
+                      );
+                    }
+                  },
+                  child: SingleChildScrollView(
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,9 +301,20 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                           onTap: () => Navigator.pop(context),
                           child: const Row(
                             children: [
-                              Icon(Icons.arrow_back, color: AppTheme.sage, size: 20),
+                              Icon(
+                                Icons.arrow_back,
+                                color: AppTheme.sage,
+                                size: 20,
+                              ),
                               SizedBox(width: 8),
-                              Text('Back', style: TextStyle(color: AppTheme.sage, fontWeight: FontWeight.w500, fontSize: 15)),
+                              Text(
+                                'Back',
+                                style: TextStyle(
+                                  color: AppTheme.sage,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 15,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -277,40 +329,74 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(_poem!.title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+                              Text(
+                                _poem!.title,
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                               const SizedBox(height: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 3,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: _poem!.verified ? const Color(0xFFE2F0DA) : const Color(0xFFFFF1E0),
+                                  color: _poem!.verified
+                                      ? const Color(0xFFE2F0DA)
+                                      : const Color(0xFFFFF1E0),
                                   borderRadius: BorderRadius.circular(30),
                                 ),
                                 child: Text(
-                                  _poem!.verified ? '✓ Verified' : '⏳ Pending Review',
+                                  _poem!.verified
+                                      ? '✓ Verified'
+                                      : '⏳ Pending Review',
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w500,
-                                    color: _poem!.verified ? const Color(0xFF3F7849) : const Color(0xFFC47D2E),
+                                    color: _poem!.verified
+                                        ? const Color(0xFF3F7849)
+                                        : const Color(0xFFC47D2E),
                                   ),
                                 ),
                               ),
                               const SizedBox(height: 12),
-                              DetailField(label: 'Author', value: _poem!.userName),
-                              if (_poem!.content != null && _poem!.content!.isNotEmpty) ...[
+                              DetailField(
+                                label: 'Author',
+                                value: _poem!.userName,
+                              ),
+                              if (_poem!.content != null &&
+                                  _poem!.content!.isNotEmpty) ...[
                                 const SizedBox(height: 12),
-                                DetailField(label: 'Poem text', value: _poem!.content!),
+                                DetailField(
+                                  label: 'Poem text',
+                                  value: _poem!.content!,
+                                ),
                               ],
                               if (_poem!.translation.isNotEmpty) ...[
                                 const SizedBox(height: 12),
-                                DetailField(label: 'Translation', value: _poem!.translation),
+                                DetailField(
+                                  label: 'Translation',
+                                  value: _poem!.translation,
+                                ),
                               ],
                               if (_poem!.tags.isNotEmpty) ...[
                                 const SizedBox(height: 12),
-                                const Text('Tags', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF9A8C79))),
+                                const Text(
+                                  'Tags',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF9A8C79),
+                                  ),
+                                ),
                                 const SizedBox(height: 6),
                                 Wrap(
                                   spacing: 6,
-                                  children: _poem!.tags.map((t) => _TagPill(label: t)).toList(),
+                                  children: _poem!.tags
+                                      .map((t) => _TagPill(label: t))
+                                      .toList(),
                                 ),
                               ],
                               const SizedBox(height: 16),
@@ -324,18 +410,32 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                                         _isLiked = !_isLiked;
                                         _likeCount += _isLiked ? 1 : -1;
                                       });
-                                      getIt<PoemBloc>().add(ToggleLike(_poem!.id, wasLiked, currentCount));
+                                      getIt<PoemBloc>().add(
+                                        ToggleLike(
+                                          _poem!.id,
+                                          wasLiked,
+                                          currentCount,
+                                        ),
+                                      );
                                     },
                                     child: Row(
                                       children: [
                                         Icon(
-                                          _isLiked ? Icons.favorite : Icons.favorite_border,
+                                          _isLiked
+                                              ? Icons.favorite
+                                              : Icons.favorite_border,
                                           color: const Color(0xFFD6B17E),
                                           size: 22,
                                         ),
                                         const SizedBox(width: 6),
-                                        Text('$_likeCount',
-                                          style: const TextStyle(color: Color(0xFFD6B17E), fontWeight: FontWeight.w500, fontSize: 14)),
+                                        Text(
+                                          '$_likeCount',
+                                          style: const TextStyle(
+                                            color: Color(0xFFD6B17E),
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 14,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -346,20 +446,36 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                                       final currentCount = _bookmarkCount;
                                       setState(() {
                                         _isBookmarked = !_isBookmarked;
-                                        _bookmarkCount += _isBookmarked ? 1 : -1;
+                                        _bookmarkCount += _isBookmarked
+                                            ? 1
+                                            : -1;
                                       });
-                                      getIt<PoemBloc>().add(ToggleBookmark(_poem!.id, wasBookmarked, currentCount));
+                                      getIt<PoemBloc>().add(
+                                        ToggleBookmark(
+                                          _poem!.id,
+                                          wasBookmarked,
+                                          currentCount,
+                                        ),
+                                      );
                                     },
                                     child: Row(
                                       children: [
                                         Icon(
-                                          _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                                          _isBookmarked
+                                              ? Icons.bookmark
+                                              : Icons.bookmark_border,
                                           color: const Color(0xFFAB9F8E),
                                           size: 22,
                                         ),
                                         const SizedBox(width: 6),
-                                        Text('$_bookmarkCount',
-                                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFFAB9F8E))),
+                                        Text(
+                                          '$_bookmarkCount',
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                            color: Color(0xFFAB9F8E),
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -370,7 +486,15 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                                 width: double.infinity,
                                 child: ElevatedButton.icon(
                                   onPressed: () {
-                                    final reasons = ['wrong_transliteration', 'wrong_translation', 'wrong_author', 'inappropriate_content', 'duplicate_poem', 'copyright_violation', 'other'];
+                                    final reasons = [
+                                      'wrong_transliteration',
+                                      'wrong_translation',
+                                      'wrong_author',
+                                      'inappropriate_content',
+                                      'duplicate_poem',
+                                      'copyright_violation',
+                                      'other',
+                                    ];
                                     showModalBottomSheet(
                                       context: context,
                                       isScrollControlled: true,
@@ -379,23 +503,42 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                                         title: _poem!.title,
                                         reasons: reasons,
                                         onSubmit: (reason, desc) {
-                                          getIt<PoemBloc>().add(ReportPoem(_poem!.id, reason, desc));
+                                          getIt<PoemBloc>().add(
+                                            ReportPoem(_poem!.id, reason, desc),
+                                          );
                                           Navigator.pop(ctx);
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(content: Text('Report submitted')),
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text('Report submitted'),
+                                            ),
                                           );
                                         },
-                                    ),
+                                      ),
                                     );
-                                    },
-                                    onLongPress: () => _showReportsPopup(context),
-                                    icon: const Icon(Icons.flag_outlined, size: 16),
-                                  label: const Text('Report this content', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                                  },
+                                  onLongPress: () => _showReportsPopup(context),
+                                  icon: const Icon(
+                                    Icons.flag_outlined,
+                                    size: 16,
+                                  ),
+                                  label: const Text(
+                                    'Report this content',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 14,
+                                    ),
+                                  ),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFFFEF1EC),
                                     foregroundColor: const Color(0xFFC25A3F),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(40),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 14,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -405,13 +548,26 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                                   width: double.infinity,
                                   child: ElevatedButton.icon(
                                     onPressed: _showEditSheet,
-                                    icon: const Icon(Icons.edit_outlined, size: 16),
-                                    label: const Text('Edit', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                                    icon: const Icon(
+                                      Icons.edit_outlined,
+                                      size: 16,
+                                    ),
+                                    label: const Text(
+                                      'Edit',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 14,
+                                      ),
+                                    ),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFFE8F0E2),
                                       foregroundColor: const Color(0xFF3F7849),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
-                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(40),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 14,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -420,19 +576,38 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                                   width: double.infinity,
                                   child: ElevatedButton.icon(
                                     onPressed: _deletePoem,
-                                    icon: const Icon(Icons.delete_outline, size: 16),
-                                    label: const Text('Delete', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                                    icon: const Icon(
+                                      Icons.delete_outline,
+                                      size: 16,
+                                    ),
+                                    label: const Text(
+                                      'Delete',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 14,
+                                      ),
+                                    ),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFFFEF1EC),
                                       foregroundColor: const Color(0xFFC25A3F),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
-                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(40),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 14,
+                                      ),
                                     ),
                                   ),
                                 ),
                                 const SizedBox(height: 8),
                                 Badge(
-                                  label: Text('$_pendingCount', style: const TextStyle(color: Colors.white, fontSize: 11)),
+                                  label: Text(
+                                    '$_pendingCount',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                    ),
+                                  ),
                                   isLabelVisible: _pendingCount > 0,
                                   backgroundColor: const Color(0xFFC25A3F),
                                   textColor: Colors.white,
@@ -440,13 +615,32 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                                     width: double.infinity,
                                     child: ElevatedButton.icon(
                                       onPressed: () => _showFixSheet(context),
-                                      icon: const Icon(Icons.edit_outlined, size: 16),
-                                      label: const Text('Fix & Update', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                                      icon: const Icon(
+                                        Icons.edit_outlined,
+                                        size: 16,
+                                      ),
+                                      label: const Text(
+                                        'Fix & Update',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 14,
+                                        ),
+                                      ),
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFFE8F0E2),
-                                        foregroundColor: const Color(0xFF3F7849),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
-                                        padding: const EdgeInsets.symmetric(vertical: 14),
+                                        backgroundColor: const Color(
+                                          0xFFE8F0E2,
+                                        ),
+                                        foregroundColor: const Color(
+                                          0xFF3F7849,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            40,
+                                          ),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 14,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -457,9 +651,9 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                         ),
                       ],
                     ),
-                    ),
-          ),
-        ),
+                  ),
+                ),
+              ),
       ),
     );
   }
@@ -472,31 +666,56 @@ class _PoemReportListSheet extends StatelessWidget {
   const _PoemReportListSheet({required this.reports, required this.itemTitle});
 
   String _formatReason(String reason) {
-    return reason.replaceAll('_', ' ').split(' ').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' ');
+    return reason
+        .replaceAll('_', ' ')
+        .split(' ')
+        .map(
+          (w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '',
+        )
+        .join(' ');
   }
 
   Color _statusColor(String status) {
     switch (status) {
-      case 'pending': return const Color(0xFFD68B2E);
-      case 'fix_submitted': return const Color(0xFF4A7BBF);
-      case 'resolved': return const Color(0xFF3F7849);
-      case 'dismissed': return const Color(0xFF9A8C79);
-      default: return const Color(0xFF9A8C79);
+      case 'pending':
+        return const Color(0xFFD68B2E);
+      case 'fix_submitted':
+        return const Color(0xFF4A7BBF);
+      case 'resolved':
+        return const Color(0xFF3F7849);
+      case 'dismissed':
+        return const Color(0xFF9A8C79);
+      default:
+        return const Color(0xFF9A8C79);
     }
   }
 
   String _statusLabel(String status) {
-    return status.replaceAll('_', ' ').split(' ').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' ');
+    return status
+        .replaceAll('_', ' ')
+        .split(' ')
+        .map(
+          (w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '',
+        )
+        .join(' ');
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.7,
+      ),
       decoration: const BoxDecoration(
         color: Color(0xFFFEFCF5),
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 20, offset: Offset(0, -6))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 20,
+            offset: Offset(0, -6),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -513,10 +732,21 @@ class _PoemReportListSheet extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.flag_outlined, size: 18, color: Color(0xFF7C9A6E)),
+                    const Icon(
+                      Icons.flag_outlined,
+                      size: 18,
+                      color: Color(0xFF7C9A6E),
+                    ),
                     const SizedBox(width: 8),
-                    Text(reports.length == 1 ? '1 Report' : '${reports.length} Reports',
-                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                    Text(
+                      reports.length == 1
+                          ? '1 Report'
+                          : '${reports.length} Reports',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
                   ],
                 ),
                 GestureDetector(
@@ -528,11 +758,17 @@ class _PoemReportListSheet extends StatelessWidget {
           ),
           Flexible(
             child: reports.isEmpty
-                ? const Center(child: Text('No reports yet', style: TextStyle(color: Color(0xFF9A8C79))))
+                ? const Center(
+                    child: Text(
+                      'No reports yet',
+                      style: TextStyle(color: Color(0xFF9A8C79)),
+                    ),
+                  )
                 : ListView.separated(
                     padding: const EdgeInsets.all(16),
                     itemCount: reports.length,
-                    separatorBuilder: (_, _) => const Divider(height: 16, color: Color(0xFFEFE8DE)),
+                    separatorBuilder: (_, _) =>
+                        const Divider(height: 16, color: Color(0xFFEFE8DE)),
                     itemBuilder: (context, index) {
                       final r = reports[index];
                       return Column(
@@ -541,16 +777,27 @@ class _PoemReportListSheet extends StatelessWidget {
                           Row(
                             children: [
                               Expanded(
-                                child: Text(_formatReason(r.reason),
-                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                                child: Text(
+                                  _formatReason(r.reason),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
+                                ),
                               ),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: _statusColor(r.status).withValues(alpha: 0.15),
+                                  color: _statusColor(
+                                    r.status,
+                                  ).withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(30),
                                 ),
-                                child: Text(_statusLabel(r.status),
+                                child: Text(
+                                  _statusLabel(r.status),
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w500,
@@ -560,18 +807,28 @@ class _PoemReportListSheet extends StatelessWidget {
                               ),
                             ],
                           ),
-                          if (r.description != null && r.description!.isNotEmpty) ...[
+                          if (r.description != null &&
+                              r.description!.isNotEmpty) ...[
                             const SizedBox(height: 4),
-                            Text(r.description!,
-                              style: const TextStyle(fontSize: 13, color: Color(0xFF6B6152)),
+                            Text(
+                              r.description!,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF6B6152),
+                              ),
                               maxLines: 3,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ],
                           if (r.createdAt != null) ...[
                             const SizedBox(height: 4),
-                            Text(r.createdAt!,
-                              style: const TextStyle(fontSize: 11, color: Color(0xFFAB9F8E))),
+                            Text(
+                              r.createdAt!,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFFAB9F8E),
+                              ),
+                            ),
                           ],
                         ],
                       );
@@ -641,13 +898,14 @@ class _PoemFixSheetState extends State<_PoemFixSheet> {
       return;
     }
     setState(() => _submitting = true);
-    final data = <String, dynamic>{
-      'reportIds': _selectedReportIds.toList(),
-    };
+    final data = <String, dynamic>{'reportIds': _selectedReportIds.toList()};
     if (_titleCtrl.text != widget.initialTitle) data['title'] = _titleCtrl.text;
-    if (_contentCtrl.text != widget.initialContent) data['content'] = _contentCtrl.text;
-    if (_transliterationCtrl.text != widget.initialTransliteration) data['transliteration'] = _transliterationCtrl.text;
-    if (_translationCtrl.text != widget.initialTranslation) data['translation'] = _translationCtrl.text;
+    if (_contentCtrl.text != widget.initialContent)
+      data['content'] = _contentCtrl.text;
+    if (_transliterationCtrl.text != widget.initialTransliteration)
+      data['transliteration'] = _transliterationCtrl.text;
+    if (_translationCtrl.text != widget.initialTranslation)
+      data['translation'] = _translationCtrl.text;
 
     final repo = getIt<PoemRepository>();
     final result = await repo.createRevision(widget.poemId, data);
@@ -665,11 +923,19 @@ class _PoemFixSheetState extends State<_PoemFixSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
       decoration: const BoxDecoration(
         color: Color(0xFFFEFCF5),
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 20, offset: Offset(0, -6))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 20,
+            offset: Offset(0, -6),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -686,9 +952,19 @@ class _PoemFixSheetState extends State<_PoemFixSheet> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF7C9A6E)),
+                    const Icon(
+                      Icons.edit_outlined,
+                      size: 18,
+                      color: Color(0xFF7C9A6E),
+                    ),
                     const SizedBox(width: 8),
-                    const Text('Fix & Update', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                    const Text(
+                      'Fix & Update',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
                   ],
                 ),
                 GestureDetector(
@@ -704,10 +980,25 @@ class _PoemFixSheetState extends State<_PoemFixSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Reports to fix', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFF9A8C79))),
+                  const Text(
+                    'Reports to fix',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                      color: Color(0xFF9A8C79),
+                    ),
+                  ),
                   const SizedBox(height: 6),
                   ...widget.pendingReports.map((r) {
-                    final label = r.reason.replaceAll('_', ' ').split(' ').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' ');
+                    final label = r.reason
+                        .replaceAll('_', ' ')
+                        .split(' ')
+                        .map(
+                          (w) => w.isNotEmpty
+                              ? '${w[0].toUpperCase()}${w.substring(1)}'
+                              : '',
+                        )
+                        .join(' ');
                     final isSelected = _selectedReportIds.contains(r.id);
                     return GestureDetector(
                       onTap: () {
@@ -720,23 +1011,42 @@ class _PoemFixSheetState extends State<_PoemFixSheet> {
                         });
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 8,
+                        ),
                         child: Row(
                           children: [
                             Icon(
-                              isSelected ? Icons.check_box : Icons.check_box_outline_blank,
-                              color: isSelected ? AppTheme.sage : const Color(0xFFAB9F8E),
+                              isSelected
+                                  ? Icons.check_box
+                                  : Icons.check_box_outline_blank,
+                              color: isSelected
+                                  ? AppTheme.sage
+                                  : const Color(0xFFAB9F8E),
                               size: 22,
                             ),
                             const SizedBox(width: 8),
-                            Expanded(child: Text(label, style: const TextStyle(fontSize: 13))),
+                            Expanded(
+                              child: Text(
+                                label,
+                                style: const TextStyle(fontSize: 13),
+                              ),
+                            ),
                           ],
                         ),
                       ),
                     );
                   }),
                   const SizedBox(height: 16),
-                  const Text('Updated content', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFF9A8C79))),
+                  const Text(
+                    'Updated content',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                      color: Color(0xFF9A8C79),
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _titleCtrl,
@@ -744,8 +1054,14 @@ class _PoemFixSheetState extends State<_PoemFixSheet> {
                       labelText: 'Title',
                       filled: true,
                       fillColor: Color(0xFFF7F3ED),
-                      border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(16))),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -755,8 +1071,14 @@ class _PoemFixSheetState extends State<_PoemFixSheet> {
                       labelText: 'Poem text',
                       filled: true,
                       fillColor: Color(0xFFF7F3ED),
-                      border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(16))),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                     ),
                     maxLines: 4,
                   ),
@@ -767,8 +1089,14 @@ class _PoemFixSheetState extends State<_PoemFixSheet> {
                       labelText: 'Transliteration',
                       filled: true,
                       fillColor: Color(0xFFF7F3ED),
-                      border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(16))),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -778,8 +1106,14 @@ class _PoemFixSheetState extends State<_PoemFixSheet> {
                       labelText: 'Translation',
                       filled: true,
                       fillColor: Color(0xFFF7F3ED),
-                      border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(16))),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                     ),
                     maxLines: 2,
                   ),
@@ -796,11 +1130,24 @@ class _PoemFixSheetState extends State<_PoemFixSheet> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFE8F0E2),
                   foregroundColor: const Color(0xFF3F7849),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
-                  padding: const EdgeInsets.symmetric(vertical: 14)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(40),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
                 child: _submitting
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF3F7849)))
-                    : const Text('Submit Fix', style: TextStyle(fontWeight: FontWeight.w600)),
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Color(0xFF3F7849),
+                        ),
+                      )
+                    : const Text(
+                        'Submit Fix',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
               ),
             ),
           ),
@@ -856,30 +1203,40 @@ class _PoemEditSheetState extends State<_PoemEditSheet> {
 
   Future<void> _save() async {
     if (_titleCtrl.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Title is required')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Title is required')));
       return;
     }
     setState(() => _saving = true);
-    getIt<PoemBloc>().add(UpdatePoem(
-      poemId: widget.poemId,
-      title: _titleCtrl.text,
-      content: _contentCtrl.text,
-      transliteration: _transliterationCtrl.text,
-      translation: _translationCtrl.text,
-    ));
+    getIt<PoemBloc>().add(
+      UpdatePoem(
+        poemId: widget.poemId,
+        title: _titleCtrl.text,
+        content: _contentCtrl.text,
+        transliteration: _transliterationCtrl.text,
+        translation: _translationCtrl.text,
+      ),
+    );
     Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
       decoration: const BoxDecoration(
         color: Color(0xFFFEFCF5),
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 20, offset: Offset(0, -6))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 20,
+            offset: Offset(0, -6),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -896,9 +1253,19 @@ class _PoemEditSheetState extends State<_PoemEditSheet> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF7C9A6E)),
+                    const Icon(
+                      Icons.edit_outlined,
+                      size: 18,
+                      color: Color(0xFF7C9A6E),
+                    ),
                     const SizedBox(width: 8),
-                    const Text('Edit Poem', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                    const Text(
+                      'Edit Poem',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
                   ],
                 ),
                 GestureDetector(
@@ -920,8 +1287,14 @@ class _PoemEditSheetState extends State<_PoemEditSheet> {
                       labelText: 'Title',
                       filled: true,
                       fillColor: Color(0xFFF7F3ED),
-                      border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(16))),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -931,8 +1304,14 @@ class _PoemEditSheetState extends State<_PoemEditSheet> {
                       labelText: 'Poem text',
                       filled: true,
                       fillColor: Color(0xFFF7F3ED),
-                      border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(16))),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                     ),
                     maxLines: 4,
                   ),
@@ -943,8 +1322,14 @@ class _PoemEditSheetState extends State<_PoemEditSheet> {
                       labelText: 'Transliteration',
                       filled: true,
                       fillColor: Color(0xFFF7F3ED),
-                      border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(16))),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -954,8 +1339,14 @@ class _PoemEditSheetState extends State<_PoemEditSheet> {
                       labelText: 'Translation',
                       filled: true,
                       fillColor: Color(0xFFF7F3ED),
-                      border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(16))),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                     ),
                     maxLines: 2,
                   ),
@@ -972,11 +1363,24 @@ class _PoemEditSheetState extends State<_PoemEditSheet> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFE8F0E2),
                   foregroundColor: const Color(0xFF3F7849),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
-                  padding: const EdgeInsets.symmetric(vertical: 14)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(40),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
                 child: _saving
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF3F7849)))
-                    : const Text('Save', style: TextStyle(fontWeight: FontWeight.w600)),
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Color(0xFF3F7849),
+                        ),
+                      )
+                    : const Text(
+                        'Save',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
               ),
             ),
           ),
@@ -991,15 +1395,28 @@ class DetailField extends StatelessWidget {
   final String label;
   final String value;
 
-
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF9A8C79))),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF9A8C79),
+          ),
+        ),
         const SizedBox(height: 4),
-        Text(value, style: const TextStyle(fontSize: 14, color: Color(0xFF3C3730), height: 1.4)),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Color(0xFF3C3730),
+            height: 1.4,
+          ),
+        ),
       ],
     );
   }
@@ -1019,7 +1436,11 @@ class _TagPill extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: Color(0xFF5D6F4A)),
+        style: const TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w500,
+          color: Color(0xFF5D6F4A),
+        ),
       ),
     );
   }
@@ -1030,7 +1451,11 @@ class _PoemDetailReportSheet extends StatefulWidget {
   final List<String> reasons;
   final Function(String reason, String description) onSubmit;
 
-  const _PoemDetailReportSheet({required this.title, required this.reasons, required this.onSubmit});
+  const _PoemDetailReportSheet({
+    required this.title,
+    required this.reasons,
+    required this.onSubmit,
+  });
 
   @override
   State<_PoemDetailReportSheet> createState() => _PoemDetailReportSheetState();
@@ -1049,11 +1474,19 @@ class _PoemDetailReportSheetState extends State<_PoemDetailReportSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.7,
+      ),
       decoration: const BoxDecoration(
         color: Color(0xFFFEFCF5),
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 20, offset: Offset(0, -6))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 20,
+            offset: Offset(0, -6),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1070,10 +1503,19 @@ class _PoemDetailReportSheetState extends State<_PoemDetailReportSheet> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.flag_outlined, size: 18, color: Color(0xFF7C9A6E)),
+                    const Icon(
+                      Icons.flag_outlined,
+                      size: 18,
+                      color: Color(0xFF7C9A6E),
+                    ),
                     SizedBox(width: 8),
-                    Text('Report: ${widget.title}',
-                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                    Text(
+                      'Report: ${widget.title}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
                   ],
                 ),
                 GestureDetector(
@@ -1089,17 +1531,32 @@ class _PoemDetailReportSheetState extends State<_PoemDetailReportSheet> {
               child: Column(
                 children: List.generate(widget.reasons.length, (i) {
                   final r = widget.reasons[i];
-                  final label = r.replaceAll('_', ' ').split(' ').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' ');
+                  final label = r
+                      .replaceAll('_', ' ')
+                      .split(' ')
+                      .map(
+                        (w) => w.isNotEmpty
+                            ? '${w[0].toUpperCase()}${w.substring(1)}'
+                            : '',
+                      )
+                      .join(' ');
                   final isSelected = _selectedIndex == i;
                   return GestureDetector(
                     onTap: () => setState(() => _selectedIndex = i),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       child: Row(
                         children: [
                           Icon(
-                            isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                            color: isSelected ? AppTheme.sage : const Color(0xFFAB9F8E),
+                            isSelected
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_unchecked,
+                            color: isSelected
+                                ? AppTheme.sage
+                                : const Color(0xFFAB9F8E),
                             size: 22,
                           ),
                           const SizedBox(width: 8),
@@ -1120,8 +1577,14 @@ class _PoemDetailReportSheetState extends State<_PoemDetailReportSheet> {
                 hintText: 'Description (optional)',
                 filled: true,
                 fillColor: Color(0xFFF7F3ED),
-                border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(16))),
-                contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                border: OutlineInputBorder(
+                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.all(Radius.circular(16)),
+                ),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
               ),
               maxLines: 2,
             ),
@@ -1131,13 +1594,22 @@ class _PoemDetailReportSheetState extends State<_PoemDetailReportSheet> {
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => widget.onSubmit(widget.reasons[_selectedIndex], _descCtrl.text),
+                onPressed: () => widget.onSubmit(
+                  widget.reasons[_selectedIndex],
+                  _descCtrl.text,
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFEF1EC),
                   foregroundColor: const Color(0xFFC25A3F),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
-                  padding: const EdgeInsets.symmetric(vertical: 14)),
-                child: const Text('Submit Report', style: TextStyle(fontWeight: FontWeight.w600)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(40),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                child: const Text(
+                  'Submit Report',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
               ),
             ),
           ),
