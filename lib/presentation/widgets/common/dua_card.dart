@@ -31,11 +31,20 @@ class _DuaCardState extends State<DuaCard> {
   late int _activeReportCount;
   late int _viewCount;
   late bool _needsFix;
+  late String _title;
+  late String? _arabicText;
+  late String? _transliteration;
+  late String _translation;
+  late String _userName;
+  late String? _avatarType;
+  late String? _avatarValue;
+  late String? _selectedBadgeSlug;
 
   @override
   void initState() {
     super.initState();
     final blocState = context.read<DuaBloc>().state;
+    final contentUpdate = blocState.contentUpdates[widget.dua.id];
     _isLiked = blocState.likedStates[widget.dua.id] ?? widget.dua.isLiked;
     _likeCount = blocState.likeCounts[widget.dua.id] ?? widget.dua.likeCount;
     _isBookmarked = blocState.favoritedStates[widget.dua.id] ?? widget.dua.isFavorited;
@@ -43,6 +52,14 @@ class _DuaCardState extends State<DuaCard> {
     _viewCount = blocState.viewCounts[widget.dua.id] ?? widget.dua.views;
     _activeReportCount = blocState.reportCounts[widget.dua.id] ?? widget.dua.activeReportCount;
     _needsFix = widget.currentUser.id == widget.dua.userId && blocState.returnedReportIds.contains(widget.dua.id);
+    _title = contentUpdate?.title ?? widget.dua.title;
+    _arabicText = contentUpdate?.arabicText ?? widget.dua.arabicText;
+    _transliteration = contentUpdate?.transliteration ?? widget.dua.transliteration;
+    _translation = contentUpdate?.translation ?? widget.dua.translation;
+    _userName = widget.dua.userName;
+    _avatarType = widget.dua.createdByAvatarType;
+    _avatarValue = widget.dua.createdByAvatarValue;
+    _selectedBadgeSlug = widget.dua.createdBySelectedBadgeSlug;
   }
 
   @override
@@ -55,8 +72,13 @@ class _DuaCardState extends State<DuaCard> {
         oldWidget.dua.likeCount != widget.dua.likeCount ||
         oldWidget.dua.isLiked != widget.dua.isLiked ||
         oldWidget.dua.bookmarkCount != widget.dua.bookmarkCount ||
-        oldWidget.dua.isFavorited != widget.dua.isFavorited) {
+        oldWidget.dua.isFavorited != widget.dua.isFavorited ||
+        oldWidget.dua.userName != widget.dua.userName ||
+        oldWidget.dua.createdByAvatarType != widget.dua.createdByAvatarType ||
+        oldWidget.dua.createdByAvatarValue != widget.dua.createdByAvatarValue ||
+        oldWidget.dua.createdBySelectedBadgeSlug != widget.dua.createdBySelectedBadgeSlug) {
       final blocState = context.read<DuaBloc>().state;
+      final contentUpdate = blocState.contentUpdates[widget.dua.id];
       _isLiked = blocState.likedStates[widget.dua.id] ?? widget.dua.isLiked;
       _likeCount = blocState.likeCounts[widget.dua.id] ?? widget.dua.likeCount;
       _isBookmarked = blocState.favoritedStates[widget.dua.id] ?? widget.dua.isFavorited;
@@ -64,6 +86,14 @@ class _DuaCardState extends State<DuaCard> {
       _viewCount = blocState.viewCounts[widget.dua.id] ?? widget.dua.views;
       _activeReportCount = blocState.reportCounts[widget.dua.id] ?? widget.dua.activeReportCount;
       _needsFix = widget.currentUser.id == widget.dua.userId && blocState.returnedReportIds.contains(widget.dua.id);
+      _title = contentUpdate?.title ?? widget.dua.title;
+      _arabicText = contentUpdate?.arabicText ?? widget.dua.arabicText;
+      _transliteration = contentUpdate?.transliteration ?? widget.dua.transliteration;
+      _translation = contentUpdate?.translation ?? widget.dua.translation;
+      _userName = widget.dua.userName;
+      _avatarType = widget.dua.createdByAvatarType;
+      _avatarValue = widget.dua.createdByAvatarValue;
+      _selectedBadgeSlug = widget.dua.createdBySelectedBadgeSlug;
     }
   }
 
@@ -149,7 +179,15 @@ class _DuaCardState extends State<DuaCard> {
           }
         } else if (state.actionType == 'content_updated') {
           if (state.lastToggledDuaId != widget.dua.id) return;
-          setState(() {});
+          final update = state.contentUpdates[widget.dua.id];
+          if (update != null) {
+            setState(() {
+              _title = update.title;
+              if (update.arabicText != null) _arabicText = update.arabicText;
+              if (update.transliteration != null) _transliteration = update.transliteration;
+              if (update.translation != null) _translation = update.translation!;
+            });
+          }
         }
       },
       child: GestureDetector(
@@ -179,7 +217,7 @@ class _DuaCardState extends State<DuaCard> {
                   child: Row(
                     children: [
                       Flexible(
-                        child: Text(widget.dua.title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                        child: Text(_title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                       ),
                       const SizedBox(width: 8),
                       Container(
@@ -220,13 +258,13 @@ class _DuaCardState extends State<DuaCard> {
                 ),
               ],
             ),
-            if (widget.dua.arabicText != null) ...[
+            if (_arabicText != null) ...[
               const SizedBox(height: 8),
-              Text(widget.dua.arabicText!, textDirection: TextDirection.rtl, style: const TextStyle(fontSize: 18, fontFamily: 'serif', color: Color(0xFF2F3E2C))),
+              Text(_arabicText!, textDirection: TextDirection.rtl, style: const TextStyle(fontSize: 18, fontFamily: 'serif', color: Color(0xFF2F3E2C))),
             ],
-            if (widget.dua.transliteration != null) ...[
+            if (_transliteration != null) ...[
               const SizedBox(height: 4),
-              Text(widget.dua.transliteration!, style: const TextStyle(fontStyle: FontStyle.italic, fontSize: 12, color: Color(0xFF7A6B5A))),
+              Text(_transliteration!, style: const TextStyle(fontStyle: FontStyle.italic, fontSize: 12, color: Color(0xFF7A6B5A))),
             ],
             const SizedBox(height: 6),
             Container(
@@ -234,7 +272,7 @@ class _DuaCardState extends State<DuaCard> {
               decoration: const BoxDecoration(
                 border: Border(left: BorderSide(color: Color(0xFFA8C39B), width: 3)),
               ),
-              child: Text(widget.dua.translation, style: const TextStyle(fontSize: 13, color: Color(0xFF4C473F))),
+              child: Text(_translation, style: const TextStyle(fontSize: 13, color: Color(0xFF4C473F))),
             ),
             const SizedBox(height: 8),
             Row(
@@ -257,21 +295,21 @@ class _DuaCardState extends State<DuaCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 GestureDetector(
-                  onTap: () => context.push('/user/${widget.dua.userId}', extra: widget.dua.userName),
+                  onTap: () => context.push('/user/${widget.dua.userId}', extra: _userName),
                   child: Row(
                     children: [
                       AvatarWithBadge(
-                        avatarType: widget.dua.createdByAvatarType,
-                        avatarValue: widget.dua.createdByAvatarValue,
-                        name: widget.dua.userName,
-                        showBadge: widget.dua.createdBySelectedBadgeSlug != null,
+                        avatarType: _avatarType,
+                        avatarValue: _avatarValue,
+                        name: _userName,
+                        showBadge: _selectedBadgeSlug != null,
                         size: 16,
                       ),
                       const SizedBox(width: 8),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(widget.dua.userName, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF5C5346))),
+                          Text(_userName, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF5C5346))),
                           const SizedBox(height: 2),
                           Row(
                             children: [

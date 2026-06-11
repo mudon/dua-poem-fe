@@ -1,3 +1,6 @@
+import '../../../data/models/dua_model.dart';
+import '../../../data/models/poem_model.dart';
+
 abstract class HomeEvent {}
 
 class FetchLatestDuas extends HomeEvent {
@@ -38,6 +41,16 @@ class SearchRequested extends HomeEvent {
 }
 
 class ClearSearch extends HomeEvent {}
+
+class InsertDua extends HomeEvent {
+  final DuaModel dua;
+  InsertDua(this.dua);
+}
+
+class InsertPoem extends HomeEvent {
+  final PoemModel poem;
+  InsertPoem(this.poem);
+}
 
 class FetchMoreSearchResults extends HomeEvent {
   final String query;

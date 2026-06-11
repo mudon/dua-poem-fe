@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../app/dependency_injection.dart';
 import '../../../data/models/signalr/poem_content_update_model.dart';
 import '../../../data/repositories/poem_repository.dart';
+import '../../../data/models/poem_model.dart';
 import '../../../data/services/signalr_service.dart';
 import 'poem_event.dart';
 import 'poem_state.dart';
@@ -29,6 +30,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     on<DeletePoem>(_onDeletePoem);
     on<SignalRPoemDeleted>(_onSignalRPoemDeleted);
     on<SignalRPoemContentUpdated>(_onSignalRPoemContentUpdated);
+    on<SignalRPoemCreated>(_onSignalRPoemCreated);
     _listenToSignalR();
     _listenToNotifications();
   }
@@ -80,6 +82,13 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     getIt<SignalRService>().onPoemDeleted.listen((poemId) {
       try {
         add(SignalRPoemDeleted(poemId));
+      } catch (_) {}
+    });
+
+    getIt<SignalRService>().onPoemCreated.listen((data) {
+      try {
+        final poem = PoemModel.fromApiJson(data);
+        add(SignalRPoemCreated(poem));
       } catch (_) {}
     });
   }
@@ -162,7 +171,17 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
   }
 
   void _onPoemCreated(PoemCreated event, Emitter<PoemState> emit) {
-    emit(state.copyWith(actionType: 'created', lastToggledPoemId: ''));
+    emit(state.copyWith(actionType: 'created', lastToggledPoemId: event.poem.id, createdPoem: event.poem, error: null));
+  }
+
+  void _onSignalRPoemCreated(SignalRPoemCreated event, Emitter<PoemState> emit) {
+    print('[SignalR] PoemBloc received SignalRPoemCreated: poemId=${event.poem.id}, title=${event.poem.title}');
+    emit(state.copyWith(
+      actionType: 'created',
+      lastToggledPoemId: event.poem.id,
+      createdPoem: event.poem,
+      error: null,
+    ));
   }
 
   Future<void> _onDeletePoem(DeletePoem event, Emitter<PoemState> emit) async {

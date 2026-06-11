@@ -30,6 +30,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<UpdatePoem>(_onUpdatePoem);
     on<RemoveDua>(_onRemoveDua);
     on<RemovePoem>(_onRemovePoem);
+    on<InsertDua>(_onInsertDua);
+    on<InsertPoem>(_onInsertPoem);
   }
 
   Future<void> _fetchDuas(FetchLatestDuas event, Emitter<HomeState> emit) async {
@@ -259,6 +261,22 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     emit(state.copyWith(
       latestPoems: state.latestPoems.where((p) => p.id != event.poemId).toList(),
       myPoems: state.myPoems.where((p) => p.id != event.poemId).toList(),
+    ));
+  }
+
+  void _onInsertDua(InsertDua event, Emitter<HomeState> emit) {
+    if (state.latestDuas.any((d) => d.id == event.dua.id)) return;
+    emit(state.copyWith(
+      latestDuas: [event.dua, ...state.latestDuas],
+      myDuas: [event.dua, ...state.myDuas],
+    ));
+  }
+
+  void _onInsertPoem(InsertPoem event, Emitter<HomeState> emit) {
+    if (state.latestPoems.any((p) => p.id == event.poem.id)) return;
+    emit(state.copyWith(
+      latestPoems: [event.poem, ...state.latestPoems],
+      myPoems: [event.poem, ...state.myPoems],
     ));
   }
 

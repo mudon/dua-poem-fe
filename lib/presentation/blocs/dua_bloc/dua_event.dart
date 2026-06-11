@@ -1,3 +1,5 @@
+import '../../../data/models/dua_model.dart';
+
 abstract class DuaEvent {}
 
 class ToggleLike extends DuaEvent {
@@ -76,13 +78,21 @@ class DeleteDua extends DuaEvent {
   DeleteDua(this.duaId);
 }
 
-class DuaCreated extends DuaEvent {}
+class DuaCreated extends DuaEvent {
+  final DuaModel dua;
+  DuaCreated(this.dua);
+}
 
 class ClearReturnedReports extends DuaEvent {}
 
 class SignalRDuaDeleted extends DuaEvent {
   final String duaId;
   SignalRDuaDeleted(this.duaId);
+}
+
+class SignalRDuaCreated extends DuaEvent {
+  final DuaModel dua;
+  SignalRDuaCreated(this.dua);
 }
 
 class SignalRDuaContentUpdated extends DuaEvent {

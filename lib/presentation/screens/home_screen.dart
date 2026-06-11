@@ -98,186 +98,22 @@ class _HomeFeedState extends State<_HomeFeed> {
         BlocListener<DuaBloc, DuaState>(
           listener: (context, state) {
             if (state.error != null) return;
-            if (state.actionType == 'created') {
-              context.read<HomeBloc>().add(FetchLatestDuas());
-              return;
-            }
-            final id = state.lastToggledDuaId;
-            if (id == null) return;
-            final homeState = context.read<HomeBloc>().state;
-            if (state.actionType == 'like') {
-              final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
-              if (idx == -1) return;
-              final isNowLiked = state.likedStates[id] ?? false;
-              final newCount = state.likeCounts[id] ?? homeState.latestDuas[idx].likeCount;
-              context.read<HomeBloc>().add(UpdateDua(
-                duaId: id,
-                isLiked: isNowLiked,
-                likeCount: newCount,
-              ));
-            } else if (state.actionType == 'signalr_like') {
-              final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
-              if (idx == -1) return;
-              final newCount = state.likeCounts[id] ?? homeState.latestDuas[idx].likeCount;
-              context.read<HomeBloc>().add(UpdateDua(
-                duaId: id,
-                likeCount: newCount,
-              ));
-            } else if (state.actionType == 'signalr_bookmark') {
-              final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
-              if (idx == -1) return;
-              final newCount = state.bookmarkCounts[id] ?? homeState.latestDuas[idx].bookmarkCount;
-              context.read<HomeBloc>().add(UpdateDua(
-                duaId: id,
-                bookmarkCount: newCount,
-              ));
-            } else if (state.actionType == 'bookmark') {
-              final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
-              if (idx == -1) return;
-              final isNowFav = state.favoritedStates[id] ?? false;
-              final newCount = state.bookmarkCounts[id] ?? homeState.latestDuas[idx].bookmarkCount;
-              context.read<HomeBloc>().add(UpdateDua(
-                duaId: id,
-                isFavorited: isNowFav,
-                bookmarkCount: newCount,
-              ));
-            } else if (state.actionType == 'signalr_view') {
-              final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
-              if (idx == -1) return;
-              final newViews = state.viewCounts[id];
-              if (newViews != null) {
-                context.read<HomeBloc>().add(UpdateDua(duaId: id, views: newViews));
-              }
-            } else if (state.actionType == 'view') {
-              final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
-              if (idx == -1) return;
-              final newViews = state.viewCounts[id];
-              if (newViews != null) {
-                context.read<HomeBloc>().add(UpdateDua(duaId: id, views: newViews));
-              }
-            } else if (state.actionType == 'signalr_report') {
-              final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
-              if (idx == -1) return;
-              final newCount = state.reportCounts[id];
-              if (newCount != null) {
-                context.read<HomeBloc>().add(UpdateDua(duaId: id, reportCount: newCount));
-              }
-            } else if (state.actionType == 'report') {
-              final idx = homeState.latestDuas.indexWhere((d) => d.id == id);
-              if (idx == -1) return;
-              final newCount = state.reportCounts[id];
-              if (newCount != null) {
-                context.read<HomeBloc>().add(UpdateDua(duaId: id, reportCount: newCount));
-              }
-            } else if (state.actionType == 'content_updated') {
-              final update = state.contentUpdates[id];
-              if (update == null) return;
-              context.read<HomeBloc>().add(UpdateDua(
-                duaId: id,
-                title: update.title,
-                arabicText: update.arabicText,
-                transliteration: update.transliteration,
-                translation: update.translation,
-                description: update.description,
-                whenToRecite: update.whenToRecite,
-                occasion: update.occasion,
-                repetitionCount: update.repetitionCount,
-                updatedAt: update.updatedAt,
-              ));
+            if (state.actionType == 'created' && state.createdDua != null) {
+              context.read<HomeBloc>().add(InsertDua(state.createdDua!));
             } else if (state.actionType == 'deleted') {
-              context.read<HomeBloc>().add(RemoveDua(id));
+              final id = state.lastToggledDuaId;
+              if (id != null) context.read<HomeBloc>().add(RemoveDua(id));
             }
           },
         ),
         BlocListener<PoemBloc, PoemState>(
           listener: (context, state) {
             if (state.error != null) return;
-            if (state.actionType == 'created') {
-              context.read<HomeBloc>().add(FetchLatestPoems());
-              return;
-            }
-            final id = state.lastToggledPoemId;
-            if (id == null) return;
-            final homeState = context.read<HomeBloc>().state;
-            if (state.actionType == 'like') {
-              final idx = homeState.latestPoems.indexWhere((p) => p.id == id);
-              if (idx == -1) return;
-              final isNowLiked = state.likedStates[id] ?? false;
-              final newCount = state.likeCounts[id] ?? homeState.latestPoems[idx].likeCount;
-              context.read<HomeBloc>().add(UpdatePoem(
-                poemId: id,
-                isLiked: isNowLiked,
-                likeCount: newCount,
-              ));
-            } else if (state.actionType == 'signalr_like') {
-              final idx = homeState.latestPoems.indexWhere((p) => p.id == id);
-              if (idx == -1) return;
-              final newCount = state.likeCounts[id] ?? homeState.latestPoems[idx].likeCount;
-              context.read<HomeBloc>().add(UpdatePoem(
-                poemId: id,
-                likeCount: newCount,
-              ));
-            } else if (state.actionType == 'signalr_bookmark') {
-              final idx = homeState.latestPoems.indexWhere((p) => p.id == id);
-              if (idx == -1) return;
-              final newCount = state.bookmarkCounts[id] ?? homeState.latestPoems[idx].bookmarkCount;
-              context.read<HomeBloc>().add(UpdatePoem(
-                poemId: id,
-                bookmarkCount: newCount,
-              ));
-            } else if (state.actionType == 'bookmark') {
-              final idx = homeState.latestPoems.indexWhere((p) => p.id == id);
-              if (idx == -1) return;
-              final isNowFav = state.favoritedStates[id] ?? false;
-              final newCount = state.bookmarkCounts[id] ?? homeState.latestPoems[idx].bookmarkCount;
-              context.read<HomeBloc>().add(UpdatePoem(
-                poemId: id,
-                isFavorited: isNowFav,
-                bookmarkCount: newCount,
-              ));
-            } else if (state.actionType == 'signalr_view') {
-              final idx = homeState.latestPoems.indexWhere((p) => p.id == id);
-              if (idx == -1) return;
-              final newViews = state.viewCounts[id];
-              if (newViews != null) {
-                context.read<HomeBloc>().add(UpdatePoem(poemId: id, views: newViews));
-              }
-            } else if (state.actionType == 'view') {
-              final idx = homeState.latestPoems.indexWhere((p) => p.id == id);
-              if (idx == -1) return;
-              final newViews = state.viewCounts[id];
-              if (newViews != null) {
-                context.read<HomeBloc>().add(UpdatePoem(poemId: id, views: newViews));
-              }
-            } else if (state.actionType == 'signalr_report') {
-              final idx = homeState.latestPoems.indexWhere((p) => p.id == id);
-              if (idx == -1) return;
-              final newCount = state.reportCounts[id];
-              if (newCount != null) {
-                context.read<HomeBloc>().add(UpdatePoem(poemId: id, reportCount: newCount));
-              }
-            } else if (state.actionType == 'report') {
-              final idx = homeState.latestPoems.indexWhere((p) => p.id == id);
-              if (idx == -1) return;
-              final newCount = state.reportCounts[id];
-              if (newCount != null) {
-                context.read<HomeBloc>().add(UpdatePoem(poemId: id, reportCount: newCount));
-              }
-            } else if (state.actionType == 'content_updated') {
-              final update = state.contentUpdates[id];
-              if (update == null) return;
-              context.read<HomeBloc>().add(UpdatePoem(
-                poemId: id,
-                title: update.title,
-                content: update.content,
-                transliteration: update.transliteration,
-                translation: update.translation,
-                description: update.description,
-                author: update.author,
-                updatedAt: update.updatedAt,
-              ));
+            if (state.actionType == 'created' && state.createdPoem != null) {
+              context.read<HomeBloc>().add(InsertPoem(state.createdPoem!));
             } else if (state.actionType == 'deleted') {
-              context.read<HomeBloc>().add(RemovePoem(id));
+              final id = state.lastToggledPoemId;
+              if (id != null) context.read<HomeBloc>().add(RemovePoem(id));
             }
           },
         ),

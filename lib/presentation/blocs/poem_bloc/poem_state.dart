@@ -1,3 +1,4 @@
+import '../../../data/models/poem_model.dart';
 import '../../../data/models/signalr/poem_content_update_model.dart';
 
 class PoemState {
@@ -13,6 +14,7 @@ class PoemState {
   final Map<String, PoemContentUpdateModel?> contentUpdates;
   final Set<String> returnedReportIds;
   final String? lastToggledPoemId;
+  final PoemModel? createdPoem;
 
   PoemState({
     this.isProcessing = false,
@@ -27,6 +29,7 @@ class PoemState {
     this.contentUpdates = const {},
     this.returnedReportIds = const {},
     this.lastToggledPoemId,
+    this.createdPoem,
   });
 
   PoemState copyWith({
@@ -42,6 +45,7 @@ class PoemState {
     Map<String, PoemContentUpdateModel?>? contentUpdates,
     Set<String>? returnedReportIds,
     String? lastToggledPoemId,
+    PoemModel? createdPoem,
   }) {
     return PoemState(
       isProcessing: isProcessing ?? this.isProcessing,
@@ -56,6 +60,7 @@ class PoemState {
       contentUpdates: contentUpdates ?? this.contentUpdates,
       returnedReportIds: returnedReportIds ?? this.returnedReportIds,
       lastToggledPoemId: lastToggledPoemId ?? this.lastToggledPoemId,
+      createdPoem: createdPoem,
     );
   }
 }

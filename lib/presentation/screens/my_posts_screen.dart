@@ -81,166 +81,18 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
           BlocListener<DuaBloc, DuaState>(
             listener: (ctx, state) {
               if (state.error != null) return;
-              final id = state.lastToggledDuaId;
-              if (id == null) return;
-              final homeState = ctx.read<HomeBloc>().state;
-              if (state.actionType == 'signalr_like') {
-                final idx = homeState.myDuas.indexWhere((d) => d.id == id);
-                if (idx == -1) return;
-                final newCount = state.likeCounts[id] ?? homeState.myDuas[idx].likeCount;
-                ctx.read<HomeBloc>().add(UpdateDua(duaId: id, likeCount: newCount));
-              } else if (state.actionType == 'like') {
-                final idx = homeState.myDuas.indexWhere((d) => d.id == id);
-                if (idx == -1) return;
-                final isNowLiked = state.likedStates[id] ?? false;
-                final newCount = state.likeCounts[id] ?? homeState.myDuas[idx].likeCount;
-                ctx.read<HomeBloc>().add(UpdateDua(
-                  duaId: id,
-                  isLiked: isNowLiked,
-                  likeCount: newCount,
-                ));
-              } else if (state.actionType == 'signalr_bookmark') {
-                final idx = homeState.myDuas.indexWhere((d) => d.id == id);
-                if (idx == -1) return;
-                final newCount = state.bookmarkCounts[id] ?? homeState.myDuas[idx].bookmarkCount;
-                ctx.read<HomeBloc>().add(UpdateDua(duaId: id, bookmarkCount: newCount));
-              } else if (state.actionType == 'bookmark') {
-                final idx = homeState.myDuas.indexWhere((d) => d.id == id);
-                if (idx == -1) return;
-                final isNowFav = state.favoritedStates[id] ?? false;
-                final newCount = state.bookmarkCounts[id] ?? homeState.myDuas[idx].bookmarkCount;
-                ctx.read<HomeBloc>().add(UpdateDua(
-                  duaId: id,
-                  isFavorited: isNowFav,
-                  bookmarkCount: newCount,
-                ));
-              } else if (state.actionType == 'signalr_view') {
-                final idx = homeState.myDuas.indexWhere((d) => d.id == id);
-                if (idx == -1) return;
-                final newViews = state.viewCounts[id];
-                if (newViews != null) {
-                  ctx.read<HomeBloc>().add(UpdateDua(duaId: id, views: newViews));
-                }
-              } else if (state.actionType == 'view') {
-                final idx = homeState.myDuas.indexWhere((d) => d.id == id);
-                if (idx == -1) return;
-                final newViews = state.viewCounts[id];
-                if (newViews != null) {
-                  ctx.read<HomeBloc>().add(UpdateDua(duaId: id, views: newViews));
-                }
-              } else if (state.actionType == 'signalr_report') {
-                final idx = homeState.myDuas.indexWhere((d) => d.id == id);
-                if (idx == -1) return;
-                final newCount = state.reportCounts[id];
-                if (newCount != null) {
-                  ctx.read<HomeBloc>().add(UpdateDua(duaId: id, reportCount: newCount));
-                }
-              } else if (state.actionType == 'report') {
-                final idx = homeState.myDuas.indexWhere((d) => d.id == id);
-                if (idx == -1) return;
-                final newCount = state.reportCounts[id];
-                if (newCount != null) {
-                  ctx.read<HomeBloc>().add(UpdateDua(duaId: id, reportCount: newCount));
-                }
-              } else if (state.actionType == 'content_updated') {
-                final update = state.contentUpdates[id];
-                if (update == null) return;
-                ctx.read<HomeBloc>().add(UpdateDua(
-                  duaId: id,
-                  title: update.title,
-                  arabicText: update.arabicText,
-                  transliteration: update.transliteration,
-                  translation: update.translation,
-                  description: update.description,
-                  whenToRecite: update.whenToRecite,
-                  occasion: update.occasion,
-                  repetitionCount: update.repetitionCount,
-                  updatedAt: update.updatedAt,
-                ));
-              } else if (state.actionType == 'deleted') {
-                ctx.read<HomeBloc>().add(RemoveDua(id));
+              if (state.actionType == 'deleted') {
+                final id = state.lastToggledDuaId;
+                if (id != null) ctx.read<HomeBloc>().add(RemoveDua(id));
               }
             },
           ),
           BlocListener<PoemBloc, PoemState>(
             listener: (ctx, state) {
               if (state.error != null) return;
-              final id = state.lastToggledPoemId;
-              if (id == null) return;
-              final homeState = ctx.read<HomeBloc>().state;
-              if (state.actionType == 'signalr_like') {
-                final idx = homeState.myPoems.indexWhere((p) => p.id == id);
-                if (idx == -1) return;
-                final newCount = state.likeCounts[id] ?? homeState.myPoems[idx].likeCount;
-                ctx.read<HomeBloc>().add(UpdatePoem(poemId: id, likeCount: newCount));
-              } else if (state.actionType == 'like') {
-                final idx = homeState.myPoems.indexWhere((p) => p.id == id);
-                if (idx == -1) return;
-                final isNowLiked = state.likedStates[id] ?? false;
-                final newCount = state.likeCounts[id] ?? homeState.myPoems[idx].likeCount;
-                ctx.read<HomeBloc>().add(UpdatePoem(
-                  poemId: id,
-                  isLiked: isNowLiked,
-                  likeCount: newCount,
-                ));
-              } else if (state.actionType == 'signalr_bookmark') {
-                final idx = homeState.myPoems.indexWhere((p) => p.id == id);
-                if (idx == -1) return;
-                final newCount = state.bookmarkCounts[id] ?? homeState.myPoems[idx].bookmarkCount;
-                ctx.read<HomeBloc>().add(UpdatePoem(poemId: id, bookmarkCount: newCount));
-              } else if (state.actionType == 'bookmark') {
-                final idx = homeState.myPoems.indexWhere((p) => p.id == id);
-                if (idx == -1) return;
-                final isNowFav = state.favoritedStates[id] ?? false;
-                final newCount = state.bookmarkCounts[id] ?? homeState.myPoems[idx].bookmarkCount;
-                ctx.read<HomeBloc>().add(UpdatePoem(
-                  poemId: id,
-                  isFavorited: isNowFav,
-                  bookmarkCount: newCount,
-                ));
-              } else if (state.actionType == 'signalr_view') {
-                final idx = homeState.myPoems.indexWhere((p) => p.id == id);
-                if (idx == -1) return;
-                final newViews = state.viewCounts[id];
-                if (newViews != null) {
-                  ctx.read<HomeBloc>().add(UpdatePoem(poemId: id, views: newViews));
-                }
-              } else if (state.actionType == 'view') {
-                final idx = homeState.myPoems.indexWhere((p) => p.id == id);
-                if (idx == -1) return;
-                final newViews = state.viewCounts[id];
-                if (newViews != null) {
-                  ctx.read<HomeBloc>().add(UpdatePoem(poemId: id, views: newViews));
-                }
-              } else if (state.actionType == 'signalr_report') {
-                final idx = homeState.myPoems.indexWhere((p) => p.id == id);
-                if (idx == -1) return;
-                final newCount = state.reportCounts[id];
-                if (newCount != null) {
-                  ctx.read<HomeBloc>().add(UpdatePoem(poemId: id, reportCount: newCount));
-                }
-              } else if (state.actionType == 'report') {
-                final idx = homeState.myPoems.indexWhere((p) => p.id == id);
-                if (idx == -1) return;
-                final newCount = state.reportCounts[id];
-                if (newCount != null) {
-                  ctx.read<HomeBloc>().add(UpdatePoem(poemId: id, reportCount: newCount));
-                }
-              } else if (state.actionType == 'content_updated') {
-                final update = state.contentUpdates[id];
-                if (update == null) return;
-                ctx.read<HomeBloc>().add(UpdatePoem(
-                  poemId: id,
-                  title: update.title,
-                  content: update.content,
-                  transliteration: update.transliteration,
-                  translation: update.translation,
-                  description: update.description,
-                  author: update.author,
-                  updatedAt: update.updatedAt,
-                ));
-              } else if (state.actionType == 'deleted') {
-                ctx.read<HomeBloc>().add(RemovePoem(id));
+              if (state.actionType == 'deleted') {
+                final id = state.lastToggledPoemId;
+                if (id != null) ctx.read<HomeBloc>().add(RemovePoem(id));
               }
             },
           ),

@@ -1,3 +1,4 @@
+import '../../../data/models/dua_model.dart';
 import '../../../data/models/signalr/dua_content_update_model.dart';
 
 class DuaState {
@@ -13,6 +14,7 @@ class DuaState {
   final Map<String, DuaContentUpdateModel?> contentUpdates;
   final Set<String> returnedReportIds;
   final String? lastToggledDuaId;
+  final DuaModel? createdDua;
 
   DuaState({
     this.isProcessing = false,
@@ -27,6 +29,7 @@ class DuaState {
     this.contentUpdates = const {},
     this.returnedReportIds = const {},
     this.lastToggledDuaId,
+    this.createdDua,
   });
 
   DuaState copyWith({
@@ -42,6 +45,7 @@ class DuaState {
     Map<String, DuaContentUpdateModel?>? contentUpdates,
     Set<String>? returnedReportIds,
     String? lastToggledDuaId,
+    DuaModel? createdDua,
   }) {
     return DuaState(
       isProcessing: isProcessing ?? this.isProcessing,
@@ -56,6 +60,7 @@ class DuaState {
       contentUpdates: contentUpdates ?? this.contentUpdates,
       returnedReportIds: returnedReportIds ?? this.returnedReportIds,
       lastToggledDuaId: lastToggledDuaId ?? this.lastToggledDuaId,
+      createdDua: createdDua,
     );
   }
 }

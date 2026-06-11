@@ -78,8 +78,8 @@ class _CreatePoemSheetState extends State<CreatePoemSheet> {
       };
       if (_selectedCategory != null) data['categoryId'] = _selectedCategory!.id;
       if (_selectedTagIds.isNotEmpty) data['tagIds'] = _selectedTagIds.toList();
-      await getIt<PoemService>().createPoem(data);
-      getIt<PoemBloc>().add(PoemCreated());
+      final created = await getIt<PoemService>().createPoem(data);
+      getIt<PoemBloc>().add(PoemCreated(created));
       if (mounted) {
         widget.onCreated?.call();
         Navigator.of(context).pop();

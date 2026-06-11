@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../app/dependency_injection.dart';
 import '../../../data/models/signalr/dua_content_update_model.dart';
 import '../../../data/repositories/dua_repository.dart';
+import '../../../data/models/dua_model.dart';
 import '../../../data/services/signalr_service.dart';
 import 'dua_event.dart';
 import 'dua_state.dart';
@@ -29,6 +30,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     on<DeleteDua>(_onDeleteDua);
     on<SignalRDuaDeleted>(_onSignalRDuaDeleted);
     on<SignalRDuaContentUpdated>(_onSignalRDuaContentUpdated);
+    on<SignalRDuaCreated>(_onSignalRDuaCreated);
     _listenToSignalR();
     _listenToNotifications();
   }
@@ -82,6 +84,13 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     getIt<SignalRService>().onDuaDeleted.listen((duaId) {
       try {
         add(SignalRDuaDeleted(duaId));
+      } catch (_) {}
+    });
+
+    getIt<SignalRService>().onDuaCreated.listen((data) {
+      try {
+        final dua = DuaModel.fromApiJson(data);
+        add(SignalRDuaCreated(dua));
       } catch (_) {}
     });
   }
@@ -158,6 +167,16 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     ));
   }
 
+  void _onSignalRDuaCreated(SignalRDuaCreated event, Emitter<DuaState> emit) {
+    print('[SignalR] DuaBloc received SignalRDuaCreated: duaId=${event.dua.id}, title=${event.dua.title}');
+    emit(state.copyWith(
+      actionType: 'created',
+      lastToggledDuaId: event.dua.id,
+      createdDua: event.dua,
+      error: null,
+    ));
+  }
+
   void _onSignalRReportReturned(SignalRReportReturned event, Emitter<DuaState> emit) {
     final updated = Set<String>.from(state.returnedReportIds)..add(event.duaId);
     emit(state.copyWith(returnedReportIds: updated, actionType: 'signalr_report_returned', lastToggledDuaId: event.duaId));
@@ -168,7 +187,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
   }
 
   void _onDuaCreated(DuaCreated event, Emitter<DuaState> emit) {
-    emit(state.copyWith(actionType: 'created', lastToggledDuaId: ''));
+    emit(state.copyWith(actionType: 'created', lastToggledDuaId: event.dua.id, createdDua: event.dua, error: null));
   }
 
   Future<void> _onDeleteDua(DeleteDua event, Emitter<DuaState> emit) async {

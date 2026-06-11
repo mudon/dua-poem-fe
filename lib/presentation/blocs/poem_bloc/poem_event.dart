@@ -1,3 +1,5 @@
+import '../../../data/models/poem_model.dart';
+
 abstract class PoemEvent {}
 
 class ToggleLike extends PoemEvent {
@@ -76,13 +78,21 @@ class DeletePoem extends PoemEvent {
   DeletePoem(this.poemId);
 }
 
-class PoemCreated extends PoemEvent {}
+class PoemCreated extends PoemEvent {
+  final PoemModel poem;
+  PoemCreated(this.poem);
+}
 
 class ClearReturnedReports extends PoemEvent {}
 
 class SignalRPoemDeleted extends PoemEvent {
   final String poemId;
   SignalRPoemDeleted(this.poemId);
+}
+
+class SignalRPoemCreated extends PoemEvent {
+  final PoemModel poem;
+  SignalRPoemCreated(this.poem);
 }
 
 class SignalRPoemContentUpdated extends PoemEvent {

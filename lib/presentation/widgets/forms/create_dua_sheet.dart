@@ -110,8 +110,8 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
             })
             .toList();
       }
-      await getIt<DuaService>().createDua(data);
-      getIt<DuaBloc>().add(DuaCreated());
+      final created = await getIt<DuaService>().createDua(data);
+      getIt<DuaBloc>().add(DuaCreated(created));
       if (mounted) {
         widget.onCreated?.call();
         Navigator.of(context).pop();

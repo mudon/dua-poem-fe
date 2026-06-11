@@ -37,6 +37,8 @@ class SignalRService {
   final _badgeRevokedController = StreamController<BadgeRevokedModel>.broadcast();
   final _duaDeletedController = StreamController<String>.broadcast();
   final _poemDeletedController = StreamController<String>.broadcast();
+  final _duaCreatedController = StreamController<Map<String, dynamic>>.broadcast();
+  final _poemCreatedController = StreamController<Map<String, dynamic>>.broadcast();
   bool _isConnected = false;
   Future<void>? _connectFuture;
 
@@ -52,6 +54,8 @@ class SignalRService {
   Stream<PoemContentUpdateModel> get onPoemContentUpdated => _poemContentController.stream;
   Stream<String> get onDuaDeleted => _duaDeletedController.stream;
   Stream<String> get onPoemDeleted => _poemDeletedController.stream;
+  Stream<Map<String, dynamic>> get onDuaCreated => _duaCreatedController.stream;
+  Stream<Map<String, dynamic>> get onPoemCreated => _poemCreatedController.stream;
 
   String get _hubBaseUrl =>
       ApiConfig.baseUrl.replaceAll('/api', '');
@@ -191,6 +195,18 @@ class SignalRService {
       final data = args[0] as Map<String, dynamic>;
       final poemId = data['poemId'].toString();
       _poemDeletedController.add(poemId);
+    });
+
+    connection.on('DuaCreated', (args) {
+      if (args == null || args.isEmpty) return;
+      final data = args[0] as Map<String, dynamic>;
+      _duaCreatedController.add(data);
+    });
+
+    connection.on('PoemCreated', (args) {
+      if (args == null || args.isEmpty) return;
+      final data = args[0] as Map<String, dynamic>;
+      _poemCreatedController.add(data);
     });
 
     connection.onclose((Exception? error) {
@@ -453,5 +469,7 @@ class SignalRService {
     _poemContentController.close();
     _duaDeletedController.close();
     _poemDeletedController.close();
+    _duaCreatedController.close();
+    _poemCreatedController.close();
   }
 }

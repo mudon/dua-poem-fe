@@ -31,18 +31,31 @@ class _PoemCardState extends State<PoemCard> {
   late int _activeReportCount;
   late int _viewCount;
   late bool _needsFix;
+  late String _title;
+  late String? _content;
+  late String _userName;
+  late String? _avatarType;
+  late String? _avatarValue;
+  late String? _selectedBadgeSlug;
 
   @override
   void initState() {
     super.initState();
     final blocState = context.read<PoemBloc>().state;
+    final contentUpdate = blocState.contentUpdates[widget.poem.id];
     _isLiked = blocState.likedStates[widget.poem.id] ?? widget.poem.isLiked;
     _likeCount = blocState.likeCounts[widget.poem.id] ?? widget.poem.likeCount;
     _isBookmarked = blocState.favoritedStates[widget.poem.id] ?? widget.poem.isFavorited;
     _bookmarkCount = blocState.bookmarkCounts[widget.poem.id] ?? widget.poem.bookmarkCount;
-    _activeReportCount = blocState.reportCounts[widget.poem.id] ?? widget.poem.activeReportCount;
     _viewCount = blocState.viewCounts[widget.poem.id] ?? widget.poem.views;
+    _activeReportCount = blocState.reportCounts[widget.poem.id] ?? widget.poem.activeReportCount;
     _needsFix = widget.currentUser.id == widget.poem.userId && blocState.returnedReportIds.contains(widget.poem.id);
+    _title = contentUpdate?.title ?? widget.poem.title;
+    _content = contentUpdate?.content ?? widget.poem.content;
+    _userName = widget.poem.userName;
+    _avatarType = widget.poem.createdByAvatarType;
+    _avatarValue = widget.poem.createdByAvatarValue;
+    _selectedBadgeSlug = widget.poem.createdBySelectedBadgeSlug;
   }
 
   @override
@@ -55,15 +68,26 @@ class _PoemCardState extends State<PoemCard> {
         oldWidget.poem.likeCount != widget.poem.likeCount ||
         oldWidget.poem.isLiked != widget.poem.isLiked ||
         oldWidget.poem.bookmarkCount != widget.poem.bookmarkCount ||
-        oldWidget.poem.isFavorited != widget.poem.isFavorited) {
+        oldWidget.poem.isFavorited != widget.poem.isFavorited ||
+        oldWidget.poem.userName != widget.poem.userName ||
+        oldWidget.poem.createdByAvatarType != widget.poem.createdByAvatarType ||
+        oldWidget.poem.createdByAvatarValue != widget.poem.createdByAvatarValue ||
+        oldWidget.poem.createdBySelectedBadgeSlug != widget.poem.createdBySelectedBadgeSlug) {
       final blocState = context.read<PoemBloc>().state;
+      final contentUpdate = blocState.contentUpdates[widget.poem.id];
       _isLiked = blocState.likedStates[widget.poem.id] ?? widget.poem.isLiked;
       _likeCount = blocState.likeCounts[widget.poem.id] ?? widget.poem.likeCount;
       _isBookmarked = blocState.favoritedStates[widget.poem.id] ?? widget.poem.isFavorited;
       _bookmarkCount = blocState.bookmarkCounts[widget.poem.id] ?? widget.poem.bookmarkCount;
       _activeReportCount = blocState.reportCounts[widget.poem.id] ?? widget.poem.activeReportCount;
-    _viewCount = blocState.viewCounts[widget.poem.id] ?? widget.poem.views;
-    _needsFix = widget.currentUser.id == widget.poem.userId && blocState.returnedReportIds.contains(widget.poem.id);
+      _viewCount = blocState.viewCounts[widget.poem.id] ?? widget.poem.views;
+      _needsFix = widget.currentUser.id == widget.poem.userId && blocState.returnedReportIds.contains(widget.poem.id);
+      _title = contentUpdate?.title ?? widget.poem.title;
+      _content = contentUpdate?.content ?? widget.poem.content;
+      _userName = widget.poem.userName;
+      _avatarType = widget.poem.createdByAvatarType;
+      _avatarValue = widget.poem.createdByAvatarValue;
+      _selectedBadgeSlug = widget.poem.createdBySelectedBadgeSlug;
     }
   }
 
@@ -149,7 +173,13 @@ class _PoemCardState extends State<PoemCard> {
           }
         } else if (state.actionType == 'content_updated') {
           if (state.lastToggledPoemId != widget.poem.id) return;
-          setState(() {});
+          final update = state.contentUpdates[widget.poem.id];
+          if (update != null) {
+            setState(() {
+              _title = update.title;
+              if (update.content != null) _content = update.content;
+            });
+          }
         }
       },
       child: GestureDetector(
@@ -179,7 +209,7 @@ class _PoemCardState extends State<PoemCard> {
                   child: Row(
                     children: [
                       Flexible(
-                        child: Text(widget.poem.title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                        child: Text(_title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                       ),
                       const SizedBox(width: 8),
                       Container(
@@ -221,15 +251,15 @@ class _PoemCardState extends State<PoemCard> {
               ],
             ),
             const SizedBox(height: 8),
-            if (widget.poem.content != null)
+            if (_content != null)
               Text(
-                '"${widget.poem.content!.length > 80 ? '${widget.poem.content!.substring(0, 80)}…' : widget.poem.content!}"',
+                '"${_content!.length > 80 ? '${_content!.substring(0, 80)}…' : _content!}"',
                 style: const TextStyle(fontSize: 13, fontStyle: FontStyle.italic, color: Color(0xFF4C473F)),
               ),
             const SizedBox(height: 8),
             Row(
               children: [
-                _PoemMetaChip(icon: Icons.person_outline, label: widget.poem.userName),
+                _PoemMetaChip(icon: Icons.person_outline, label: _userName),
               ],
             ),
             if (widget.poem.tags.isNotEmpty) ...[
@@ -247,21 +277,21 @@ class _PoemCardState extends State<PoemCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 GestureDetector(
-                  onTap: () => context.push('/user/${widget.poem.userId}', extra: widget.poem.userName),
+                  onTap: () => context.push('/user/${widget.poem.userId}', extra: _userName),
                   child: Row(
                     children: [
                       AvatarWithBadge(
-                        avatarType: widget.poem.createdByAvatarType,
-                        avatarValue: widget.poem.createdByAvatarValue,
-                        name: widget.poem.userName,
-                        showBadge: widget.poem.createdBySelectedBadgeSlug != null,
+                        avatarType: _avatarType,
+                        avatarValue: _avatarValue,
+                        name: _userName,
+                        showBadge: _selectedBadgeSlug != null,
                         size: 16,
                       ),
                       const SizedBox(width: 8),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(widget.poem.userName, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF5C5346))),
+                          Text(_userName, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF5C5346))),
                           const SizedBox(height: 2),
                           Row(
                             children: [
