@@ -18,7 +18,10 @@ class UpdateProfileRequested extends AuthEvent {
   final String firstName;
   final String lastName;
   final String? bio;
-  UpdateProfileRequested(this.firstName, this.lastName, {this.bio});
+  final String? avatarType;
+  final String? avatarValue;
+  final String? selectedBadgeSlug;
+  UpdateProfileRequested(this.firstName, this.lastName, {this.bio, this.avatarType, this.avatarValue, this.selectedBadgeSlug});
 }
 
 class ClearAuthError extends AuthEvent {}

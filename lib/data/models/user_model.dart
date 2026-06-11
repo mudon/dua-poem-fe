@@ -7,6 +7,9 @@ class UserModel {
   final DateTime createdAt;
   final String? avatar;
   final String? bio;
+  final String? avatarType;
+  final String? avatarValue;
+  final String? selectedBadgeSlug;
   final String joinedDate;
 
   String get fullName => '$firstName $lastName';
@@ -20,6 +23,9 @@ class UserModel {
     required this.createdAt,
     this.avatar,
     this.bio,
+    this.avatarType,
+    this.avatarValue,
+    this.selectedBadgeSlug,
     String? joinedDate,
   }) : joinedDate = joinedDate ?? _formatDate(createdAt);
 
@@ -34,7 +40,39 @@ class UserModel {
       createdAt: createdAt,
       avatar: json['avatar'],
       bio: json['bio'],
+      avatarType: json['avatarType'],
+      avatarValue: json['avatarValue'],
+      selectedBadgeSlug: json['selectedBadgeSlug'],
       joinedDate: json['joinedDate'],
+    );
+  }
+
+  UserModel copyWith({
+    String? firstName,
+    String? lastName,
+    String? email,
+    String? role,
+    DateTime? createdAt,
+    String? avatar,
+    String? bio,
+    String? avatarType,
+    String? avatarValue,
+    String? selectedBadgeSlug,
+    String? joinedDate,
+  }) {
+    return UserModel(
+      id: id,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      email: email ?? this.email,
+      role: role ?? this.role,
+      createdAt: createdAt ?? this.createdAt,
+      avatar: avatar ?? this.avatar,
+      bio: bio ?? this.bio,
+      avatarType: avatarType ?? this.avatarType,
+      avatarValue: avatarValue ?? this.avatarValue,
+      selectedBadgeSlug: selectedBadgeSlug ?? this.selectedBadgeSlug,
+      joinedDate: joinedDate ?? this.joinedDate,
     );
   }
 

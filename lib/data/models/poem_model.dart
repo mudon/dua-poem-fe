@@ -13,6 +13,9 @@ class PoemModel {
   final String userId;
   final String userName;
   final String userAvatar;
+  final String? createdByAvatarType;
+  final String? createdByAvatarValue;
+  final String? createdBySelectedBadgeSlug;
   final int views;
   final int bookmarkCount;
   final int likeCount;
@@ -38,6 +41,9 @@ class PoemModel {
     required this.userId,
     required this.userName,
     required this.userAvatar,
+    this.createdByAvatarType,
+    this.createdByAvatarValue,
+    this.createdBySelectedBadgeSlug,
     required this.views,
     required this.bookmarkCount,
     required this.likeCount,
@@ -76,6 +82,9 @@ class PoemModel {
       userAvatar: firstName.isNotEmpty
           ? firstName[0].toUpperCase()
           : (userName.isNotEmpty ? userName[0].toUpperCase() : '?'),
+      createdByAvatarType: json['createdByAvatarType'],
+      createdByAvatarValue: json['createdByAvatarValue'],
+      createdBySelectedBadgeSlug: json['createdBySelectedBadgeSlug'],
       views: json['viewsCount'] ?? 0,
       bookmarkCount: json['bookmarkCount'] ?? json['favoritesCount'] ?? 0,
       likeCount: json['likesCount'] ?? 0,
@@ -95,6 +104,9 @@ class PoemModel {
     String? translation,
     String? userName,
     String? userAvatar,
+    String? createdByAvatarType,
+    String? createdByAvatarValue,
+    String? createdBySelectedBadgeSlug,
     int? views,
     int? bookmarkCount,
     int? likeCount,
@@ -121,6 +133,9 @@ class PoemModel {
       userId: userId,
       userName: userName ?? this.userName,
       userAvatar: userAvatar ?? this.userAvatar,
+      createdByAvatarType: createdByAvatarType ?? this.createdByAvatarType,
+      createdByAvatarValue: createdByAvatarValue ?? this.createdByAvatarValue,
+      createdBySelectedBadgeSlug: createdBySelectedBadgeSlug ?? this.createdBySelectedBadgeSlug,
       views: views ?? this.views,
       bookmarkCount: bookmarkCount ?? this.bookmarkCount,
       likeCount: likeCount ?? this.likeCount,

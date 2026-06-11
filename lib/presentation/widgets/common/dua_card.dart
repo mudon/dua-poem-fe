@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/themes/app_theme.dart';
 import '../../../data/models/dua_model.dart';
 import '../../../data/models/user_model.dart';
+import 'avatar_with_badge.dart';
 import '../../blocs/dua_bloc/dua_bloc.dart';
 import '../../blocs/dua_bloc/dua_event.dart';
 import '../../blocs/dua_bloc/dua_state.dart';
@@ -259,15 +260,12 @@ class _DuaCardState extends State<DuaCard> {
                   onTap: () => context.push('/user/${widget.dua.userId}', extra: widget.dua.userName),
                   child: Row(
                     children: [
-                      CircleAvatar(
-                        radius: 16,
-                        backgroundColor: const Color(0xFFDCE8D3),
-                        child: Text(
-                          widget.dua.userAvatar.isNotEmpty
-                              ? widget.dua.userAvatar
-                              : '?',
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF4A5B3E)),
-                        ),
+                      AvatarWithBadge(
+                        avatarType: widget.dua.createdByAvatarType,
+                        avatarValue: widget.dua.createdByAvatarValue,
+                        name: widget.dua.userName,
+                        showBadge: widget.dua.createdBySelectedBadgeSlug != null,
+                        size: 16,
                       ),
                       const SizedBox(width: 8),
                       Column(

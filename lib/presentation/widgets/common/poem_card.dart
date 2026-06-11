@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../data/models/poem_model.dart';
 import '../../../data/models/report_model.dart';
 import '../../../data/models/user_model.dart';
+import 'avatar_with_badge.dart';
 import '../../../data/repositories/poem_repository.dart';
 import '../../../core/themes/app_theme.dart';
 import '../../blocs/poem_bloc/poem_bloc.dart';
@@ -249,15 +250,12 @@ class _PoemCardState extends State<PoemCard> {
                   onTap: () => context.push('/user/${widget.poem.userId}', extra: widget.poem.userName),
                   child: Row(
                     children: [
-                      CircleAvatar(
-                        radius: 16,
-                        backgroundColor: const Color(0xFFDCE8D3),
-                        child: Text(
-                          widget.poem.userAvatar.isNotEmpty
-                              ? widget.poem.userAvatar
-                              : '?',
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF4A5B3E)),
-                        ),
+                      AvatarWithBadge(
+                        avatarType: widget.poem.createdByAvatarType,
+                        avatarValue: widget.poem.createdByAvatarValue,
+                        name: widget.poem.userName,
+                        showBadge: widget.poem.createdBySelectedBadgeSlug != null,
+                        size: 16,
                       ),
                       const SizedBox(width: 8),
                       Column(

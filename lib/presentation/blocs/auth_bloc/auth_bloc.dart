@@ -162,7 +162,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     if (current is! Authenticated) return;
 
     try {
-      final data = await _userService.updateProfile(event.firstName, event.lastName, event.bio);
+      final data = await _userService.updateProfile(
+        firstName: event.firstName,
+        lastName: event.lastName,
+        bio: event.bio,
+        avatarType: event.avatarType,
+        avatarValue: event.avatarValue,
+        selectedBadgeSlug: event.selectedBadgeSlug,
+      );
       final user = UserModel.fromJson(data);
       await _saveUser(user);
       emit(Authenticated(user));
@@ -182,6 +189,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       'createdAt': user.createdAt.toIso8601String(),
       'avatar': user.avatar,
       'bio': user.bio,
+      'avatarType': user.avatarType,
+      'avatarValue': user.avatarValue,
+      'selectedBadgeSlug': user.selectedBadgeSlug,
       'joinedDate': user.joinedDate,
     }));
   }

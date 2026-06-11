@@ -12,6 +12,8 @@ import '../blocs/auth_bloc/auth_event.dart';
 import '../blocs/auth_bloc/auth_state.dart';
 import '../widgets/common/notification_bell.dart';
 import '../widgets/common/badge_grid.dart';
+import '../widgets/common/avatar_with_badge.dart';
+import '../../core/constants/app_avatars.dart';
 import '../../app/dependency_injection.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -59,69 +61,254 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  String? _selectedAvatarType;
+  String? _selectedAvatarValue;
+  String? _selectedBadgeSlug;
+
   void _showEditProfileDialog(UserModel user) {
+    _selectedAvatarType = user.avatarType;
+    _selectedAvatarValue = user.avatarValue;
+    _selectedBadgeSlug = user.selectedBadgeSlug;
     final firstNameCtrl = TextEditingController(text: user.firstName);
     final lastNameCtrl = TextEditingController(text: user.lastName);
     final bioCtrl = TextEditingController(text: user.bio ?? '');
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Edit profile'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: firstNameCtrl,
-              autofocus: true,
-              decoration: const InputDecoration(
-                labelText: 'First name',
-                border: OutlineInputBorder(),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text('Edit profile'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GestureDetector(
+                onTap: () => _showAvatarPicker(ctx, setDialogState),
+                child: AvatarWithBadge(
+                  avatarType: _selectedAvatarType,
+                  avatarValue: _selectedAvatarValue,
+                  name: user.fullName,
+                  showBadge: _selectedBadgeSlug != null,
+                  size: 50,
+                ),
               ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => _showAvatarPicker(ctx, setDialogState),
+                child: const Text('Change avatar', style: TextStyle(fontSize: 12, color: Color(0xFF7C9A6E))),
+              ),
+              if (_stats != null && _stats!.badges.isNotEmpty) ...[
+                TextButton(
+                  onPressed: () => _showBadgePicker(ctx, setDialogState),
+                  child: Text(
+                    _selectedBadgeSlug == null ? 'Add badge overlay' : 'Change badge overlay',
+                    style: const TextStyle(fontSize: 12, color: Color(0xFF7C9A6E)),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 12),
+              TextField(
+                controller: firstNameCtrl,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  labelText: 'First name',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: lastNameCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Last name',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: bioCtrl,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: 'Bio',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: lastNameCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Last name',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: bioCtrl,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'Bio',
-                border: OutlineInputBorder(),
-              ),
+            TextButton(
+              onPressed: () {
+                final fName = firstNameCtrl.text.trim();
+                final lName = lastNameCtrl.text.trim();
+                if (fName.isNotEmpty) {
+                  Navigator.pop(ctx);
+                  context.read<AuthBloc>().add(UpdateProfileRequested(
+                    fName,
+                    lName,
+                    bio: bioCtrl.text.trim(),
+                    avatarType: _selectedAvatarType,
+                    avatarValue: _selectedAvatarValue,
+                    selectedBadgeSlug: _selectedBadgeSlug,
+                  ));
+                }
+              },
+              child: const Text('Save'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              final fName = firstNameCtrl.text.trim();
-              final lName = lastNameCtrl.text.trim();
-              if (fName.isNotEmpty) {
-                Navigator.pop(ctx);
-                context.read<AuthBloc>().add(UpdateProfileRequested(fName, lName, bio: bioCtrl.text.trim()));
-              }
-            },
-            child: const Text('Save'),
-          ),
-        ],
+      ),
+    );
+  }
+
+  void _showAvatarPicker(BuildContext parentCtx, void Function(void Function()) setDialogState) {
+    showModalBottomSheet(
+      context: parentCtx,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Choose avatar', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                if (_selectedAvatarType != null)
+                  TextButton(
+                    onPressed: () {
+                      setDialogState(() {
+                        _selectedAvatarType = null;
+                        _selectedAvatarValue = null;
+                      });
+                      Navigator.pop(ctx);
+                    },
+                    child: const Text('Remove', style: TextStyle(color: Color(0xFFC25A3F))),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: appAvatars.map((avatar) {
+                final selected = _selectedAvatarType == 'icon' && _selectedAvatarValue == avatar.id.toString();
+                return GestureDetector(
+                  onTap: () {
+                    setDialogState(() {
+                      _selectedAvatarType = 'icon';
+                      _selectedAvatarValue = avatar.id.toString();
+                    });
+                    Navigator.pop(ctx);
+                  },
+                  child: Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: selected ? avatar.color.withValues(alpha: 0.2) : const Color(0xFFF3F0EA),
+                      borderRadius: BorderRadius.circular(16),
+                      border: selected ? Border.all(color: avatar.color, width: 2.5) : Border.all(color: const Color(0xFFE8E2D8)),
+                    ),
+                    child: Icon(avatar.icon, color: selected ? avatar.color : const Color(0xFF9A8C79), size: 28),
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showBadgePicker(BuildContext parentCtx, void Function(void Function()) setDialogState) {
+    final earned = _stats?.badges ?? [];
+    showModalBottomSheet(
+      context: parentCtx,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Badge overlay', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                if (_selectedBadgeSlug != null)
+                  TextButton(
+                    onPressed: () {
+                      setDialogState(() => _selectedBadgeSlug = null);
+                      Navigator.pop(ctx);
+                    },
+                    child: const Text('Remove', style: TextStyle(color: Color(0xFFC25A3F))),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            if (earned.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(20),
+                child: Text('No badges earned yet. Create content to earn badges.', style: TextStyle(color: Color(0xFF9A8C79))),
+              )
+            else
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: earned.map((badge) {
+                  final selected = _selectedBadgeSlug == badge.slug;
+                  return GestureDetector(
+                    onTap: () {
+                      setDialogState(() => _selectedBadgeSlug = badge.slug);
+                      Navigator.pop(ctx);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: selected ? const Color(0xFFDCE8D3) : const Color(0xFFF3F0EA),
+                        borderRadius: BorderRadius.circular(12),
+                        border: selected ? Border.all(color: const Color(0xFF7C9A6E), width: 2) : null,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.emoji_events_rounded,
+                            size: 16,
+                            color: selected ? const Color(0xFF4A5B3E) : const Color(0xFF9A8C79),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            badge.name,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                              color: selected ? const Color(0xFF3C3730) : const Color(0xFF6E6558),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = context.read<AuthBloc>().state;
+    final authState = context.select<AuthBloc, AuthState>((b) => b.state);
     if (authState is! Authenticated) return const SizedBox.shrink();
     final user = authState.user;
 
@@ -148,13 +335,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 Row(
                   children: [
-                    CircleAvatar(
-                      radius: 35,
-                      backgroundColor: const Color(0xFFDCE8D3),
-                      child: Text(
-                        user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : '?',
-                        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: Color(0xFF4A5B3E)),
-                      ),
+                    AvatarWithBadge(
+                      avatarType: user.avatarType,
+                      avatarValue: user.avatarValue,
+                      name: user.fullName,
+                      showBadge: user.selectedBadgeSlug != null,
                     ),
                     const SizedBox(width: 16),
                     Expanded(

@@ -7,6 +7,7 @@ import '../../data/models/user_stats_model.dart';
 import '../../data/services/user_service.dart';
 import '../../data/repositories/dua_repository.dart';
 import '../widgets/common/badge_grid.dart';
+import '../widgets/common/avatar_with_badge.dart';
 import '../../data/repositories/poem_repository.dart';
 import '../../core/themes/app_theme.dart';
 import '../blocs/dua_bloc/dua_bloc.dart';
@@ -101,6 +102,9 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
             _userDuas = paged.data.map((d) => d.copyWith(
               userName: profile.fullName,
               userAvatar: profile.firstName.isNotEmpty ? profile.firstName[0].toUpperCase() : '?',
+              createdByAvatarType: profile.avatarType,
+              createdByAvatarValue: profile.avatarValue,
+              createdBySelectedBadgeSlug: profile.selectedBadgeSlug,
             )).toList();
             _duaCursor = paged.nextCursor;
             _hasMoreDuas = paged.hasMore;
@@ -111,6 +115,9 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
             _userPoems = paged.data.map((p) => p.copyWith(
               userName: profile.fullName,
               userAvatar: profile.firstName.isNotEmpty ? profile.firstName[0].toUpperCase() : '?',
+              createdByAvatarType: profile.avatarType,
+              createdByAvatarValue: profile.avatarValue,
+              createdBySelectedBadgeSlug: profile.selectedBadgeSlug,
             )).toList();
             _poemCursor = paged.nextCursor;
             _hasMorePoems = paged.hasMore;
@@ -134,6 +141,9 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
         _userDuas.addAll(paged.data.map((d) => d.copyWith(
           userName: _profile?.fullName ?? widget.userDisplayName,
           userAvatar: _profile?.firstName.isNotEmpty == true ? _profile!.firstName[0].toUpperCase() : '?',
+          createdByAvatarType: _profile?.avatarType,
+          createdByAvatarValue: _profile?.avatarValue,
+          createdBySelectedBadgeSlug: _profile?.selectedBadgeSlug,
         )));
         _duaCursor = paged.nextCursor;
         _hasMoreDuas = paged.hasMore;
@@ -154,6 +164,9 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
         _userPoems.addAll(paged.data.map((p) => p.copyWith(
           userName: _profile?.fullName ?? widget.userDisplayName,
           userAvatar: _profile?.firstName.isNotEmpty == true ? _profile!.firstName[0].toUpperCase() : '?',
+          createdByAvatarType: _profile?.avatarType,
+          createdByAvatarValue: _profile?.avatarValue,
+          createdBySelectedBadgeSlug: _profile?.selectedBadgeSlug,
         )));
         _poemCursor = paged.nextCursor;
         _hasMorePoems = paged.hasMore;
@@ -330,15 +343,12 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                         children: [
                           Row(
                             children: [
-                              CircleAvatar(
-                                radius: 35,
-                                backgroundColor: const Color(0xFFDCE8D3),
-                                child: Text(
-                                  _profile?.firstName.isNotEmpty == true
-                                      ? _profile!.firstName[0].toUpperCase()
-                                      : (name.isNotEmpty ? name[0].toUpperCase() : '?'),
-                                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: Color(0xFF4A5B3E)),
-                                ),
+                              AvatarWithBadge(
+                                avatarType: _profile?.avatarType,
+                                avatarValue: _profile?.avatarValue,
+                                name: _profile?.fullName ?? name,
+                                showBadge: _profile?.selectedBadgeSlug != null,
+                                size: 35,
                               ),
                               const SizedBox(width: 16),
                               Expanded(
