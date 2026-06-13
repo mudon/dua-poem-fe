@@ -69,7 +69,7 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authState = context.read<AuthBloc>().state;
+    final authState = context.watch<AuthBloc>().state;
     if (authState is! Authenticated) return const SizedBox.shrink();
     final user = authState.user;
 

@@ -24,7 +24,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authState = context.read<AuthBloc>().state;
+    final authState = context.watch<AuthBloc>().state;
     if (authState is! Authenticated) return const SizedBox.shrink();
     final user = authState.user;
 
@@ -155,7 +155,7 @@ class _HomeFeedState extends State<_HomeFeed> {
                       child: Center(child: CircularProgressIndicator()),
                     );
                   }
-                  final authState = context.read<AuthBloc>().state;
+    final authState = context.watch<AuthBloc>().state;
                   if (authState is! Authenticated) return const SizedBox.shrink();
                   return DuaCard(key: ValueKey(state.searchDuas[index].id), dua: state.searchDuas[index], currentUser: authState.user);
                 },
