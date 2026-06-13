@@ -1,3 +1,5 @@
+import '../../../core/enums/avatar_type.dart';
+
 abstract class AuthEvent {}
 
 class LoginRequested extends AuthEvent {
@@ -18,7 +20,7 @@ class UpdateProfileRequested extends AuthEvent {
   final String firstName;
   final String lastName;
   final String? bio;
-  final String? avatarType;
+  final AvatarType? avatarType;
   final String? avatarValue;
   final String? selectedBadgeSlug;
   UpdateProfileRequested(this.firstName, this.lastName, {this.bio, this.avatarType, this.avatarValue, this.selectedBadgeSlug});

@@ -1,8 +1,10 @@
+import '../../core/enums/report_status.dart';
+
 class ReportModel {
   final String id;
   final String reason;
   final String? description;
-  final String status;
+  final ReportStatus status;
   final String? createdAt;
 
   ReportModel({
@@ -18,7 +20,7 @@ class ReportModel {
       id: json['id'].toString(),
       reason: json['reason'] ?? '',
       description: json['description'],
-      status: json['status'] ?? 'pending',
+      status: ReportStatus.fromValue(json['status'] as String? ?? 'pending'),
       createdAt: json['createdAt'],
     );
   }

@@ -166,7 +166,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         firstName: event.firstName,
         lastName: event.lastName,
         bio: event.bio,
-        avatarType: event.avatarType,
+        avatarType: event.avatarType?.value,
         avatarValue: event.avatarValue,
         selectedBadgeSlug: event.selectedBadgeSlug,
       );
@@ -189,7 +189,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       'createdAt': user.createdAt.toIso8601String(),
       'avatar': user.avatar,
       'bio': user.bio,
-      'avatarType': user.avatarType,
+      'avatarType': user.avatarType?.value,
       'avatarValue': user.avatarValue,
       'selectedBadgeSlug': user.selectedBadgeSlug,
       'joinedDate': user.joinedDate,

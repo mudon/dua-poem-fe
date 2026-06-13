@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../app/dependency_injection.dart';
+import '../../../core/enums/notification_type.dart';
 import '../../../data/repositories/admin_repository.dart';
 import '../../../data/services/signalr_service.dart';
 import 'admin_event.dart';
@@ -19,7 +20,7 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
 
   void _listenToSignalR() {
     _notificationSub = getIt<SignalRService>().onNotificationReceived.listen((notification) {
-      if (notification.type == 'revision_submitted') {
+      if (notification.type == NotificationType.revisionSubmitted) {
         add(LoadPendingRevisions());
       }
     });

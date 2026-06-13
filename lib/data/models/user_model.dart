@@ -1,3 +1,5 @@
+import '../../core/enums/avatar_type.dart';
+
 class UserModel {
   final String id;
   final String firstName;
@@ -7,7 +9,7 @@ class UserModel {
   final DateTime createdAt;
   final String? avatar;
   final String? bio;
-  final String? avatarType;
+  final AvatarType? avatarType;
   final String? avatarValue;
   final String? selectedBadgeSlug;
   final String joinedDate;
@@ -40,7 +42,7 @@ class UserModel {
       createdAt: createdAt,
       avatar: json['avatar'],
       bio: json['bio'],
-      avatarType: json['avatarType'],
+      avatarType: AvatarType.fromValue(json['avatarType'] as String?),
       avatarValue: json['avatarValue'],
       selectedBadgeSlug: json['selectedBadgeSlug'],
       joinedDate: json['joinedDate'],
@@ -55,7 +57,7 @@ class UserModel {
     DateTime? createdAt,
     String? avatar,
     String? bio,
-    String? avatarType,
+    AvatarType? avatarType,
     String? avatarValue,
     String? selectedBadgeSlug,
     String? joinedDate,

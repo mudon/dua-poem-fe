@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../data/models/user_model.dart';
 import '../../data/models/dua_model.dart';
 import '../../data/models/report_model.dart';
+import '../../core/enums/report_status.dart';
+import '../../core/enums/dua_report_reason.dart';
 import '../../core/themes/app_theme.dart';
 import '../../data/repositories/dua_repository.dart';
 import '../../data/services/signalr_service.dart';
@@ -65,7 +67,7 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
     if (result.isSuccess && result.data != null) {
       for (final report in result.data!.data) {
         reports.add(report);
-        if (report.status != 'resolved' && report.status != 'dismissed') {
+        if (report.status != ReportStatus.resolved && report.status != ReportStatus.dismissed) {
           pending++;
         }
       }
@@ -99,7 +101,7 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
     final pendingReports = <ReportModel>[];
     if (reportsResult.isSuccess && reportsResult.data != null) {
       for (final report in reportsResult.data!.data) {
-        if (report.status == 'pending') {
+        if (report.status == ReportStatus.pending) {
           pendingReports.add(report);
         }
       }
@@ -506,15 +508,7 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                                 width: double.infinity,
                                 child: ElevatedButton.icon(
                                   onPressed: () {
-                                    final reasons = [
-                                      'wrong_arabic_text',
-                                      'wrong_transliteration',
-                                      'wrong_translation',
-                                      'wrong_source',
-                                      'inappropriate_content',
-                                      'duplicate_dua',
-                                      'other',
-                                    ];
+                                    final reasons = DuaReportReason.values;
                                     showModalBottomSheet(
                                       context: context,
                                       isScrollControlled: true,
@@ -522,9 +516,9 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                                       builder: (ctx) => _DetailReportSheet(
                                         title: _dua!.title,
                                         reasons: reasons,
-                                        onSubmit: (reason, desc) {
+                                        onSubmit: (DuaReportReason reason, desc) {
                                           getIt<DuaBloc>().add(
-                                            ReportDua(_dua!.id, reason, desc),
+                                            ReportDua(_dua!.id, reason.value, desc),
                                           );
                                           Navigator.pop(ctx);
                                           ScaffoldMessenger.of(
@@ -685,40 +679,7 @@ class _ReportListSheet extends StatelessWidget {
 
   const _ReportListSheet({required this.reports, required this.itemTitle});
 
-  String _formatReason(String reason) {
-    return reason
-        .replaceAll('_', ' ')
-        .split(' ')
-        .map(
-          (w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '',
-        )
-        .join(' ');
-  }
 
-  Color _statusColor(String status) {
-    switch (status) {
-      case 'pending':
-        return const Color(0xFFD68B2E);
-      case 'fix_submitted':
-        return const Color(0xFF4A7BBF);
-      case 'resolved':
-        return const Color(0xFF3F7849);
-      case 'dismissed':
-        return const Color(0xFF9A8C79);
-      default:
-        return const Color(0xFF9A8C79);
-    }
-  }
-
-  String _statusLabel(String status) {
-    return status
-        .replaceAll('_', ' ')
-        .split(' ')
-        .map(
-          (w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '',
-        )
-        .join(' ');
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -798,7 +759,7 @@ class _ReportListSheet extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                  _formatReason(r.reason),
+                                  r.reason.replaceAll('_', ' ').split(' ').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' '),
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w600,
                                     fontSize: 14,
@@ -811,17 +772,15 @@ class _ReportListSheet extends StatelessWidget {
                                   vertical: 3,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: _statusColor(
-                                    r.status,
-                                  ).withValues(alpha: 0.15),
+                                  color: r.status.color.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(30),
                                 ),
                                 child: Text(
-                                  _statusLabel(r.status),
+                                  r.status.displayName,
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w500,
-                                    color: _statusColor(r.status),
+                                    color: r.status.color,
                                   ),
                                 ),
                               ),
@@ -1466,8 +1425,8 @@ class _TagPill extends StatelessWidget {
 
 class _DetailReportSheet extends StatefulWidget {
   final String title;
-  final List<String> reasons;
-  final Function(String reason, String description) onSubmit;
+  final List<DuaReportReason> reasons;
+  final Function(DuaReportReason reason, String description) onSubmit;
 
   const _DetailReportSheet({
     required this.title,
@@ -1549,15 +1508,6 @@ class _DetailReportSheetState extends State<_DetailReportSheet> {
               child: Column(
                 children: List.generate(widget.reasons.length, (i) {
                   final r = widget.reasons[i];
-                  final label = r
-                      .replaceAll('_', ' ')
-                      .split(' ')
-                      .map(
-                        (w) => w.isNotEmpty
-                            ? '${w[0].toUpperCase()}${w.substring(1)}'
-                            : '',
-                      )
-                      .join(' ');
                   final isSelected = _selectedIndex == i;
                   return GestureDetector(
                     onTap: () => setState(() => _selectedIndex = i),
@@ -1578,7 +1528,7 @@ class _DetailReportSheetState extends State<_DetailReportSheet> {
                             size: 22,
                           ),
                           const SizedBox(width: 8),
-                          Text(label, style: const TextStyle(fontSize: 14)),
+                          Text(r.displayName, style: const TextStyle(fontSize: 14)),
                         ],
                       ),
                     ),

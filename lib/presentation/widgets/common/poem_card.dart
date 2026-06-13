@@ -6,6 +6,7 @@ import '../../../data/models/report_model.dart';
 import '../../../data/models/user_model.dart';
 import 'avatar_with_badge.dart';
 import '../../../data/repositories/poem_repository.dart';
+import '../../../core/enums/avatar_type.dart';
 import '../../../core/themes/app_theme.dart';
 import '../../blocs/poem_bloc/poem_bloc.dart';
 import '../../blocs/poem_bloc/poem_event.dart';
@@ -34,7 +35,7 @@ class _PoemCardState extends State<PoemCard> {
   late String _title;
   late String? _content;
   late String _userName;
-  late String? _avatarType;
+  late AvatarType? _avatarType;
   late String? _avatarValue;
   late String? _selectedBadgeSlug;
 
@@ -178,6 +179,17 @@ class _PoemCardState extends State<PoemCard> {
             setState(() {
               _title = update.title;
               if (update.content != null) _content = update.content;
+            });
+          }
+        } else if (state.actionType == 'profile_update') {
+          if (state.lastToggledPoemId != widget.poem.userId) return;
+          final update = state.profileUpdates[widget.poem.userId];
+          if (update != null) {
+            setState(() {
+              _userName = update.userName;
+              _avatarType = update.avatarType;
+              _avatarValue = update.avatarValue;
+              _selectedBadgeSlug = update.selectedBadgeSlug;
             });
           }
         }

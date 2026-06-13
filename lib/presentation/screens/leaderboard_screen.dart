@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../app/dependency_injection.dart';
+import '../../core/enums/content_type.dart';
 import '../../core/themes/app_theme.dart';
 import '../../data/repositories/leaderboard_repository.dart';
 import '../../data/services/leaderboard_service.dart';
@@ -44,11 +45,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   void _onLeaderboardUpdate(List<LeaderboardUpdateModel> entries) {
     setState(() {
       _duas = entries
-          .where((e) => e.type == 'dua')
+          .where((e) => e.type == ContentType.dua)
           .map((e) => LeaderboardEntry(id: e.id, title: e.title, likesCount: e.likesCount, type: e.type))
           .toList();
       _poems = entries
-          .where((e) => e.type == 'poem')
+          .where((e) => e.type == ContentType.poem)
           .map((e) => LeaderboardEntry(id: e.id, title: e.title, likesCount: e.likesCount, type: e.type))
           .toList();
       _isLoading = false;
@@ -78,7 +79,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
     void onItemTap(LeaderboardEntry entry) {
       if (currentUser == null) return;
-      final route = entry.type == 'dua' ? '/dua/${entry.id}' : '/poem/${entry.id}';
+      final route = entry.type == ContentType.dua ? '/dua/${entry.id}' : '/poem/${entry.id}';
       context.push(route, extra: currentUser);
     }
 

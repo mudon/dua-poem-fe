@@ -13,6 +13,7 @@ import '../blocs/auth_bloc/auth_state.dart';
 import '../widgets/common/notification_bell.dart';
 import '../widgets/common/badge_grid.dart';
 import '../widgets/common/avatar_with_badge.dart';
+import '../../core/enums/avatar_type.dart';
 import '../../core/constants/app_avatars.dart';
 import '../../app/dependency_injection.dart';
 
@@ -61,7 +62,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  String? _selectedAvatarType;
+  AvatarType? _selectedAvatarType;
   String? _selectedAvatarValue;
   String? _selectedBadgeSlug;
 
@@ -196,11 +197,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               spacing: 12,
               runSpacing: 12,
               children: appAvatars.map((avatar) {
-                final selected = _selectedAvatarType == 'icon' && _selectedAvatarValue == avatar.id.toString();
+                final selected = _selectedAvatarType == AvatarType.icon && _selectedAvatarValue == avatar.id.toString();
                 return GestureDetector(
                   onTap: () {
                     setDialogState(() {
-                      _selectedAvatarType = 'icon';
+                      _selectedAvatarType = AvatarType.icon;
                       _selectedAvatarValue = avatar.id.toString();
                     });
                     Navigator.pop(ctx);

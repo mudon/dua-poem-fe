@@ -2,7 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../app/dependency_injection.dart';
+import '../../../core/enums/notification_type.dart';
+import '../../../core/enums/avatar_type.dart';
 import '../../../data/models/signalr/dua_content_update_model.dart';
+import '../../../data/models/signalr/profile_update_model.dart';
 import '../../../data/repositories/dua_repository.dart';
 import '../../../data/models/dua_model.dart';
 import '../../../data/services/signalr_service.dart';
@@ -29,6 +32,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     on<UpdateDua>(_onUpdateDua);
     on<DeleteDua>(_onDeleteDua);
     on<SignalRDuaDeleted>(_onSignalRDuaDeleted);
+    on<SignalRProfileUpdated>(_onSignalRProfileUpdated);
     on<SignalRDuaContentUpdated>(_onSignalRDuaContentUpdated);
     on<SignalRDuaCreated>(_onSignalRDuaCreated);
     _listenToSignalR();
@@ -87,6 +91,19 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
       } catch (_) {}
     });
 
+    getIt<SignalRService>().onProfileUpdated.listen((update) {
+      try {
+        add(SignalRProfileUpdated(
+          userId: update.userId,
+          firstName: update.firstName,
+          lastName: update.lastName,
+          avatarType: update.avatarType?.toString(),
+          avatarValue: update.avatarValue,
+          selectedBadgeSlug: update.selectedBadgeSlug,
+        ));
+      } catch (_) {}
+    });
+
     getIt<SignalRService>().onDuaCreated.listen((data) {
       try {
         final dua = DuaModel.fromApiJson(data);
@@ -98,7 +115,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
   void _listenToNotifications() {
     _notificationSub = getIt<SignalRService>().onNotificationReceived.listen((notification) {
       try {
-        if (notification.type == 'report_reopened') {
+        if (notification.type == NotificationType.reportReopened) {
           final data = notification.data;
           if (data == null) return;
           final parsed = jsonDecode(data) as Map<String, dynamic>;
@@ -143,6 +160,24 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     } else {
       emit(state.copyWith(error: result.error, actionType: 'update_error'));
     }
+  }
+
+  void _onSignalRProfileUpdated(SignalRProfileUpdated event, Emitter<DuaState> emit) {
+    print('[SignalR] DuaBloc received SignalRProfileUpdated: userId=${event.userId}, userName=${event.userName}');
+    final newProfileUpdates = Map<String, ProfileUpdateModel>.from(state.profileUpdates);
+    newProfileUpdates[event.userId] = ProfileUpdateModel(
+      userId: event.userId,
+      firstName: event.firstName,
+      lastName: event.lastName,
+      avatarType: event.avatarType != null ? AvatarType.fromValue(event.avatarType) : null,
+      avatarValue: event.avatarValue,
+      selectedBadgeSlug: event.selectedBadgeSlug,
+    );
+    emit(state.copyWith(
+      profileUpdates: newProfileUpdates,
+      actionType: 'profile_update',
+      lastToggledDuaId: event.userId,
+    ));
   }
 
   void _onSignalRDuaContentUpdated(SignalRDuaContentUpdated event, Emitter<DuaState> emit) {

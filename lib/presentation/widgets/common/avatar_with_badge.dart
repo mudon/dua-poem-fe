@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_avatars.dart';
+import '../../../core/enums/avatar_type.dart';
 
 class AvatarWithBadge extends StatelessWidget {
-  final String? avatarType;
+  final AvatarType? avatarType;
   final String? avatarValue;
   final String name;
   final bool showBadge;
@@ -31,7 +32,7 @@ class AvatarWithBadge extends StatelessWidget {
     final radius = size;
     final badgeRadius = radius * 0.4;
 
-    final appAvatar = avatarType == 'icon'
+    final appAvatar = avatarType == AvatarType.icon
         ? findAvatarById(avatarValue)
         : null;
 

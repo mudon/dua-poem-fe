@@ -1,5 +1,6 @@
 import '../../../data/models/dua_model.dart';
 import '../../../data/models/signalr/dua_content_update_model.dart';
+import '../../../data/models/signalr/profile_update_model.dart';
 
 class DuaState {
   final bool isProcessing;
@@ -12,6 +13,7 @@ class DuaState {
   final Map<String, int> viewCounts;
   final Map<String, int> reportCounts;
   final Map<String, DuaContentUpdateModel?> contentUpdates;
+  final Map<String, ProfileUpdateModel> profileUpdates;
   final Set<String> returnedReportIds;
   final String? lastToggledDuaId;
   final DuaModel? createdDua;
@@ -27,6 +29,7 @@ class DuaState {
     this.viewCounts = const {},
     this.reportCounts = const {},
     this.contentUpdates = const {},
+    this.profileUpdates = const {},
     this.returnedReportIds = const {},
     this.lastToggledDuaId,
     this.createdDua,
@@ -43,6 +46,7 @@ class DuaState {
     Map<String, int>? viewCounts,
     Map<String, int>? reportCounts,
     Map<String, DuaContentUpdateModel?>? contentUpdates,
+    Map<String, ProfileUpdateModel>? profileUpdates,
     Set<String>? returnedReportIds,
     String? lastToggledDuaId,
     DuaModel? createdDua,
@@ -58,6 +62,7 @@ class DuaState {
       viewCounts: viewCounts ?? this.viewCounts,
       reportCounts: reportCounts ?? this.reportCounts,
       contentUpdates: contentUpdates ?? this.contentUpdates,
+      profileUpdates: profileUpdates ?? this.profileUpdates,
       returnedReportIds: returnedReportIds ?? this.returnedReportIds,
       lastToggledDuaId: lastToggledDuaId ?? this.lastToggledDuaId,
       createdDua: createdDua,

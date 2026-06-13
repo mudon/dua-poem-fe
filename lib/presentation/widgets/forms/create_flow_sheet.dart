@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/enums/content_type.dart';
 import 'create_picker_sheet.dart';
 import 'create_dua_sheet.dart';
 import 'create_poem_sheet.dart';
@@ -27,7 +28,7 @@ class _CreateFlowSheetState extends State<CreateFlowSheet> {
         return CreatePickerSheet(
           onSelected: (type) {
             setState(() {
-              _step = type == 'dua' ? _FlowStep.duaForm : _FlowStep.poemForm;
+              _step = type == ContentType.dua ? _FlowStep.duaForm : _FlowStep.poemForm;
             });
           },
         );

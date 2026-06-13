@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/dependency_injection.dart';
 import '../../../core/themes/app_theme.dart';
+import '../../../core/enums/notification_type.dart';
 import '../../../data/models/notification_model.dart';
 import '../../blocs/auth_bloc/auth_bloc.dart';
 import '../../blocs/auth_bloc/auth_state.dart';
@@ -35,30 +36,7 @@ class _NotificationBellState extends State<NotificationBell> {
     _show();
   }
 
-  IconData _iconForType(String type) {
-    switch (type) {
-      case 'like_received':
-        return Icons.favorite;
-      case 'report_created':
-        return Icons.flag_outlined;
-      case 'report_resolved':
-        return Icons.check_circle_outline;
-      case 'report_dismissed':
-        return Icons.cancel_outlined;
-      case 'revision_submitted':
-        return Icons.pending_actions;
-      case 'revision_reviewed':
-        return Icons.edit_note;
-      case 'report_reopened':
-        return Icons.refresh;
-      case 'badge_awarded':
-        return Icons.emoji_events;
-      case 'badge_revoked':
-        return Icons.lock_outline;
-      default:
-        return Icons.notifications_outlined;
-    }
-  }
+  IconData _iconForType(NotificationType type) => type.icon;
 
   String _timeAgo(DateTime dt) {
     final diff = DateTime.now().difference(dt);
@@ -226,7 +204,7 @@ class _NotificationBellState extends State<NotificationBell> {
                                     ),
                     itemBuilder: (_, i) {
                       final n = items[i];
-                      final isReturnedFix = n.type == 'report_reopened';
+                      final isReturnedFix = n.type == NotificationType.reportReopened;
                       String? fixNavigatePath;
                       if (isReturnedFix && n.data != null) {
                         try {

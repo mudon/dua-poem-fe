@@ -95,6 +95,26 @@ class SignalRDuaCreated extends DuaEvent {
   SignalRDuaCreated(this.dua);
 }
 
+class SignalRProfileUpdated extends DuaEvent {
+  final String userId;
+  final String firstName;
+  final String lastName;
+  final String? avatarType;
+  final String? avatarValue;
+  final String? selectedBadgeSlug;
+
+  String get userName => '$firstName $lastName';
+
+  SignalRProfileUpdated({
+    required this.userId,
+    required this.firstName,
+    required this.lastName,
+    this.avatarType,
+    this.avatarValue,
+    this.selectedBadgeSlug,
+  });
+}
+
 class SignalRDuaContentUpdated extends DuaEvent {
   final String duaId;
   final String title;

@@ -1,8 +1,10 @@
+import '../../../core/enums/content_type.dart';
+
 class LeaderboardUpdateModel {
   final String id;
   final String title;
   final int likesCount;
-  final String type;
+  final ContentType type;
 
   LeaderboardUpdateModel({
     required this.id,
@@ -16,7 +18,7 @@ class LeaderboardUpdateModel {
       id: json['id'] as String,
       title: json['title'] as String,
       likesCount: json['likesCount'] as int,
-      type: json['type'] as String,
+      type: ContentType.fromValue(json['type'] as String),
     );
   }
 }

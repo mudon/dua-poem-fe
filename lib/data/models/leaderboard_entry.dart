@@ -1,8 +1,10 @@
+import '../../core/enums/content_type.dart';
+
 class LeaderboardEntry {
   final String id;
   final String title;
   final int likesCount;
-  final String type;
+  final ContentType type;
 
   LeaderboardEntry({
     required this.id,
@@ -16,7 +18,7 @@ class LeaderboardEntry {
       id: json['id'].toString(),
       title: json['title'] ?? '',
       likesCount: json['likesCount'] ?? 0,
-      type: 'dua',
+      type: ContentType.dua,
     );
   }
 
@@ -25,7 +27,7 @@ class LeaderboardEntry {
       id: json['id'].toString(),
       title: json['title'] ?? '',
       likesCount: json['likesCount'] ?? 0,
-      type: 'poem',
+      type: ContentType.poem,
     );
   }
 

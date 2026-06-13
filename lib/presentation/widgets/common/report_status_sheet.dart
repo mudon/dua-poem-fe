@@ -10,20 +10,6 @@ class ReportStatusSheet extends StatelessWidget {
     return reason.replaceAll('_', ' ').split(' ').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' ');
   }
 
-  static Color _statusColor(String status) {
-    switch (status) {
-      case 'pending': return const Color(0xFFD68B2E);
-      case 'fix_submitted': return const Color(0xFF4A7BBF);
-      case 'resolved': return const Color(0xFF3F7849);
-      case 'dismissed': return const Color(0xFF9A8C79);
-      default: return const Color(0xFF9A8C79);
-    }
-  }
-
-  static String _statusLabel(String status) {
-    return status.replaceAll('_', ' ').split(' ').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' ');
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -82,14 +68,14 @@ class ReportStatusSheet extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
-                                  color: _statusColor(r.status).withValues(alpha: 0.15),
+                                  color: r.status.color.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(30),
                                 ),
-                                child: Text(_statusLabel(r.status),
+                                child: Text(r.status.displayName,
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w500,
-                                    color: _statusColor(r.status),
+                                    color: r.status.color,
                                   ),
                                 ),
                               ),

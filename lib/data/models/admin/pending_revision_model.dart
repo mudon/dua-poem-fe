@@ -1,6 +1,8 @@
+import '../../../core/enums/content_type.dart';
+
 class PendingRevisionModel {
   final String id;
-  final String contentType;
+  final ContentType contentType;
   final String contentId;
   final String contentTitle;
   final String? submittedBy;
@@ -22,7 +24,7 @@ class PendingRevisionModel {
   factory PendingRevisionModel.fromJson(Map<String, dynamic> json) {
     return PendingRevisionModel(
       id: json['id'].toString(),
-      contentType: json['contentType'] ?? '',
+      contentType: ContentType.fromValue(json['contentType'] as String? ?? 'dua'),
       contentId: json['contentId'].toString(),
       contentTitle: json['contentTitle'] ?? '',
       submittedBy: json['submittedBy']?.toString(),

@@ -1,3 +1,4 @@
+import '../../core/enums/content_type.dart';
 import '../../core/errors/error_helper.dart';
 import '../../core/network/api_result.dart';
 import '../models/admin/pending_revision_model.dart';
@@ -20,9 +21,9 @@ class AdminRepository {
     }
   }
 
-  Future<ApiResult<Map<String, dynamic>>> getRevisionDetail(String revisionId, String contentType) async {
+  Future<ApiResult<Map<String, dynamic>>> getRevisionDetail(String revisionId, ContentType contentType) async {
     try {
-      final data = contentType == 'dua'
+      final data = contentType == ContentType.dua
           ? await _adminService.getDuaRevisionDetail(revisionId)
           : await _adminService.getPoemRevisionDetail(revisionId);
       return ApiResult.success(data);
@@ -31,9 +32,9 @@ class AdminRepository {
     }
   }
 
-  Future<ApiResult<void>> reviewRevision(String revisionId, String contentType, Map<String, String> actions) async {
+  Future<ApiResult<void>> reviewRevision(String revisionId, ContentType contentType, Map<String, String> actions) async {
     try {
-      if (contentType == 'dua') {
+      if (contentType == ContentType.dua) {
         await _adminService.reviewDuaRevision(revisionId, actions);
       } else {
         await _adminService.reviewPoemRevision(revisionId, actions);

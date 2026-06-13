@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/enums/avatar_type.dart';
 import '../../../core/themes/app_theme.dart';
 import '../../../data/models/dua_model.dart';
 import '../../../data/models/user_model.dart';
@@ -36,7 +37,7 @@ class _DuaCardState extends State<DuaCard> {
   late String? _transliteration;
   late String _translation;
   late String _userName;
-  late String? _avatarType;
+  late AvatarType? _avatarType;
   late String? _avatarValue;
   late String? _selectedBadgeSlug;
 
@@ -186,6 +187,17 @@ class _DuaCardState extends State<DuaCard> {
               if (update.arabicText != null) _arabicText = update.arabicText;
               if (update.transliteration != null) _transliteration = update.transliteration;
               if (update.translation != null) _translation = update.translation!;
+            });
+          }
+        } else if (state.actionType == 'profile_update') {
+          if (state.lastToggledDuaId != widget.dua.userId) return;
+          final update = state.profileUpdates[widget.dua.userId];
+          if (update != null) {
+            setState(() {
+              _userName = update.userName;
+              _avatarType = update.avatarType;
+              _avatarValue = update.avatarValue;
+              _selectedBadgeSlug = update.selectedBadgeSlug;
             });
           }
         }

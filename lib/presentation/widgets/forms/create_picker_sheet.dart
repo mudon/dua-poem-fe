@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../../core/enums/content_type.dart';
 import '../../../core/themes/app_theme.dart';
 
 class CreatePickerSheet extends StatelessWidget {
-  final ValueChanged<String>? onSelected;
+  final ValueChanged<ContentType>? onSelected;
 
   const CreatePickerSheet({super.key, this.onSelected});
 
@@ -36,13 +37,13 @@ class CreatePickerSheet extends StatelessWidget {
           _OptionRow(
             icon: Icons.book,
             label: 'New Dua',
-            onTap: () => onSelected?.call('dua'),
+            onTap: () => onSelected?.call(ContentType.dua),
           ),
           const SizedBox(height: 8),
           _OptionRow(
             icon: Icons.auto_stories,
             label: 'New Poem',
-            onTap: () => onSelected?.call('poem'),
+            onTap: () => onSelected?.call(ContentType.poem),
           ),
           const SizedBox(height: 8),
         ],

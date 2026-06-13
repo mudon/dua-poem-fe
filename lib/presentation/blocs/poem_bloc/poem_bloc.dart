@@ -2,7 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../app/dependency_injection.dart';
+import '../../../core/enums/notification_type.dart';
+import '../../../core/enums/avatar_type.dart';
 import '../../../data/models/signalr/poem_content_update_model.dart';
+import '../../../data/models/signalr/profile_update_model.dart';
 import '../../../data/repositories/poem_repository.dart';
 import '../../../data/models/poem_model.dart';
 import '../../../data/services/signalr_service.dart';
@@ -29,6 +32,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     on<UpdatePoem>(_onUpdatePoem);
     on<DeletePoem>(_onDeletePoem);
     on<SignalRPoemDeleted>(_onSignalRPoemDeleted);
+    on<SignalRProfileUpdated>(_onSignalRProfileUpdated);
     on<SignalRPoemContentUpdated>(_onSignalRPoemContentUpdated);
     on<SignalRPoemCreated>(_onSignalRPoemCreated);
     _listenToSignalR();
@@ -85,6 +89,19 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
       } catch (_) {}
     });
 
+    getIt<SignalRService>().onProfileUpdated.listen((update) {
+      try {
+        add(SignalRProfileUpdated(
+          userId: update.userId,
+          firstName: update.firstName,
+          lastName: update.lastName,
+          avatarType: update.avatarType?.toString(),
+          avatarValue: update.avatarValue,
+          selectedBadgeSlug: update.selectedBadgeSlug,
+        ));
+      } catch (_) {}
+    });
+
     getIt<SignalRService>().onPoemCreated.listen((data) {
       try {
         final poem = PoemModel.fromApiJson(data);
@@ -96,7 +113,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
   void _listenToNotifications() {
     _notificationSub = getIt<SignalRService>().onNotificationReceived.listen((notification) {
       try {
-        if (notification.type == 'report_reopened') {
+        if (notification.type == NotificationType.reportReopened) {
           final data = notification.data;
           if (data == null) return;
           final parsed = jsonDecode(data) as Map<String, dynamic>;
@@ -139,6 +156,24 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     } else {
       emit(state.copyWith(error: result.error, actionType: 'update_error'));
     }
+  }
+
+  void _onSignalRProfileUpdated(SignalRProfileUpdated event, Emitter<PoemState> emit) {
+    print('[SignalR] PoemBloc received SignalRProfileUpdated: userId=${event.userId}, userName=${event.userName}');
+    final newProfileUpdates = Map<String, ProfileUpdateModel>.from(state.profileUpdates);
+    newProfileUpdates[event.userId] = ProfileUpdateModel(
+      userId: event.userId,
+      firstName: event.firstName,
+      lastName: event.lastName,
+      avatarType: event.avatarType != null ? AvatarType.fromValue(event.avatarType) : null,
+      avatarValue: event.avatarValue,
+      selectedBadgeSlug: event.selectedBadgeSlug,
+    );
+    emit(state.copyWith(
+      profileUpdates: newProfileUpdates,
+      actionType: 'profile_update',
+      lastToggledPoemId: event.userId,
+    ));
   }
 
   void _onSignalRPoemContentUpdated(SignalRPoemContentUpdated event, Emitter<PoemState> emit) {

@@ -1,5 +1,6 @@
 import '../../../data/models/poem_model.dart';
 import '../../../data/models/signalr/poem_content_update_model.dart';
+import '../../../data/models/signalr/profile_update_model.dart';
 
 class PoemState {
   final bool isProcessing;
@@ -12,6 +13,7 @@ class PoemState {
   final Map<String, int> viewCounts;
   final Map<String, int> reportCounts;
   final Map<String, PoemContentUpdateModel?> contentUpdates;
+  final Map<String, ProfileUpdateModel> profileUpdates;
   final Set<String> returnedReportIds;
   final String? lastToggledPoemId;
   final PoemModel? createdPoem;
@@ -27,6 +29,7 @@ class PoemState {
     this.viewCounts = const {},
     this.reportCounts = const {},
     this.contentUpdates = const {},
+    this.profileUpdates = const {},
     this.returnedReportIds = const {},
     this.lastToggledPoemId,
     this.createdPoem,
@@ -43,6 +46,7 @@ class PoemState {
     Map<String, int>? viewCounts,
     Map<String, int>? reportCounts,
     Map<String, PoemContentUpdateModel?>? contentUpdates,
+    Map<String, ProfileUpdateModel>? profileUpdates,
     Set<String>? returnedReportIds,
     String? lastToggledPoemId,
     PoemModel? createdPoem,
@@ -58,6 +62,7 @@ class PoemState {
       viewCounts: viewCounts ?? this.viewCounts,
       reportCounts: reportCounts ?? this.reportCounts,
       contentUpdates: contentUpdates ?? this.contentUpdates,
+      profileUpdates: profileUpdates ?? this.profileUpdates,
       returnedReportIds: returnedReportIds ?? this.returnedReportIds,
       lastToggledPoemId: lastToggledPoemId ?? this.lastToggledPoemId,
       createdPoem: createdPoem,

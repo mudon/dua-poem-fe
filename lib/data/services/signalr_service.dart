@@ -12,6 +12,7 @@ import '../models/signalr/dua_content_update_model.dart';
 import '../models/signalr/poem_content_update_model.dart';
 import '../models/signalr/badge_awarded_model.dart';
 import '../models/signalr/badge_revoked_model.dart';
+import '../models/signalr/profile_update_model.dart';
 
 class SignalRService {
   HubConnection? _duaHubConnection;
@@ -25,6 +26,7 @@ class SignalRService {
   HubConnection? _notificationHubConnection;
   HubConnection? _leaderboardHubConnection;
   HubConnection? _badgeHubConnection;
+  HubConnection? _profileHubConnection;
   final _likesController = StreamController<LikesUpdateModel>.broadcast();
   final _favoritesController = StreamController<FavoritesUpdateModel>.broadcast();
   final _viewsController = StreamController<ViewsUpdateModel>.broadcast();
@@ -35,6 +37,7 @@ class SignalRService {
   final _poemContentController = StreamController<PoemContentUpdateModel>.broadcast();
   final _badgeController = StreamController<BadgeAwardedModel>.broadcast();
   final _badgeRevokedController = StreamController<BadgeRevokedModel>.broadcast();
+  final _profileController = StreamController<ProfileUpdateModel>.broadcast();
   final _duaDeletedController = StreamController<String>.broadcast();
   final _poemDeletedController = StreamController<String>.broadcast();
   final _duaCreatedController = StreamController<Map<String, dynamic>>.broadcast();
@@ -50,6 +53,7 @@ class SignalRService {
   Stream<List<LeaderboardUpdateModel>> get onLeaderboardUpdated => _leaderboardController.stream;
   Stream<BadgeAwardedModel> get onBadgeAwarded => _badgeController.stream;
   Stream<BadgeRevokedModel> get onBadgeRevoked => _badgeRevokedController.stream;
+  Stream<ProfileUpdateModel> get onProfileUpdated => _profileController.stream;
   Stream<DuaContentUpdateModel> get onDuaContentUpdated => _duaContentController.stream;
   Stream<PoemContentUpdateModel> get onPoemContentUpdated => _poemContentController.stream;
   Stream<String> get onDuaDeleted => _duaDeletedController.stream;
@@ -94,6 +98,7 @@ class SignalRService {
       '/hubs/notifications',
       '/hubs/leaderboard',
       '/hubs/badges',
+      '/hubs/profile',
     ];
 
     await Future.wait(
@@ -197,6 +202,13 @@ class SignalRService {
       _poemDeletedController.add(poemId);
     });
 
+    connection.on('ProfileUpdated', (args) {
+      if (args == null || args.isEmpty) return;
+      final data = args[0] as Map<String, dynamic>;
+      print('[SignalR] ProfileUpdated: userId=${data['userId']}');
+      _profileController.add(ProfileUpdateModel.fromJson(data));
+    });
+
     connection.on('DuaCreated', (args) {
       if (args == null || args.isEmpty) return;
       final data = args[0] as Map<String, dynamic>;
@@ -222,6 +234,7 @@ class SignalRService {
       if (hubPath.contains('notifications')) _notificationHubConnection = null;
       if (hubPath.contains('leaderboard')) _leaderboardHubConnection = null;
       if (hubPath.contains('badges')) _badgeHubConnection = null;
+      if (hubPath.contains('profile')) _profileHubConnection = null;
     });
 
     await connection.start();
@@ -238,6 +251,7 @@ class SignalRService {
     if (hubPath.contains('notifications')) _notificationHubConnection = connection;
     if (hubPath.contains('leaderboard')) _leaderboardHubConnection = connection;
     if (hubPath.contains('badges')) _badgeHubConnection = connection;
+    if (hubPath.contains('profile')) _profileHubConnection = connection;
   }
 
   Future<void> joinDuaGroup(String duaId) async {
@@ -442,6 +456,11 @@ class SignalRService {
     } catch (e) {
       print('[SignalR] disconnect badge hub error: $e');
     }
+    try {
+      await _profileHubConnection?.stop();
+    } catch (e) {
+      print('[SignalR] disconnect profile hub error: $e');
+    }
     _duaHubConnection = null;
     _poemHubConnection = null;
     _duaFavHubConnection = null;
@@ -453,6 +472,7 @@ class SignalRService {
     _notificationHubConnection = null;
     _leaderboardHubConnection = null;
     _badgeHubConnection = null;
+    _profileHubConnection = null;
   }
 
   void dispose() {
@@ -465,6 +485,7 @@ class SignalRService {
     _leaderboardController.close();
     _badgeController.close();
     _badgeRevokedController.close();
+    _profileController.close();
     _duaContentController.close();
     _poemContentController.close();
     _duaDeletedController.close();

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/enums/badge_category.dart';
 import '../../../data/models/user_stats_model.dart';
 
 class BadgeGrid extends StatelessWidget {
@@ -6,7 +7,7 @@ class BadgeGrid extends StatelessWidget {
 
   const BadgeGrid({super.key, required this.allBadges});
 
-  static const _categories = ['Duas', 'Poems', 'Likes', 'Views', 'Streak'];
+  static const _categories = BadgeCategory.values;
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +17,7 @@ class BadgeGrid extends StatelessWidget {
         for (final category in _categories)
           _BadgeSection(
             category: category,
-            badges: allBadges.where((b) => b.category == category).toList(),
+            badges: allBadges.where((b) => b.badgeCategory == category).toList(),
           ),
       ],
     );
@@ -24,32 +25,14 @@ class BadgeGrid extends StatelessWidget {
 }
 
 class _BadgeSection extends StatelessWidget {
-  final String category;
+  final BadgeCategory category;
   final List<CatalogBadgeModel> badges;
 
   const _BadgeSection({required this.category, required this.badges});
 
-  IconData get _icon {
-    switch (category) {
-      case 'Duas': return Icons.menu_book_rounded;
-      case 'Poems': return Icons.auto_stories_rounded;
-      case 'Likes': return Icons.favorite_rounded;
-      case 'Views': return Icons.visibility_rounded;
-      case 'Streak': return Icons.local_fire_department_rounded;
-      default: return Icons.emoji_events_rounded;
-    }
-  }
+  IconData get _icon => category.icon;
 
-  Color get _color {
-    switch (category) {
-      case 'Duas': return const Color(0xFF4A7C59);
-      case 'Poems': return const Color(0xFF3A7CA5);
-      case 'Likes': return const Color(0xFFC25A6E);
-      case 'Views': return const Color(0xFFC48B3F);
-      case 'Streak': return const Color(0xFF7C5CA6);
-      default: return const Color(0xFF6E6558);
-    }
-  }
+  Color get _color => category.color;
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +47,7 @@ class _BadgeSection extends StatelessWidget {
               Icon(_icon, size: 16, color: _color),
               const SizedBox(width: 6),
               Text(
-                category,
+                category.displayName,
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,

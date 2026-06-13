@@ -1,3 +1,5 @@
+import '../../core/enums/badge_category.dart';
+
 class UserBadgeModel {
   final String slug;
   final String name;
@@ -41,13 +43,17 @@ class CatalogBadgeModel {
     this.awardedAt,
   });
 
-  String get category {
-    if (slug.startsWith('duas_')) return 'Duas';
-    if (slug.startsWith('poems_')) return 'Poems';
-    if (slug.startsWith('likes_')) return 'Likes';
-    if (slug.startsWith('views_')) return 'Views';
-    if (slug.startsWith('streak_')) return 'Streak';
-    return 'Other';
+  String get category => _getCategory().displayName;
+
+  BadgeCategory get badgeCategory => _getCategory();
+
+  BadgeCategory _getCategory() {
+    if (slug.startsWith('duas_')) return BadgeCategory.duas;
+    if (slug.startsWith('poems_')) return BadgeCategory.poems;
+    if (slug.startsWith('likes_')) return BadgeCategory.likes;
+    if (slug.startsWith('views_')) return BadgeCategory.views;
+    if (slug.startsWith('streak_')) return BadgeCategory.streak;
+    return BadgeCategory.other;
   }
 
   factory CatalogBadgeModel.fromJson(Map<String, dynamic> json) {

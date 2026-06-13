@@ -1,3 +1,5 @@
+import '../../core/enums/avatar_type.dart';
+
 class DuaModel {
   final String id;
   final String title;
@@ -15,7 +17,7 @@ class DuaModel {
   final String userId;
   final String userName;
   final String userAvatar;
-  final String? createdByAvatarType;
+  final AvatarType? createdByAvatarType;
   final String? createdByAvatarValue;
   final String? createdBySelectedBadgeSlug;
   final int views;
@@ -88,7 +90,7 @@ class DuaModel {
       userAvatar: firstName.isNotEmpty
           ? firstName[0].toUpperCase()
           : (userName.isNotEmpty ? userName[0].toUpperCase() : '?'),
-      createdByAvatarType: json['createdByAvatarType'],
+      createdByAvatarType: AvatarType.fromValue(json['createdByAvatarType'] as String?),
       createdByAvatarValue: json['createdByAvatarValue'],
       createdBySelectedBadgeSlug: json['createdBySelectedBadgeSlug'],
       views: json['viewsCount'] ?? 0,
@@ -110,7 +112,7 @@ class DuaModel {
     String? translation,
     String? userName,
     String? userAvatar,
-    String? createdByAvatarType,
+    AvatarType? createdByAvatarType,
     String? createdByAvatarValue,
     String? createdBySelectedBadgeSlug,
     int? views,

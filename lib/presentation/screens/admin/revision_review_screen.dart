@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../../app/dependency_injection.dart';
+import '../../../core/enums/content_type.dart';
+import '../../../core/enums/report_status.dart';
 import '../../../data/repositories/admin_repository.dart';
 import '../../../data/services/admin_service.dart';
 
@@ -38,7 +40,7 @@ class _RevisionReviewScreenState extends State<RevisionReviewScreen> {
 
   Future<void> _loadDetail() async {
     setState(() => _isLoading = true);
-    final result = await _adminRepo.getRevisionDetail(widget.revisionId, widget.contentType);
+    final result = await _adminRepo.getRevisionDetail(widget.revisionId, ContentType.fromValue(widget.contentType));
     if (result.isSuccess) {
       final data = result.data!;
       final before = jsonDecode(data['beforeContent'] as String? ?? '{}') as Map<String, dynamic>;
@@ -78,7 +80,7 @@ class _RevisionReviewScreenState extends State<RevisionReviewScreen> {
     }
 
     setState(() => _isSubmitting = true);
-    final result = await _adminRepo.reviewRevision(widget.revisionId, widget.contentType, actions);
+    final result = await _adminRepo.reviewRevision(widget.revisionId, ContentType.fromValue(widget.contentType), actions);
     if (result.isSuccess) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -242,28 +244,28 @@ class _RevisionReviewScreenState extends State<RevisionReviewScreen> {
                                     const SizedBox(width: 8),
                                     _DecisionButton(
                                       label: 'Resolve',
-                                      isSelected: _decisions[id] == 'resolved',
+                                      isSelected: _decisions[id] == ReportStatus.resolved.value,
                                       color: const Color(0xFF3F7849),
                                       onTap: () => setState(() {
-                                        _decisions[id] = _decisions[id] == 'resolved' ? '' : 'resolved';
+                                        _decisions[id] = _decisions[id] == ReportStatus.resolved.value ? '' : ReportStatus.resolved.value;
                                       }),
                                     ),
                                     const SizedBox(width: 6),
                                     _DecisionButton(
                                       label: 'Dismiss',
-                                      isSelected: _decisions[id] == 'dismissed',
+                                      isSelected: _decisions[id] == ReportStatus.dismissed.value,
                                       color: const Color(0xFF9A8C79),
                                       onTap: () => setState(() {
-                                        _decisions[id] = _decisions[id] == 'dismissed' ? '' : 'dismissed';
+                                        _decisions[id] = _decisions[id] == ReportStatus.dismissed.value ? '' : ReportStatus.dismissed.value;
                                       }),
                                     ),
                                     const SizedBox(width: 6),
                                     _DecisionButton(
                                       label: 'Pending',
-                                      isSelected: _decisions[id] == 'pending',
+                                      isSelected: _decisions[id] == ReportStatus.pending.value,
                                       color: const Color(0xFFD68B2E),
                                       onTap: () => setState(() {
-                                        _decisions[id] = _decisions[id] == 'pending' ? '' : 'pending';
+                                        _decisions[id] = _decisions[id] == ReportStatus.pending.value ? '' : ReportStatus.pending.value;
                                       }),
                                     ),
                                   ],

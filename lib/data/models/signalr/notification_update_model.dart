@@ -1,6 +1,8 @@
+import '../../../core/enums/notification_type.dart';
+
 class NotificationUpdateModel {
   final String id;
-  final String type;
+  final NotificationType type;
   final String title;
   final String? body;
   final String? data;
@@ -20,7 +22,7 @@ class NotificationUpdateModel {
   factory NotificationUpdateModel.fromJson(Map<String, dynamic> json) {
     return NotificationUpdateModel(
       id: json['id'] as String,
-      type: json['type'] as String,
+      type: NotificationType.fromValue(json['type'] as String),
       title: json['title'] as String,
       body: json['body'] as String?,
       data: json['data'] as String?,

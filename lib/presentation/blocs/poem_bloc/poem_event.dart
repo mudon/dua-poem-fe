@@ -95,6 +95,26 @@ class SignalRPoemCreated extends PoemEvent {
   SignalRPoemCreated(this.poem);
 }
 
+class SignalRProfileUpdated extends PoemEvent {
+  final String userId;
+  final String firstName;
+  final String lastName;
+  final String? avatarType;
+  final String? avatarValue;
+  final String? selectedBadgeSlug;
+
+  String get userName => '$firstName $lastName';
+
+  SignalRProfileUpdated({
+    required this.userId,
+    required this.firstName,
+    required this.lastName,
+    this.avatarType,
+    this.avatarValue,
+    this.selectedBadgeSlug,
+  });
+}
+
 class SignalRPoemContentUpdated extends PoemEvent {
   final String poemId;
   final String title;

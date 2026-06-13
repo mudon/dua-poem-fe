@@ -1,3 +1,5 @@
+import '../../core/enums/avatar_type.dart';
+
 class PoemModel {
   final String id;
   final String title;
@@ -13,7 +15,7 @@ class PoemModel {
   final String userId;
   final String userName;
   final String userAvatar;
-  final String? createdByAvatarType;
+  final AvatarType? createdByAvatarType;
   final String? createdByAvatarValue;
   final String? createdBySelectedBadgeSlug;
   final int views;
@@ -82,7 +84,7 @@ class PoemModel {
       userAvatar: firstName.isNotEmpty
           ? firstName[0].toUpperCase()
           : (userName.isNotEmpty ? userName[0].toUpperCase() : '?'),
-      createdByAvatarType: json['createdByAvatarType'],
+      createdByAvatarType: AvatarType.fromValue(json['createdByAvatarType'] as String?),
       createdByAvatarValue: json['createdByAvatarValue'],
       createdBySelectedBadgeSlug: json['createdBySelectedBadgeSlug'],
       views: json['viewsCount'] ?? 0,
@@ -104,7 +106,7 @@ class PoemModel {
     String? translation,
     String? userName,
     String? userAvatar,
-    String? createdByAvatarType,
+    AvatarType? createdByAvatarType,
     String? createdByAvatarValue,
     String? createdBySelectedBadgeSlug,
     int? views,

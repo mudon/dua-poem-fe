@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/dependency_injection.dart';
+import '../../../core/enums/content_type.dart';
 import '../../../data/repositories/admin_repository.dart';
 import '../../../data/services/admin_service.dart';
 import '../../blocs/admin_bloc/admin_bloc.dart';
@@ -83,7 +84,7 @@ class _AdminScreenState extends State<AdminScreen> {
                       '/admin/revision',
                       extra: {
                         'revisionId': rev.id,
-                        'contentType': rev.contentType,
+                        'contentType': rev.contentType.value,
                         'contentTitle': rev.contentTitle,
                       },
                     ),
@@ -110,8 +111,8 @@ class _RevisionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final typeLabel = revision.contentType == 'dua' ? 'Dua' : 'Poem';
-    final typeColor = revision.contentType == 'dua'
+    final typeLabel = revision.contentType == ContentType.dua ? 'Dua' : 'Poem';
+    final typeColor = revision.contentType == ContentType.dua
         ? const Color(0xFF4A7BBF)
         : const Color(0xFF8B5BAE);
 
