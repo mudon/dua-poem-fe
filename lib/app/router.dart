@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../core/constants/route_paths.dart';
 import '../presentation/blocs/auth_bloc/auth_bloc.dart';
 import '../presentation/blocs/auth_bloc/auth_state.dart';
 import '../presentation/screens/auth_screen.dart';
@@ -46,14 +47,14 @@ class AppRouter {
     redirect: (context, state) {
       final authState = authBloc.state;
       final isLoggedIn = authState is Authenticated;
-      final isAuthRoute = state.matchedLocation == '/auth';
+      final isAuthRoute = state.matchedLocation == RoutePaths.auth;
       final isInitial = authState is AuthInitial || authState is AuthLoading;
 
       if (isInitial) return null;
 
-      if (!isLoggedIn && !isAuthRoute) return '/auth';
-      if (isLoggedIn && isAuthRoute) return '/home';
-      if (isLoggedIn && state.matchedLocation == '/') return '/home';
+      if (!isLoggedIn && !isAuthRoute) return RoutePaths.auth;
+      if (isLoggedIn && isAuthRoute) return RoutePaths.home;
+      if (isLoggedIn && state.matchedLocation == '/') return RoutePaths.home;
       return null;
     },
     routes: [
@@ -64,7 +65,7 @@ class AppRouter {
         ),
       ),
       GoRoute(
-        path: '/auth',
+        path: RoutePaths.auth,
         builder: (_, _) => const AuthScreen(),
       ),
       StatefulShellRoute.indexedStack(
@@ -73,7 +74,7 @@ class AppRouter {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/home',
+                path: RoutePaths.home,
                 builder: (_, _) => const HomeScreen(),
               ),
             ],
@@ -81,7 +82,7 @@ class AppRouter {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/my-posts',
+                path: RoutePaths.myPosts,
                 builder: (_, _) => const MyPostsScreen(),
               ),
             ],
@@ -89,7 +90,7 @@ class AppRouter {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/leaderboard',
+                path: RoutePaths.leaderboard,
                 builder: (_, _) => const LeaderboardScreen(),
               ),
             ],
@@ -97,7 +98,7 @@ class AppRouter {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/profile',
+                path: RoutePaths.profile,
                 builder: (_, _) => const ProfileScreen(),
               ),
             ],
@@ -105,7 +106,7 @@ class AppRouter {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/favorites',
+                path: RoutePaths.favorites,
                 builder: (_, state) {
                   final authState = authBloc.state;
                   final user = authState is Authenticated ? authState.user : null;
@@ -117,7 +118,7 @@ class AppRouter {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/admin',
+                path: RoutePaths.admin,
                 builder: (_, _) => const AdminScreen(),
               ),
             ],
@@ -125,7 +126,7 @@ class AppRouter {
         ],
       ),
       GoRoute(
-        path: '/admin/revision',
+        path: RoutePaths.adminRevision,
         builder: (_, state) {
           final extra = state.extra as Map<String, String>? ?? {};
           return RevisionReviewScreen(

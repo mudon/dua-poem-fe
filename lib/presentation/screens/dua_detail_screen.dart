@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/enums/action_type.dart';
 import '../../data/models/user_model.dart';
 import '../../data/models/dua_model.dart';
 import '../../data/models/report_model.dart';
@@ -233,10 +234,10 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                   listener: (context, state) {
                     if (state.error != null) {
                       setState(() {
-                        if (state.actionType == 'like') {
+                        if (state.actionType == ActionType.like) {
                           _isLiked = !_isLiked;
                           _likeCount += _isLiked ? 1 : -1;
-                        } else if (state.actionType == 'bookmark') {
+                        } else if (state.actionType == ActionType.bookmark) {
                           _isBookmarked = !_isBookmarked;
                           _bookmarkCount += _isBookmarked ? 1 : -1;
                         }
@@ -249,13 +250,13 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                     if (count != null && count != _likeCount) {
                       setState(() => _likeCount = count);
                     }
-                    if (state.actionType == 'signalr_report') {
+                    if (state.actionType == ActionType.signalrReport) {
                       final c = state.reportCounts[widget.duaId];
                       if (c != null) {
                         setState(() => _pendingCount = c);
                       }
                     }
-                    if (state.actionType == 'report') {
+                    if (state.actionType == ActionType.report) {
                       if (state.error != null) {
                         ScaffoldMessenger.of(
                           context,
@@ -264,7 +265,7 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                         _loadReports();
                       }
                     }
-                    if (state.actionType == 'content_updated' &&
+                    if (state.actionType == ActionType.contentUpdated &&
                         state.lastToggledDuaId == widget.duaId) {
                       final update = state.contentUpdates[widget.duaId];
                       if (update != null && _dua != null) {
@@ -284,11 +285,11 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                         _loadReports();
                       }
                     }
-                    if (state.actionType == 'deleted' &&
+                    if (state.actionType == ActionType.deleted &&
                         state.lastToggledDuaId == widget.duaId) {
                       if (context.mounted) context.pop();
                     }
-                    if (state.actionType == 'delete_error') {
+                    if (state.actionType == ActionType.deleteError) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(state.error ?? 'Failed to delete'),

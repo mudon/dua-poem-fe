@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../core/enums/action_type.dart';
 import '../../data/models/user_model.dart';
 import '../../data/models/dua_model.dart';
 import '../../data/models/poem_model.dart';
@@ -192,14 +193,14 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
       child: MultiBlocListener(
         listeners: [
           BlocListener<DuaBloc, DuaState>(
-            listenWhen: (_, current) => current.actionType == 'deleted',
+            listenWhen: (_, current) => current.actionType == ActionType.deleted,
             listener: (context, state) {
               final id = state.lastToggledDuaId;
               if (id != null) setState(() => _userDuas.removeWhere((d) => d.id == id));
             },
           ),
           BlocListener<PoemBloc, PoemState>(
-            listenWhen: (_, current) => current.actionType == 'deleted',
+            listenWhen: (_, current) => current.actionType == ActionType.deleted,
             listener: (context, state) {
               final id = state.lastToggledPoemId;
               if (id != null) setState(() => _userPoems.removeWhere((p) => p.id == id));
@@ -300,7 +301,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
         children: [
           _UserDetailField(label: 'About', value: _profile?.bio?.isNotEmpty == true ? _profile!.bio! : 'No bio'),
           const SizedBox(height: 12),
-          _UserDetailField(label: 'Role', value: _profile?.role ?? 'user'),
+          _UserDetailField(label: 'Role', value: _profile?.role.name ?? 'user'),
           const SizedBox(height: 12),
           _UserDetailField(label: 'Member since', value: _profile?.joinedDate ?? 'Unknown'),
           const SizedBox(height: 12),

@@ -1,0 +1,35 @@
+enum ActionType {
+  signalrLike,
+  signalrBookmark,
+  signalrView,
+  signalrReport,
+  signalrReportReturned,
+  like,
+  bookmark,
+  view,
+  report,
+  contentUpdated,
+  profileUpdate,
+  created,
+  deleted,
+  deleteError,
+  updateError;
+
+  String get value => switch (this) {
+    ActionType.signalrLike => 'signalr_like',
+    ActionType.signalrBookmark => 'signalr_bookmark',
+    ActionType.signalrView => 'signalr_view',
+    ActionType.signalrReport => 'signalr_report',
+    ActionType.signalrReportReturned => 'signalr_report_returned',
+    ActionType.like => 'like',
+    ActionType.bookmark => 'bookmark',
+    ActionType.view => 'view',
+    ActionType.report => 'report',
+    ActionType.contentUpdated => 'content_updated',
+    ActionType.profileUpdate => 'profile_update',
+    ActionType.created => 'created',
+    ActionType.deleted => 'deleted',
+    ActionType.deleteError => 'delete_error',
+    ActionType.updateError => 'update_error',
+  };
+}

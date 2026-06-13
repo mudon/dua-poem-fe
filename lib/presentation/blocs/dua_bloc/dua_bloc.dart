@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../app/dependency_injection.dart';
 import '../../../core/enums/notification_type.dart';
+import '../../../core/enums/action_type.dart';
 import '../../../core/enums/avatar_type.dart';
 import '../../../data/models/signalr/dua_content_update_model.dart';
 import '../../../data/models/signalr/profile_update_model.dart';
@@ -154,11 +155,11 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
       );
       emit(state.copyWith(
         contentUpdates: newContentUpdates,
-        actionType: 'content_updated',
+        actionType: ActionType.contentUpdated,
         lastToggledDuaId: event.duaId,
       ));
     } else {
-      emit(state.copyWith(error: result.error, actionType: 'update_error'));
+      emit(state.copyWith(error: result.error, actionType: ActionType.updateError));
     }
   }
 
@@ -175,7 +176,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     );
     emit(state.copyWith(
       profileUpdates: newProfileUpdates,
-      actionType: 'profile_update',
+      actionType: ActionType.profileUpdate,
       lastToggledDuaId: event.userId,
     ));
   }
@@ -197,7 +198,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     );
     emit(state.copyWith(
       contentUpdates: newContentUpdates,
-      actionType: 'content_updated',
+      actionType: ActionType.contentUpdated,
       lastToggledDuaId: event.duaId,
     ));
   }
@@ -205,7 +206,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
   void _onSignalRDuaCreated(SignalRDuaCreated event, Emitter<DuaState> emit) {
     print('[SignalR] DuaBloc received SignalRDuaCreated: duaId=${event.dua.id}, title=${event.dua.title}');
     emit(state.copyWith(
-      actionType: 'created',
+      actionType: ActionType.created,
       lastToggledDuaId: event.dua.id,
       createdDua: event.dua,
       error: null,
@@ -214,7 +215,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
 
   void _onSignalRReportReturned(SignalRReportReturned event, Emitter<DuaState> emit) {
     final updated = Set<String>.from(state.returnedReportIds)..add(event.duaId);
-    emit(state.copyWith(returnedReportIds: updated, actionType: 'signalr_report_returned', lastToggledDuaId: event.duaId));
+    emit(state.copyWith(returnedReportIds: updated, actionType: ActionType.signalrReportReturned, lastToggledDuaId: event.duaId));
   }
 
   void _onClearReturnedReports(ClearReturnedReports event, Emitter<DuaState> emit) {
@@ -222,7 +223,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
   }
 
   void _onDuaCreated(DuaCreated event, Emitter<DuaState> emit) {
-    emit(state.copyWith(actionType: 'created', lastToggledDuaId: event.dua.id, createdDua: event.dua, error: null));
+    emit(state.copyWith(actionType: ActionType.created, lastToggledDuaId: event.dua.id, createdDua: event.dua, error: null));
   }
 
   Future<void> _onDeleteDua(DeleteDua event, Emitter<DuaState> emit) async {
@@ -230,14 +231,14 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     final result = await _duaRepo.deleteDua(event.duaId);
     emit(state.copyWith(isProcessing: false));
     if (result.isSuccess) {
-      emit(state.copyWith(actionType: 'deleted', lastToggledDuaId: event.duaId));
+      emit(state.copyWith(actionType: ActionType.deleted, lastToggledDuaId: event.duaId));
     } else {
-      emit(state.copyWith(error: result.error, actionType: 'delete_error'));
+      emit(state.copyWith(error: result.error, actionType: ActionType.deleteError));
     }
   }
 
   void _onSignalRDuaDeleted(SignalRDuaDeleted event, Emitter<DuaState> emit) {
-    emit(state.copyWith(actionType: 'deleted', lastToggledDuaId: event.duaId));
+    emit(state.copyWith(actionType: ActionType.deleted, lastToggledDuaId: event.duaId));
   }
 
   void _onSignalRLikeCountUpdated(SignalRLikeCountUpdated event, Emitter<DuaState> emit) {
@@ -246,7 +247,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     newLikeCounts[event.duaId] = event.likesCount;
     emit(state.copyWith(
       likeCounts: newLikeCounts,
-      actionType: 'signalr_like',
+      actionType: ActionType.signalrLike,
       lastToggledDuaId: event.duaId,
     ));
   }
@@ -265,7 +266,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     if (result.isSuccess) {
       newLiked[event.duaId] = !event.currentlyLiked;
     }
-    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'like', likedStates: newLiked, lastToggledDuaId: event.duaId));
+    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: ActionType.like, likedStates: newLiked, lastToggledDuaId: event.duaId));
   }
 
   Future<void> _onToggleBookmark(ToggleBookmark event, Emitter<DuaState> emit) async {
@@ -275,7 +276,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     if (result.isSuccess) {
       newFavorited[event.duaId] = !event.currentlyFavorited;
     }
-    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'bookmark', favoritedStates: newFavorited, lastToggledDuaId: event.duaId));
+    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: ActionType.bookmark, favoritedStates: newFavorited, lastToggledDuaId: event.duaId));
   }
 
   void _onSignalRFavoritesCountUpdated(SignalRFavoritesCountUpdated event, Emitter<DuaState> emit) {
@@ -284,7 +285,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     newBookmarkCounts[event.duaId] = event.favoritesCount;
     emit(state.copyWith(
       bookmarkCounts: newBookmarkCounts,
-      actionType: 'signalr_bookmark',
+      actionType: ActionType.signalrBookmark,
       lastToggledDuaId: event.duaId,
     ));
   }
@@ -295,7 +296,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     newViewCounts[event.duaId] = event.viewsCount;
     emit(state.copyWith(
       viewCounts: newViewCounts,
-      actionType: 'signalr_view',
+      actionType: ActionType.signalrView,
       lastToggledDuaId: event.duaId,
     ));
   }
@@ -306,7 +307,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     newReportCounts[event.duaId] = event.reportsCount;
     emit(state.copyWith(
       reportCounts: newReportCounts,
-      actionType: 'signalr_report',
+      actionType: ActionType.signalrReport,
       lastToggledDuaId: event.duaId,
     ));
   }
@@ -314,7 +315,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
   void _onRecordView(RecordView event, Emitter<DuaState> emit) {
     final newViewCounts = Map<String, int>.from(state.viewCounts);
     newViewCounts[event.duaId] = event.viewCount;
-    emit(state.copyWith(actionType: 'view', viewCounts: newViewCounts, lastToggledDuaId: event.duaId));
+    emit(state.copyWith(actionType: ActionType.view, viewCounts: newViewCounts, lastToggledDuaId: event.duaId));
   }
 
   Future<void> _onReport(ReportDua event, Emitter<DuaState> emit) async {
@@ -323,7 +324,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
     emit(state.copyWith(
       isProcessing: false,
       error: result.isSuccess ? null : result.error,
-      actionType: 'report',
+      actionType: ActionType.report,
       lastToggledDuaId: event.duaId,
     ));
   }

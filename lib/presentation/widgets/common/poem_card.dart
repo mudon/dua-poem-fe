@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/enums/action_type.dart';
+import '../../../core/constants/route_paths.dart';
 import '../../../data/models/poem_model.dart';
 import '../../../data/models/report_model.dart';
 import '../../../data/models/user_model.dart';
@@ -96,17 +98,17 @@ class _PoemCardState extends State<PoemCard> {
   Widget build(BuildContext context) {
     return BlocListener<PoemBloc, PoemState>(
       listener: (context, state) {
-        if (state.actionType == 'signalr_like') {
+        if (state.actionType == ActionType.signalrLike) {
           final count = state.likeCounts[widget.poem.id];
           if (count != null) {
             setState(() => _likeCount = count);
           }
-        } else if (state.actionType == 'signalr_bookmark') {
+        } else if (state.actionType == ActionType.signalrBookmark) {
           final count = state.bookmarkCounts[widget.poem.id];
           if (count != null) {
             setState(() => _bookmarkCount = count);
           }
-        } else if (state.actionType == 'like') {
+        } else if (state.actionType == ActionType.like) {
           if (state.error != null) {
             setState(() => _isLiked = !_isLiked);
             ScaffoldMessenger.of(context).showSnackBar(
@@ -122,7 +124,7 @@ class _PoemCardState extends State<PoemCard> {
               });
             }
           }
-        } else if (state.actionType == 'bookmark') {
+        } else if (state.actionType == ActionType.bookmark) {
           if (state.error != null) {
             setState(() => _isBookmarked = !_isBookmarked);
             ScaffoldMessenger.of(context).showSnackBar(
@@ -138,26 +140,26 @@ class _PoemCardState extends State<PoemCard> {
               });
             }
           }
-        } else if (state.actionType == 'signalr_view') {
+        } else if (state.actionType == ActionType.signalrView) {
           final count = state.viewCounts[widget.poem.id];
           if (count != null) {
             setState(() => _viewCount = count);
           }
-        } else if (state.actionType == 'view') {
+        } else if (state.actionType == ActionType.view) {
           final count = state.viewCounts[widget.poem.id];
           if (count != null) {
             setState(() => _viewCount = count);
           }
-        } else if (state.actionType == 'signalr_report') {
+        } else if (state.actionType == ActionType.signalrReport) {
           final count = state.reportCounts[widget.poem.id];
           if (count != null) {
             setState(() => _activeReportCount = count);
           }
-        } else if (state.actionType == 'signalr_report_returned') {
+        } else if (state.actionType == ActionType.signalrReportReturned) {
           if (state.lastToggledPoemId == widget.poem.id && widget.currentUser.id == widget.poem.userId) {
             setState(() => _needsFix = true);
           }
-        } else if (state.actionType == 'report') {
+        } else if (state.actionType == ActionType.report) {
           if (state.lastToggledPoemId != widget.poem.id) return;
           final count = state.reportCounts[widget.poem.id];
           if (count != null) {
@@ -172,7 +174,7 @@ class _PoemCardState extends State<PoemCard> {
               const SnackBar(content: Text('Report submitted')),
             );
           }
-        } else if (state.actionType == 'content_updated') {
+        } else if (state.actionType == ActionType.contentUpdated) {
           if (state.lastToggledPoemId != widget.poem.id) return;
           final update = state.contentUpdates[widget.poem.id];
           if (update != null) {
@@ -181,7 +183,7 @@ class _PoemCardState extends State<PoemCard> {
               if (update.content != null) _content = update.content;
             });
           }
-        } else if (state.actionType == 'profile_update') {
+        } else if (state.actionType == ActionType.profileUpdate) {
           if (state.lastToggledPoemId != widget.poem.userId) return;
           final update = state.profileUpdates[widget.poem.userId];
           if (update != null) {
@@ -195,7 +197,7 @@ class _PoemCardState extends State<PoemCard> {
         }
       },
       child: GestureDetector(
-      onTap: () => context.push('/poem/${widget.poem.id}', extra: widget.currentUser),
+      onTap: () => context.push(RoutePaths.poemDetail(widget.poem.id), extra: widget.currentUser),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         padding: const EdgeInsets.all(16),
@@ -289,7 +291,7 @@ class _PoemCardState extends State<PoemCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 GestureDetector(
-                  onTap: () => context.push('/user/${widget.poem.userId}', extra: _userName),
+                  onTap: () => context.push(RoutePaths.userDetail(widget.poem.userId), extra: _userName),
                   child: Row(
                     children: [
                       AvatarWithBadge(

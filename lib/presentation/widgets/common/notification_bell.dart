@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/dependency_injection.dart';
+import '../../../core/constants/route_paths.dart';
 import '../../../core/themes/app_theme.dart';
 import '../../../core/enums/notification_type.dart';
 import '../../../data/models/notification_model.dart';
@@ -211,8 +212,8 @@ class _NotificationBellState extends State<NotificationBell> {
                           final parsed = jsonDecode(n.data!) as Map<String, dynamic>;
                           final duaId = parsed['duaId'] as String?;
                           final poemId = parsed['poemId'] as String?;
-                          if (duaId != null) fixNavigatePath = '/dua/$duaId';
-                          if (poemId != null) fixNavigatePath = '/poem/$poemId';
+                          if (duaId != null) fixNavigatePath = RoutePaths.duaDetail(duaId);
+                          if (poemId != null) fixNavigatePath = RoutePaths.poemDetail(poemId);
                         } catch (_) {}
                       }
                       return _NotificationItem(
@@ -235,9 +236,9 @@ class _NotificationBellState extends State<NotificationBell> {
                             } catch (_) {}
                           }
                           if (duaId != null) {
-                            context.push('/dua/$duaId', extra: user);
+                            context.push(RoutePaths.duaDetail(duaId), extra: user);
                           } else if (poemId != null) {
-                            context.push('/poem/$poemId', extra: user);
+                            context.push(RoutePaths.poemDetail(poemId), extra: user);
                           } else {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const _ContentNotFoundScreen()));
                           }

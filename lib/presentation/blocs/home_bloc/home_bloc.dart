@@ -1,4 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/network/api_result.dart';
+import '../../../data/models/dua_model.dart';
+import '../../../data/models/paged_response.dart';
+import '../../../data/models/poem_model.dart';
 import '../../../data/repositories/dua_repository.dart';
 import '../../../data/repositories/poem_repository.dart';
 import 'home_event.dart';
@@ -9,8 +13,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final PoemRepository _poemRepo;
 
   HomeBloc(this._duaRepo, this._poemRepo) : super(HomeState()) {
-    on<FetchLatestDuas>(_fetchDuas);
-    on<FetchLatestPoems>(_fetchPoems);
+    on<FetchLatestData>(_fetchLatestData);
     on<FetchMoreDuas>(_fetchMoreDuas);
     on<FetchMorePoems>(_fetchMorePoems);
     on<ToggleHomeTab>((event, emit) => emit(state.copyWith(showDuasTab: event.showDuas)));
@@ -34,35 +37,31 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<InsertPoem>(_onInsertPoem);
   }
 
-  Future<void> _fetchDuas(FetchLatestDuas event, Emitter<HomeState> emit) async {
+  Future<void> _fetchLatestData(FetchLatestData event, Emitter<HomeState> emit) async {
     emit(state.copyWith(isLoading: true));
-    final result = await _duaRepo.getLatestDuas(limit: event.limit);
-    if (result.isSuccess) {
-      final paged = result.data!;
+    final results = await Future.wait([
+      _duaRepo.getLatestDuas(limit: event.limit),
+      _poemRepo.getLatestPoems(limit: event.limit),
+    ]);
+    final duasResult = results[0] as ApiResult<PagedResponse<DuaModel>>;
+    final poemsResult = results[1] as ApiResult<PagedResponse<PoemModel>>;
+    if (duasResult.isSuccess && poemsResult.isSuccess) {
+      final duasPaged = duasResult.data!;
+      final poemsPaged = poemsResult.data!;
       emit(state.copyWith(
         isLoading: false,
-        latestDuas: paged.data,
-        duaCursor: paged.nextCursor,
-        hasMoreDuas: paged.hasMore,
+        latestDuas: duasPaged.data,
+        duaCursor: duasPaged.nextCursor,
+        hasMoreDuas: duasPaged.hasMore,
+        latestPoems: poemsPaged.data,
+        poemCursor: poemsPaged.nextCursor,
+        hasMorePoems: poemsPaged.hasMore,
       ));
     } else {
-      emit(state.copyWith(isLoading: false, error: result.error));
-    }
-  }
-
-  Future<void> _fetchPoems(FetchLatestPoems event, Emitter<HomeState> emit) async {
-    emit(state.copyWith(isLoading: true));
-    final result = await _poemRepo.getLatestPoems(limit: event.limit);
-    if (result.isSuccess) {
-      final paged = result.data!;
       emit(state.copyWith(
         isLoading: false,
-        latestPoems: paged.data,
-        poemCursor: paged.nextCursor,
-        hasMorePoems: paged.hasMore,
+        error: duasResult.error ?? poemsResult.error,
       ));
-    } else {
-      emit(state.copyWith(isLoading: false, error: result.error));
     }
   }
 

@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:signalr_core/signalr_core.dart';
 import '../../core/constants/api_config.dart';
+import '../../core/enums/hub_route.dart';
+import '../../core/constants/storage_keys.dart';
 import '../models/signalr/likes_update_model.dart';
 import '../models/signalr/favorites_update_model.dart';
 import '../models/signalr/views_update_model.dart';
@@ -15,18 +17,7 @@ import '../models/signalr/badge_revoked_model.dart';
 import '../models/signalr/profile_update_model.dart';
 
 class SignalRService {
-  HubConnection? _duaHubConnection;
-  HubConnection? _poemHubConnection;
-  HubConnection? _duaFavHubConnection;
-  HubConnection? _poemFavHubConnection;
-  HubConnection? _duaViewHubConnection;
-  HubConnection? _poemViewHubConnection;
-  HubConnection? _duaReportHubConnection;
-  HubConnection? _poemReportHubConnection;
-  HubConnection? _notificationHubConnection;
-  HubConnection? _leaderboardHubConnection;
-  HubConnection? _badgeHubConnection;
-  HubConnection? _profileHubConnection;
+  final Map<HubRoute, HubConnection> _connections = {};
   final _likesController = StreamController<LikesUpdateModel>.broadcast();
   final _favoritesController = StreamController<FavoritesUpdateModel>.broadcast();
   final _viewsController = StreamController<ViewsUpdateModel>.broadcast();
@@ -80,40 +71,25 @@ class SignalRService {
 
   Future<void> _connectInternal() async {
     const storage = FlutterSecureStorage();
-    final token = await storage.read(key: 'access_token');
+    final token = await storage.read(key: StorageKeys.accessToken);
     if (token == null) {
       print('[SignalR] No access_token found in secure storage, skipping connection');
       return;
     }
 
-    final hubPaths = [
-      '/hubs/dua-likes',
-      '/hubs/poem-likes',
-      '/hubs/dua-favorites',
-      '/hubs/poem-favorites',
-      '/hubs/dua-views',
-      '/hubs/poem-views',
-      '/hubs/dua-reports',
-      '/hubs/poem-reports',
-      '/hubs/notifications',
-      '/hubs/leaderboard',
-      '/hubs/badges',
-      '/hubs/profile',
-    ];
-
     await Future.wait(
-      hubPaths.map((path) => _connectHub(path, token).catchError((e) {
-        print('[SignalR] Failed to connect $path: $e');
+      HubRoute.values.map((route) => _connectHub(route, token).catchError((e) {
+        print('[SignalR] Failed to connect ${route.path}: $e');
       })),
     );
 
     _isConnected = true;
   }
 
-  Future<void> _connectHub(String hubPath, String token) async {
+  Future<void> _connectHub(HubRoute route, String token) async {
     final connection = HubConnectionBuilder()
         .withUrl(
-          '$_hubBaseUrl$hubPath',
+          '$_hubBaseUrl${route.path}',
           HttpConnectionOptions(
             transport: HttpTransportType.webSockets,
             accessTokenFactory: () async => token,
@@ -222,42 +198,20 @@ class SignalRService {
     });
 
     connection.onclose((Exception? error) {
-      print('[SignalR] Connection closed for $hubPath: $error');
-      if (hubPath.contains('dua-likes')) _duaHubConnection = null;
-      if (hubPath.contains('poem-likes')) _poemHubConnection = null;
-      if (hubPath.contains('dua-favorites')) _duaFavHubConnection = null;
-      if (hubPath.contains('poem-favorites')) _poemFavHubConnection = null;
-      if (hubPath.contains('dua-views')) _duaViewHubConnection = null;
-      if (hubPath.contains('poem-views')) _poemViewHubConnection = null;
-      if (hubPath.contains('dua-reports')) _duaReportHubConnection = null;
-      if (hubPath.contains('poem-reports')) _poemReportHubConnection = null;
-      if (hubPath.contains('notifications')) _notificationHubConnection = null;
-      if (hubPath.contains('leaderboard')) _leaderboardHubConnection = null;
-      if (hubPath.contains('badges')) _badgeHubConnection = null;
-      if (hubPath.contains('profile')) _profileHubConnection = null;
+      print('[SignalR] Connection closed for ${route.path}: $error');
+      _connections.remove(route);
     });
 
     await connection.start();
-    print('[SignalR] Connected to $hubPath');
+    print('[SignalR] Connected to ${route.path}');
 
-    if (hubPath.contains('dua-likes')) _duaHubConnection = connection;
-    if (hubPath.contains('poem-likes')) _poemHubConnection = connection;
-    if (hubPath.contains('dua-favorites')) _duaFavHubConnection = connection;
-    if (hubPath.contains('poem-favorites')) _poemFavHubConnection = connection;
-    if (hubPath.contains('dua-views')) _duaViewHubConnection = connection;
-    if (hubPath.contains('poem-views')) _poemViewHubConnection = connection;
-    if (hubPath.contains('dua-reports')) _duaReportHubConnection = connection;
-    if (hubPath.contains('poem-reports')) _poemReportHubConnection = connection;
-    if (hubPath.contains('notifications')) _notificationHubConnection = connection;
-    if (hubPath.contains('leaderboard')) _leaderboardHubConnection = connection;
-    if (hubPath.contains('badges')) _badgeHubConnection = connection;
-    if (hubPath.contains('profile')) _profileHubConnection = connection;
+    _connections[route] = connection;
   }
 
   Future<void> joinDuaGroup(String duaId) async {
     await _connectFuture;
     try {
-      await _duaHubConnection?.invoke('JoinDuaGroup', args: [duaId]);
+      await _connections[HubRoute.duaLikes]?.invoke('JoinDuaGroup', args: [duaId]);
     } catch (e) {
       print('[SignalR] joinDuaGroup failed for $duaId: $e');
     }
@@ -266,7 +220,7 @@ class SignalRService {
   Future<void> leaveDuaGroup(String duaId) async {
     await _connectFuture;
     try {
-      await _duaHubConnection?.invoke('LeaveDuaGroup', args: [duaId]);
+      await _connections[HubRoute.duaLikes]?.invoke('LeaveDuaGroup', args: [duaId]);
     } catch (e) {
       print('[SignalR] leaveDuaGroup failed for $duaId: $e');
     }
@@ -275,7 +229,7 @@ class SignalRService {
   Future<void> joinPoemGroup(String poemId) async {
     await _connectFuture;
     try {
-      await _poemHubConnection?.invoke('JoinPoemGroup', args: [poemId]);
+      await _connections[HubRoute.poemLikes]?.invoke('JoinPoemGroup', args: [poemId]);
     } catch (e) {
       print('[SignalR] joinPoemGroup failed for $poemId: $e');
     }
@@ -284,7 +238,7 @@ class SignalRService {
   Future<void> leavePoemGroup(String poemId) async {
     await _connectFuture;
     try {
-      await _poemHubConnection?.invoke('LeavePoemGroup', args: [poemId]);
+      await _connections[HubRoute.poemLikes]?.invoke('LeavePoemGroup', args: [poemId]);
     } catch (e) {
       print('[SignalR] leavePoemGroup failed for $poemId: $e');
     }
@@ -293,7 +247,7 @@ class SignalRService {
   Future<void> joinDuaReportGroup(String duaId) async {
     await _connectFuture;
     try {
-      await _duaReportHubConnection?.invoke('JoinDuaGroup', args: [duaId]);
+      await _connections[HubRoute.duaReports]?.invoke('JoinDuaGroup', args: [duaId]);
     } catch (e) {
       print('[SignalR] joinDuaReportGroup failed for $duaId: $e');
     }
@@ -302,7 +256,7 @@ class SignalRService {
   Future<void> leaveDuaReportGroup(String duaId) async {
     await _connectFuture;
     try {
-      await _duaReportHubConnection?.invoke('LeaveDuaGroup', args: [duaId]);
+      await _connections[HubRoute.duaReports]?.invoke('LeaveDuaGroup', args: [duaId]);
     } catch (e) {
       print('[SignalR] leaveDuaReportGroup failed for $duaId: $e');
     }
@@ -311,7 +265,7 @@ class SignalRService {
   Future<void> joinPoemReportGroup(String poemId) async {
     await _connectFuture;
     try {
-      await _poemReportHubConnection?.invoke('JoinPoemGroup', args: [poemId]);
+      await _connections[HubRoute.poemReports]?.invoke('JoinPoemGroup', args: [poemId]);
     } catch (e) {
       print('[SignalR] joinPoemReportGroup failed for $poemId: $e');
     }
@@ -320,7 +274,7 @@ class SignalRService {
   Future<void> leavePoemReportGroup(String poemId) async {
     await _connectFuture;
     try {
-      await _poemReportHubConnection?.invoke('LeavePoemGroup', args: [poemId]);
+      await _connections[HubRoute.poemReports]?.invoke('LeavePoemGroup', args: [poemId]);
     } catch (e) {
       print('[SignalR] leavePoemReportGroup failed for $poemId: $e');
     }
@@ -329,7 +283,7 @@ class SignalRService {
   Future<void> joinDuaViewGroup(String duaId) async {
     await _connectFuture;
     try {
-      await _duaViewHubConnection?.invoke('JoinDuaGroup', args: [duaId]);
+      await _connections[HubRoute.duaViews]?.invoke('JoinDuaGroup', args: [duaId]);
     } catch (e) {
       print('[SignalR] joinDuaViewGroup failed for $duaId: $e');
     }
@@ -338,7 +292,7 @@ class SignalRService {
   Future<void> leaveDuaViewGroup(String duaId) async {
     await _connectFuture;
     try {
-      await _duaViewHubConnection?.invoke('LeaveDuaGroup', args: [duaId]);
+      await _connections[HubRoute.duaViews]?.invoke('LeaveDuaGroup', args: [duaId]);
     } catch (e) {
       print('[SignalR] leaveDuaViewGroup failed for $duaId: $e');
     }
@@ -347,7 +301,7 @@ class SignalRService {
   Future<void> joinPoemViewGroup(String poemId) async {
     await _connectFuture;
     try {
-      await _poemViewHubConnection?.invoke('JoinPoemGroup', args: [poemId]);
+      await _connections[HubRoute.poemViews]?.invoke('JoinPoemGroup', args: [poemId]);
     } catch (e) {
       print('[SignalR] joinPoemViewGroup failed for $poemId: $e');
     }
@@ -356,7 +310,7 @@ class SignalRService {
   Future<void> leavePoemViewGroup(String poemId) async {
     await _connectFuture;
     try {
-      await _poemViewHubConnection?.invoke('LeavePoemGroup', args: [poemId]);
+      await _connections[HubRoute.poemViews]?.invoke('LeavePoemGroup', args: [poemId]);
     } catch (e) {
       print('[SignalR] leavePoemViewGroup failed for $poemId: $e');
     }
@@ -365,7 +319,7 @@ class SignalRService {
   Future<void> joinDuaFavoriteGroup(String duaId) async {
     await _connectFuture;
     try {
-      await _duaFavHubConnection?.invoke('JoinDuaGroup', args: [duaId]);
+      await _connections[HubRoute.duaFavorites]?.invoke('JoinDuaGroup', args: [duaId]);
     } catch (e) {
       print('[SignalR] joinDuaFavoriteGroup failed for $duaId: $e');
     }
@@ -374,7 +328,7 @@ class SignalRService {
   Future<void> leaveDuaFavoriteGroup(String duaId) async {
     await _connectFuture;
     try {
-      await _duaFavHubConnection?.invoke('LeaveDuaGroup', args: [duaId]);
+      await _connections[HubRoute.duaFavorites]?.invoke('LeaveDuaGroup', args: [duaId]);
     } catch (e) {
       print('[SignalR] leaveDuaFavoriteGroup failed for $duaId: $e');
     }
@@ -383,7 +337,7 @@ class SignalRService {
   Future<void> joinPoemFavoriteGroup(String poemId) async {
     await _connectFuture;
     try {
-      await _poemFavHubConnection?.invoke('JoinPoemGroup', args: [poemId]);
+      await _connections[HubRoute.poemFavorites]?.invoke('JoinPoemGroup', args: [poemId]);
     } catch (e) {
       print('[SignalR] joinPoemFavoriteGroup failed for $poemId: $e');
     }
@@ -392,7 +346,7 @@ class SignalRService {
   Future<void> leavePoemFavoriteGroup(String poemId) async {
     await _connectFuture;
     try {
-      await _poemFavHubConnection?.invoke('LeavePoemGroup', args: [poemId]);
+      await _connections[HubRoute.poemFavorites]?.invoke('LeavePoemGroup', args: [poemId]);
     } catch (e) {
       print('[SignalR] leavePoemFavoriteGroup failed for $poemId: $e');
     }
@@ -401,78 +355,14 @@ class SignalRService {
   Future<void> disconnect() async {
     _isConnected = false;
     _connectFuture = null;
-    try {
-      await _duaHubConnection?.stop();
-    } catch (e) {
-      print('[SignalR] disconnect dua hub error: $e');
+    for (final entry in _connections.entries) {
+      try {
+        await entry.value.stop();
+      } catch (e) {
+        print('[SignalR] disconnect ${entry.key.path} error: $e');
+      }
     }
-    try {
-      await _poemHubConnection?.stop();
-    } catch (e) {
-      print('[SignalR] disconnect poem hub error: $e');
-    }
-    try {
-      await _duaFavHubConnection?.stop();
-    } catch (e) {
-      print('[SignalR] disconnect dua favorites hub error: $e');
-    }
-    try {
-      await _poemFavHubConnection?.stop();
-    } catch (e) {
-      print('[SignalR] disconnect poem favorites hub error: $e');
-    }
-    try {
-      await _duaViewHubConnection?.stop();
-    } catch (e) {
-      print('[SignalR] disconnect dua views hub error: $e');
-    }
-    try {
-      await _poemViewHubConnection?.stop();
-    } catch (e) {
-      print('[SignalR] disconnect poem views hub error: $e');
-    }
-    try {
-      await _duaReportHubConnection?.stop();
-    } catch (e) {
-      print('[SignalR] disconnect dua report hub error: $e');
-    }
-    try {
-      await _poemReportHubConnection?.stop();
-    } catch (e) {
-      print('[SignalR] disconnect poem report hub error: $e');
-    }
-    try {
-      await _notificationHubConnection?.stop();
-    } catch (e) {
-      print('[SignalR] disconnect notification hub error: $e');
-    }
-    try {
-      await _leaderboardHubConnection?.stop();
-    } catch (e) {
-      print('[SignalR] disconnect leaderboard hub error: $e');
-    }
-    try {
-      await _badgeHubConnection?.stop();
-    } catch (e) {
-      print('[SignalR] disconnect badge hub error: $e');
-    }
-    try {
-      await _profileHubConnection?.stop();
-    } catch (e) {
-      print('[SignalR] disconnect profile hub error: $e');
-    }
-    _duaHubConnection = null;
-    _poemHubConnection = null;
-    _duaFavHubConnection = null;
-    _poemFavHubConnection = null;
-    _duaViewHubConnection = null;
-    _poemViewHubConnection = null;
-    _duaReportHubConnection = null;
-    _poemReportHubConnection = null;
-    _notificationHubConnection = null;
-    _leaderboardHubConnection = null;
-    _badgeHubConnection = null;
-    _profileHubConnection = null;
+    _connections.clear();
   }
 
   void dispose() {

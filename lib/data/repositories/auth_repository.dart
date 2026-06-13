@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../../core/constants/auth_error_codes.dart';
 import '../../core/errors/error_helper.dart';
 import '../../core/network/api_result.dart';
 import '../../core/network/dio_client.dart';
@@ -22,8 +23,8 @@ class AuthRepository {
     } catch (e) {
       if (e is DioException) {
         final respData = e.response?.data;
-        if (respData is Map && respData['code'] == 'EMAIL_NOT_VERIFIED') {
-          return ApiResult.failure(e.userMessage, code: 'EMAIL_NOT_VERIFIED');
+        if (respData is Map && respData['code'] == AuthErrorCodes.emailNotVerified) {
+          return ApiResult.failure(e.userMessage, code: AuthErrorCodes.emailNotVerified);
         }
       }
       return ApiResult.failure(e.userMessage);

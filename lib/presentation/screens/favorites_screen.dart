@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../core/enums/action_type.dart';
 import '../../data/models/user_model.dart';
 import '../../data/models/dua_model.dart';
 import '../../data/models/poem_model.dart';
@@ -139,7 +140,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProv
     return MultiBlocListener(
       listeners: [
         BlocListener<DuaBloc, DuaState>(
-          listenWhen: (_, current) => current.actionType == 'bookmark' && current.error == null,
+          listenWhen: (_, current) => current.actionType == ActionType.bookmark && current.error == null,
           listener: (context, state) {
             final id = state.lastToggledDuaId;
             if (id != null && state.favoritedStates[id] == false) {
@@ -148,7 +149,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProv
           },
         ),
         BlocListener<PoemBloc, PoemState>(
-          listenWhen: (_, current) => current.actionType == 'bookmark' && current.error == null,
+          listenWhen: (_, current) => current.actionType == ActionType.bookmark && current.error == null,
           listener: (context, state) {
             final id = state.lastToggledPoemId;
             if (id != null && state.favoritedStates[id] == false) {

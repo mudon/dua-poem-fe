@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../app/dependency_injection.dart';
 import '../../../core/enums/notification_type.dart';
+import '../../../core/enums/action_type.dart';
 import '../../../core/enums/avatar_type.dart';
 import '../../../data/models/signalr/poem_content_update_model.dart';
 import '../../../data/models/signalr/profile_update_model.dart';
@@ -150,11 +151,11 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
       );
       emit(state.copyWith(
         contentUpdates: newContentUpdates,
-        actionType: 'content_updated',
+        actionType: ActionType.contentUpdated,
         lastToggledPoemId: event.poemId,
       ));
     } else {
-      emit(state.copyWith(error: result.error, actionType: 'update_error'));
+      emit(state.copyWith(error: result.error, actionType: ActionType.updateError));
     }
   }
 
@@ -171,7 +172,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     );
     emit(state.copyWith(
       profileUpdates: newProfileUpdates,
-      actionType: 'profile_update',
+      actionType: ActionType.profileUpdate,
       lastToggledPoemId: event.userId,
     ));
   }
@@ -191,14 +192,14 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     );
     emit(state.copyWith(
       contentUpdates: newContentUpdates,
-      actionType: 'content_updated',
+      actionType: ActionType.contentUpdated,
       lastToggledPoemId: event.poemId,
     ));
   }
 
   void _onSignalRReportReturned(SignalRReportReturned event, Emitter<PoemState> emit) {
     final updated = Set<String>.from(state.returnedReportIds)..add(event.poemId);
-    emit(state.copyWith(returnedReportIds: updated, actionType: 'signalr_report_returned', lastToggledPoemId: event.poemId));
+    emit(state.copyWith(returnedReportIds: updated, actionType: ActionType.signalrReportReturned, lastToggledPoemId: event.poemId));
   }
 
   void _onClearReturnedReports(ClearReturnedReports event, Emitter<PoemState> emit) {
@@ -206,13 +207,13 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
   }
 
   void _onPoemCreated(PoemCreated event, Emitter<PoemState> emit) {
-    emit(state.copyWith(actionType: 'created', lastToggledPoemId: event.poem.id, createdPoem: event.poem, error: null));
+    emit(state.copyWith(actionType: ActionType.created, lastToggledPoemId: event.poem.id, createdPoem: event.poem, error: null));
   }
 
   void _onSignalRPoemCreated(SignalRPoemCreated event, Emitter<PoemState> emit) {
     print('[SignalR] PoemBloc received SignalRPoemCreated: poemId=${event.poem.id}, title=${event.poem.title}');
     emit(state.copyWith(
-      actionType: 'created',
+      actionType: ActionType.created,
       lastToggledPoemId: event.poem.id,
       createdPoem: event.poem,
       error: null,
@@ -224,14 +225,14 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     final result = await _poemRepo.deletePoem(event.poemId);
     emit(state.copyWith(isProcessing: false));
     if (result.isSuccess) {
-      emit(state.copyWith(actionType: 'deleted', lastToggledPoemId: event.poemId));
+      emit(state.copyWith(actionType: ActionType.deleted, lastToggledPoemId: event.poemId));
     } else {
-      emit(state.copyWith(error: result.error, actionType: 'delete_error'));
+      emit(state.copyWith(error: result.error, actionType: ActionType.deleteError));
     }
   }
 
   void _onSignalRPoemDeleted(SignalRPoemDeleted event, Emitter<PoemState> emit) {
-    emit(state.copyWith(actionType: 'deleted', lastToggledPoemId: event.poemId));
+    emit(state.copyWith(actionType: ActionType.deleted, lastToggledPoemId: event.poemId));
   }
 
   void _onSignalRLikeCountUpdated(SignalRLikeCountUpdated event, Emitter<PoemState> emit) {
@@ -240,7 +241,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     newLikeCounts[event.poemId] = event.likesCount;
     emit(state.copyWith(
       likeCounts: newLikeCounts,
-      actionType: 'signalr_like',
+      actionType: ActionType.signalrLike,
       lastToggledPoemId: event.poemId,
     ));
   }
@@ -259,7 +260,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     if (result.isSuccess) {
       newLiked[event.poemId] = !event.currentlyLiked;
     }
-    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'like', likedStates: newLiked, lastToggledPoemId: event.poemId));
+    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: ActionType.like, likedStates: newLiked, lastToggledPoemId: event.poemId));
   }
 
   Future<void> _onToggleBookmark(ToggleBookmark event, Emitter<PoemState> emit) async {
@@ -269,7 +270,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     if (result.isSuccess) {
       newFavorited[event.poemId] = !event.currentlyFavorited;
     }
-    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: 'bookmark', favoritedStates: newFavorited, lastToggledPoemId: event.poemId));
+    emit(state.copyWith(isProcessing: false, error: result.isSuccess ? null : result.error, actionType: ActionType.bookmark, favoritedStates: newFavorited, lastToggledPoemId: event.poemId));
   }
 
   void _onSignalRFavoritesCountUpdated(SignalRFavoritesCountUpdated event, Emitter<PoemState> emit) {
@@ -278,7 +279,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     newBookmarkCounts[event.poemId] = event.favoritesCount;
     emit(state.copyWith(
       bookmarkCounts: newBookmarkCounts,
-      actionType: 'signalr_bookmark',
+      actionType: ActionType.signalrBookmark,
       lastToggledPoemId: event.poemId,
     ));
   }
@@ -289,7 +290,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     newViewCounts[event.poemId] = event.viewsCount;
     emit(state.copyWith(
       viewCounts: newViewCounts,
-      actionType: 'signalr_view',
+      actionType: ActionType.signalrView,
       lastToggledPoemId: event.poemId,
     ));
   }
@@ -300,7 +301,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     newReportCounts[event.poemId] = event.reportsCount;
     emit(state.copyWith(
       reportCounts: newReportCounts,
-      actionType: 'signalr_report',
+      actionType: ActionType.signalrReport,
       lastToggledPoemId: event.poemId,
     ));
   }
@@ -308,7 +309,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
   void _onRecordView(RecordView event, Emitter<PoemState> emit) {
     final newViewCounts = Map<String, int>.from(state.viewCounts);
     newViewCounts[event.poemId] = event.viewCount;
-    emit(state.copyWith(actionType: 'view', viewCounts: newViewCounts, lastToggledPoemId: event.poemId));
+    emit(state.copyWith(actionType: ActionType.view, viewCounts: newViewCounts, lastToggledPoemId: event.poemId));
   }
 
   Future<void> _onReport(ReportPoem event, Emitter<PoemState> emit) async {
@@ -317,7 +318,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
     emit(state.copyWith(
       isProcessing: false,
       error: result.isSuccess ? null : result.error,
-      actionType: 'report',
+      actionType: ActionType.report,
       lastToggledPoemId: event.poemId,
     ));
   }

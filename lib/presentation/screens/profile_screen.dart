@@ -419,7 +419,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(height: 12),
         _DetailField(label: 'Email', value: user.email),
         const SizedBox(height: 12),
-        _DetailField(label: 'Role', value: user.role),
+        _DetailField(label: 'Role', value: user.role.name),
         const SizedBox(height: 12),
         _DetailField(label: 'Member since', value: user.joinedDate),
         const SizedBox(height: 12),

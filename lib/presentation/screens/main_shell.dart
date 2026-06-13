@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/enums/user_role.dart';
 import '../../core/themes/app_theme.dart';
 import '../widgets/forms/create_flow_sheet.dart';
 import '../blocs/auth_bloc/auth_bloc.dart';
@@ -30,7 +31,7 @@ class _MainShellState extends State<MainShell> {
 
   List<BottomNavigationBarItem> _buildNavItems() {
     final authState = context.watch<AuthBloc>().state;
-    final isAdmin = authState is Authenticated && authState.user.role == 'admin';
+    final isAdmin = authState is Authenticated && authState.user.role == UserRole.admin;
 
     final items = <BottomNavigationBarItem>[
       const BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Home'),

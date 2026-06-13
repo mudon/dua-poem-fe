@@ -3,6 +3,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../app/dependency_injection.dart';
+import '../../../core/constants/auth_error_codes.dart';
+import '../../../core/constants/storage_keys.dart';
 import '../../../core/errors/error_helper.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/services/user_service.dart';
@@ -43,7 +45,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _saveUser(result.data!);
       await _signalRService.connect();
       emit(Authenticated(result.data!));
-    } else if (result.code == 'EMAIL_NOT_VERIFIED') {
+    } else if (result.code == AuthErrorCodes.emailNotVerified) {
       emit(EmailNotVerified(event.email));
     } else {
       emit(AuthError(result.error!));
@@ -120,7 +122,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     getIt<PoemBloc>().add(poem_event.ClearReturnedReports());
     await _authRepo.logout();
     const storage = FlutterSecureStorage();
-    await storage.delete(key: 'cached_user');
+    await storage.delete(key: StorageKeys.cachedUser);
     emit(Unauthenticated());
   }
 
@@ -133,7 +135,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         // SignalR connection failure is non-fatal; API calls still work via token refresh
       }
       const storage = FlutterSecureStorage();
-      final cachedUser = await storage.read(key: 'cached_user');
+      final cachedUser = await storage.read(key: StorageKeys.cachedUser);
       if (cachedUser != null) {
         final user = UserModel.fromJson(jsonDecode(cachedUser));
         emit(Authenticated(user));
@@ -180,12 +182,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _saveUser(UserModel user) async {
     const storage = FlutterSecureStorage();
-    await storage.write(key: 'cached_user', value: jsonEncode({
+    await storage.write(key: StorageKeys.cachedUser, value: jsonEncode({
       'id': user.id,
       'firstName': user.firstName,
       'lastName': user.lastName,
       'email': user.email,
-      'role': user.role,
+      'role': user.role.name,
       'createdAt': user.createdAt.toIso8601String(),
       'avatar': user.avatar,
       'bio': user.bio,

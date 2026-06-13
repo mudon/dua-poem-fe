@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/dependency_injection.dart';
+import '../../../core/constants/route_paths.dart';
 import '../../../core/enums/content_type.dart';
 import '../../../data/repositories/admin_repository.dart';
 import '../../../data/services/admin_service.dart';
@@ -81,7 +82,7 @@ class _AdminScreenState extends State<AdminScreen> {
                   return _RevisionCard(
                     revision: rev,
                     onTap: () => context.push(
-                      '/admin/revision',
+                      RoutePaths.adminRevision,
                       extra: {
                         'revisionId': rev.id,
                         'contentType': rev.contentType.value,

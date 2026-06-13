@@ -1,11 +1,12 @@
 import '../../core/enums/avatar_type.dart';
+import '../../core/enums/user_role.dart';
 
 class UserModel {
   final String id;
   final String firstName;
   final String lastName;
   final String email;
-  final String role;
+  final UserRole role;
   final DateTime createdAt;
   final String? avatar;
   final String? bio;
@@ -21,7 +22,7 @@ class UserModel {
     required this.firstName,
     required this.lastName,
     required this.email,
-    this.role = 'user',
+    this.role = UserRole.user,
     required this.createdAt,
     this.avatar,
     this.bio,
@@ -38,7 +39,7 @@ class UserModel {
       firstName: json['firstName'] ?? json['name'] ?? '',
       lastName: json['lastName'] ?? '',
       email: json['email'] ?? '',
-      role: json['role'] ?? 'user',
+      role: UserRole.fromValue(json['role'] as String? ?? 'user'),
       createdAt: createdAt,
       avatar: json['avatar'],
       bio: json['bio'],
@@ -53,7 +54,7 @@ class UserModel {
     String? firstName,
     String? lastName,
     String? email,
-    String? role,
+    UserRole? role,
     DateTime? createdAt,
     String? avatar,
     String? bio,

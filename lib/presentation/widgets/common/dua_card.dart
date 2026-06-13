@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/enums/action_type.dart';
 import '../../../core/enums/avatar_type.dart';
+import '../../../core/constants/route_paths.dart';
 import '../../../core/themes/app_theme.dart';
 import '../../../data/models/dua_model.dart';
 import '../../../data/models/user_model.dart';
@@ -102,17 +104,17 @@ class _DuaCardState extends State<DuaCard> {
   Widget build(BuildContext context) {
     return BlocListener<DuaBloc, DuaState>(
       listener: (context, state) {
-        if (state.actionType == 'signalr_like') {
+        if (state.actionType == ActionType.signalrLike) {
           final count = state.likeCounts[widget.dua.id];
           if (count != null) {
             setState(() => _likeCount = count);
           }
-        } else if (state.actionType == 'signalr_bookmark') {
+        } else if (state.actionType == ActionType.signalrBookmark) {
           final count = state.bookmarkCounts[widget.dua.id];
           if (count != null) {
             setState(() => _bookmarkCount = count);
           }
-        } else if (state.actionType == 'like') {
+        } else if (state.actionType == ActionType.like) {
           if (state.error != null) {
             setState(() => _isLiked = !_isLiked);
             ScaffoldMessenger.of(context).showSnackBar(
@@ -128,7 +130,7 @@ class _DuaCardState extends State<DuaCard> {
               });
             }
           }
-        } else if (state.actionType == 'bookmark') {
+        } else if (state.actionType == ActionType.bookmark) {
           if (state.error != null) {
             setState(() => _isBookmarked = !_isBookmarked);
             ScaffoldMessenger.of(context).showSnackBar(
@@ -144,26 +146,26 @@ class _DuaCardState extends State<DuaCard> {
               });
             }
           }
-        } else if (state.actionType == 'signalr_view') {
+        } else if (state.actionType == ActionType.signalrView) {
           final count = state.viewCounts[widget.dua.id];
           if (count != null) {
             setState(() => _viewCount = count);
           }
-        } else if (state.actionType == 'view') {
+        } else if (state.actionType == ActionType.view) {
           final count = state.viewCounts[widget.dua.id];
           if (count != null) {
             setState(() => _viewCount = count);
           }
-        } else if (state.actionType == 'signalr_report') {
+        } else if (state.actionType == ActionType.signalrReport) {
           final count = state.reportCounts[widget.dua.id];
           if (count != null) {
             setState(() => _activeReportCount = count);
           }
-        } else if (state.actionType == 'signalr_report_returned') {
+        } else if (state.actionType == ActionType.signalrReportReturned) {
           if (state.lastToggledDuaId == widget.dua.id && widget.currentUser.id == widget.dua.userId) {
             setState(() => _needsFix = true);
           }
-        } else if (state.actionType == 'report') {
+        } else if (state.actionType == ActionType.report) {
           if (state.lastToggledDuaId != widget.dua.id) return;
           final count = state.reportCounts[widget.dua.id];
           if (count != null) {
@@ -178,7 +180,7 @@ class _DuaCardState extends State<DuaCard> {
               const SnackBar(content: Text('Report submitted')),
             );
           }
-        } else if (state.actionType == 'content_updated') {
+        } else if (state.actionType == ActionType.contentUpdated) {
           if (state.lastToggledDuaId != widget.dua.id) return;
           final update = state.contentUpdates[widget.dua.id];
           if (update != null) {
@@ -189,7 +191,7 @@ class _DuaCardState extends State<DuaCard> {
               if (update.translation != null) _translation = update.translation!;
             });
           }
-        } else if (state.actionType == 'profile_update') {
+        } else if (state.actionType == ActionType.profileUpdate) {
           if (state.lastToggledDuaId != widget.dua.userId) return;
           final update = state.profileUpdates[widget.dua.userId];
           if (update != null) {
@@ -203,7 +205,7 @@ class _DuaCardState extends State<DuaCard> {
         }
       },
       child: GestureDetector(
-      onTap: () => context.push('/dua/${widget.dua.id}', extra: widget.currentUser),
+      onTap: () => context.push(RoutePaths.duaDetail(widget.dua.id), extra: widget.currentUser),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         padding: const EdgeInsets.all(16),
@@ -307,7 +309,7 @@ class _DuaCardState extends State<DuaCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 GestureDetector(
-                  onTap: () => context.push('/user/${widget.dua.userId}', extra: _userName),
+                  onTap: () => context.push(RoutePaths.userDetail(widget.dua.userId), extra: _userName),
                   child: Row(
                     children: [
                       AvatarWithBadge(

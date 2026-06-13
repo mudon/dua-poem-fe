@@ -1,3 +1,4 @@
+import '../../../core/enums/action_type.dart';
 import '../../../data/models/poem_model.dart';
 import '../../../data/models/signalr/poem_content_update_model.dart';
 import '../../../data/models/signalr/profile_update_model.dart';
@@ -5,7 +6,7 @@ import '../../../data/models/signalr/profile_update_model.dart';
 class PoemState {
   final bool isProcessing;
   final String? error;
-  final String? actionType;
+  final ActionType? actionType;
   final Map<String, bool> likedStates;
   final Map<String, bool> favoritedStates;
   final Map<String, int> likeCounts;
@@ -23,6 +24,7 @@ class PoemState {
     this.error,
     this.actionType,
     this.likedStates = const {},
+
     this.favoritedStates = const {},
     this.likeCounts = const {},
     this.bookmarkCounts = const {},
@@ -38,7 +40,7 @@ class PoemState {
   PoemState copyWith({
     bool? isProcessing,
     String? error,
-    String? actionType,
+    ActionType? actionType,
     Map<String, bool>? likedStates,
     Map<String, bool>? favoritedStates,
     Map<String, int>? likeCounts,

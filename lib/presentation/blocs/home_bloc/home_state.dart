@@ -36,7 +36,7 @@ class HomeState {
   final bool loadingMorePoems;
 
   HomeState({
-    this.isLoading = false,
+    this.isLoading = true,
     this.error,
     this.latestDuas = const [],
     this.latestPoems = const [],

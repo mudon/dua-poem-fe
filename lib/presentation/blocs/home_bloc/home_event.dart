@@ -3,14 +3,9 @@ import '../../../data/models/poem_model.dart';
 
 abstract class HomeEvent {}
 
-class FetchLatestDuas extends HomeEvent {
+class FetchLatestData extends HomeEvent {
   final int limit;
-  FetchLatestDuas({this.limit = 20});
-}
-
-class FetchLatestPoems extends HomeEvent {
-  final int limit;
-  FetchLatestPoems({this.limit = 20});
+  FetchLatestData({this.limit = 20});
 }
 
 class FetchMoreDuas extends HomeEvent {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../core/enums/action_type.dart';
 import '../../core/themes/app_theme.dart';
 import '../blocs/auth_bloc/auth_bloc.dart';
 import '../blocs/auth_bloc/auth_state.dart';
@@ -31,7 +32,7 @@ class HomeScreen extends StatelessWidget {
       create: (context) => HomeBloc(
         RepositoryProvider.of<DuaRepository>(context),
         RepositoryProvider.of<PoemRepository>(context),
-      )..add(FetchLatestDuas())..add(FetchLatestPoems()),
+      )..add(FetchLatestData()),
       child: Scaffold(
         backgroundColor: const Color(0xFFF4F0E8),
         body: SafeArea(
@@ -98,9 +99,9 @@ class _HomeFeedState extends State<_HomeFeed> {
         BlocListener<DuaBloc, DuaState>(
           listener: (context, state) {
             if (state.error != null) return;
-            if (state.actionType == 'created' && state.createdDua != null) {
+            if (state.actionType == ActionType.created && state.createdDua != null) {
               context.read<HomeBloc>().add(InsertDua(state.createdDua!));
-            } else if (state.actionType == 'deleted') {
+            } else if (state.actionType == ActionType.deleted) {
               final id = state.lastToggledDuaId;
               if (id != null) context.read<HomeBloc>().add(RemoveDua(id));
             }
@@ -109,9 +110,9 @@ class _HomeFeedState extends State<_HomeFeed> {
         BlocListener<PoemBloc, PoemState>(
           listener: (context, state) {
             if (state.error != null) return;
-            if (state.actionType == 'created' && state.createdPoem != null) {
+            if (state.actionType == ActionType.created && state.createdPoem != null) {
               context.read<HomeBloc>().add(InsertPoem(state.createdPoem!));
-            } else if (state.actionType == 'deleted') {
+            } else if (state.actionType == ActionType.deleted) {
               final id = state.lastToggledPoemId;
               if (id != null) context.read<HomeBloc>().add(RemovePoem(id));
             }

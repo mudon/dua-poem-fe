@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../core/enums/action_type.dart';
 import '../../core/themes/app_theme.dart';
 import '../blocs/auth_bloc/auth_bloc.dart';
 import '../blocs/auth_bloc/auth_state.dart';
@@ -81,7 +82,7 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
           BlocListener<DuaBloc, DuaState>(
             listener: (ctx, state) {
               if (state.error != null) return;
-              if (state.actionType == 'deleted') {
+              if (state.actionType == ActionType.deleted) {
                 final id = state.lastToggledDuaId;
                 if (id != null) ctx.read<HomeBloc>().add(RemoveDua(id));
               }
@@ -90,7 +91,7 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
           BlocListener<PoemBloc, PoemState>(
             listener: (ctx, state) {
               if (state.error != null) return;
-              if (state.actionType == 'deleted') {
+              if (state.actionType == ActionType.deleted) {
                 final id = state.lastToggledPoemId;
                 if (id != null) ctx.read<HomeBloc>().add(RemovePoem(id));
               }
