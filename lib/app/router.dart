@@ -33,6 +33,8 @@ class AuthStateNotifier extends ChangeNotifier {
 }
 
 class AppRouter {
+  static final navigatorKey = GlobalKey<NavigatorState>();
+
   final AuthBloc authBloc;
   late final AuthStateNotifier _notifier;
 
@@ -41,6 +43,7 @@ class AppRouter {
   }
 
   late final GoRouter router = GoRouter(
+    navigatorKey: navigatorKey,
     initialLocation: '/',
     debugLogDiagnostics: true,
     refreshListenable: _notifier,
@@ -140,7 +143,9 @@ class AppRouter {
         path: '/dua/:duaId',
         builder: (_, state) {
           final duaId = state.pathParameters['duaId']!;
-          final currentUser = state.extra as UserModel;
+          final currentUser = state.extra is UserModel
+              ? state.extra as UserModel
+              : (authBloc.state as Authenticated).user;
           return DuaDetailScreen(duaId: duaId, currentUser: currentUser);
         },
       ),
@@ -148,7 +153,9 @@ class AppRouter {
         path: '/poem/:poemId',
         builder: (_, state) {
           final poemId = state.pathParameters['poemId']!;
-          final currentUser = state.extra as UserModel;
+          final currentUser = state.extra is UserModel
+              ? state.extra as UserModel
+              : (authBloc.state as Authenticated).user;
           return PoemDetailScreen(poemId: poemId, currentUser: currentUser);
         },
       ),

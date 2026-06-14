@@ -28,10 +28,20 @@ migrate_working_dir/
 **/ios/Flutter/.last_build_id
 .dart_tool/
 .flutter-plugins-dependencies
+
+# Environment variables (secrets)
+.env
 .pub-cache/
 .pub/
 /build/
 /coverage/
+
+# Firebase platform config (regenerate via flutterfire configure)
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+
+# Firebase Admin SDK (server-side, not used by Flutter directly)
+keys/firebase-admin-sdk.json
 
 # Symbolication related
 app.*.symbols

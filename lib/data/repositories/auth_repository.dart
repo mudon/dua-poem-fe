@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../core/constants/auth_error_codes.dart';
+import '../../core/services/secure_storage_service.dart';
 import '../../core/errors/error_helper.dart';
 import '../../core/network/api_result.dart';
 import '../../core/network/dio_client.dart';
@@ -9,7 +9,7 @@ import '../models/user_model.dart';
 
 class AuthRepository {
   final AuthService _authService;
-  final FlutterSecureStorage _secureStorage;
+  final SecureStorageService _secureStorage;
 
   AuthRepository(this._authService, this._secureStorage);
 

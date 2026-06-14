@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../constants/api_config.dart';
+import '../services/secure_storage_service.dart';
 import '../errors/error_helper.dart';
 
 class DioClient {
@@ -8,7 +8,7 @@ class DioClient {
   static const String refreshTokenKey = 'refresh_token';
 
   final Dio _dio;
-  final FlutterSecureStorage _secureStorage;
+  final SecureStorageService _secureStorage;
 
   DioClient(this._dio, this._secureStorage) {
     _dio.options.baseUrl = ApiConfig.baseUrl;
@@ -23,7 +23,7 @@ class DioClient {
 }
 
 class _AuthInterceptor extends Interceptor {
-  final FlutterSecureStorage _secureStorage;
+  final SecureStorageService _secureStorage;
   final Dio _dio;
   bool _isRefreshing = false;
   final List<RequestOptions> _failedRequests = [];

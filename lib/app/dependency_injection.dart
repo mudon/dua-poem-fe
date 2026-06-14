@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/network/dio_client.dart';
+import '../core/services/secure_storage_service.dart';
 import '../data/services/auth_service.dart';
 import '../data/services/dua_service.dart';
 import '../data/services/poem_service.dart';
@@ -13,6 +13,8 @@ import '../data/services/signalr_service.dart';
 import '../data/services/notification_service.dart';
 import '../data/services/admin_service.dart';
 import '../data/services/leaderboard_service.dart';
+import '../data/services/device_token_service.dart';
+import '../data/services/fcm_service.dart';
 import '../data/repositories/auth_repository.dart';
 import '../data/repositories/notification_repository.dart';
 import '../data/repositories/admin_repository.dart';
@@ -33,11 +35,13 @@ final getIt = GetIt.instance;
 
 Future<void> setupDependencies() async {
   final prefs = await SharedPreferences.getInstance();
-  final secureStorage = const FlutterSecureStorage();
+  final secureStorage = SecureStorageService();
+  await secureStorage.init();
   final dio = Dio();
 
   // Core
   getIt.registerLazySingleton<SharedPreferences>(() => prefs);
+  getIt.registerLazySingleton<SecureStorageService>(() => secureStorage);
   getIt.registerLazySingleton(() => DioClient(dio, secureStorage));
 
   // Services
@@ -51,9 +55,11 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton(() => NotificationService(getIt<DioClient>()));
   getIt.registerLazySingleton(() => AdminService(getIt<DioClient>()));
   getIt.registerLazySingleton(() => LeaderboardService(getIt<DioClient>()));
+  getIt.registerLazySingleton(() => DeviceTokenService(getIt<DioClient>()));
+  getIt.registerLazySingleton(() => FcmService(getIt<DeviceTokenService>()));
 
   // Repositories
-  getIt.registerLazySingleton(() => AuthRepository(getIt<AuthService>(), secureStorage));
+  getIt.registerLazySingleton(() => AuthRepository(getIt<AuthService>(), getIt<SecureStorageService>()));
   getIt.registerLazySingleton(() => DuaRepository(getIt<DuaService>()));
   getIt.registerLazySingleton(() => PoemRepository(getIt<PoemService>()));
   getIt.registerLazySingleton(() => CategoryRepository(getIt<CategoryService>()));

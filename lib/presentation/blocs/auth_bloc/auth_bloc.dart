@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/services/secure_storage_service.dart';
 import '../../../app/dependency_injection.dart';
 import '../../../core/constants/auth_error_codes.dart';
 import '../../../core/constants/storage_keys.dart';
@@ -14,6 +14,7 @@ import '../../blocs/dua_bloc/dua_event.dart' as dua_event;
 import '../../blocs/poem_bloc/poem_event.dart' as poem_event;
 import '../../blocs/dua_bloc/dua_bloc.dart';
 import '../../blocs/poem_bloc/poem_bloc.dart';
+import '../../../data/services/fcm_service.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -44,6 +45,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     if (result.isSuccess) {
       await _saveUser(result.data!);
       await _signalRService.connect();
+      await getIt<FcmService>().registerTokenWithBackend();
       emit(Authenticated(result.data!));
     } else if (result.code == AuthErrorCodes.emailNotVerified) {
       emit(EmailNotVerified(event.email));
@@ -68,6 +70,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     if (result.isSuccess) {
       await _saveUser(result.data!);
       await _signalRService.connect();
+      await getIt<FcmService>().registerTokenWithBackend();
       emit(Authenticated(result.data!));
     } else {
       emit(EmailNotVerified(event.email, error: result.error));
@@ -121,7 +124,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     getIt<DuaBloc>().add(dua_event.ClearReturnedReports());
     getIt<PoemBloc>().add(poem_event.ClearReturnedReports());
     await _authRepo.logout();
-    const storage = FlutterSecureStorage();
+    final storage = getIt<SecureStorageService>();
     await storage.delete(key: StorageKeys.cachedUser);
     emit(Unauthenticated());
   }
@@ -134,7 +137,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       } catch (_) {
         // SignalR connection failure is non-fatal; API calls still work via token refresh
       }
-      const storage = FlutterSecureStorage();
+      try {
+        await getIt<FcmService>().registerTokenWithBackend();
+      } catch (_) {
+        // FCM token registration is non-fatal
+      }
+      final storage = getIt<SecureStorageService>();
       final cachedUser = await storage.read(key: StorageKeys.cachedUser);
       if (cachedUser != null) {
         final user = UserModel.fromJson(jsonDecode(cachedUser));
@@ -181,7 +189,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _saveUser(UserModel user) async {
-    const storage = FlutterSecureStorage();
+    final storage = getIt<SecureStorageService>();
     await storage.write(key: StorageKeys.cachedUser, value: jsonEncode({
       'id': user.id,
       'firstName': user.firstName,

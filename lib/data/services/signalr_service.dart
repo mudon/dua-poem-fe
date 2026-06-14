@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:signalr_core/signalr_core.dart';
+import '../../core/services/secure_storage_service.dart';
 import '../../core/constants/api_config.dart';
 import '../../core/enums/hub_route.dart';
 import '../../core/constants/storage_keys.dart';
@@ -48,6 +48,10 @@ class SignalRService {
   Stream<DuaContentUpdateModel> get onDuaContentUpdated => _duaContentController.stream;
   Stream<PoemContentUpdateModel> get onPoemContentUpdated => _poemContentController.stream;
   Stream<String> get onDuaDeleted => _duaDeletedController.stream;
+
+  void addNotification(NotificationUpdateModel update) {
+    _notificationController.add(update);
+  }
   Stream<String> get onPoemDeleted => _poemDeletedController.stream;
   Stream<Map<String, dynamic>> get onDuaCreated => _duaCreatedController.stream;
   Stream<Map<String, dynamic>> get onPoemCreated => _poemCreatedController.stream;
@@ -70,7 +74,8 @@ class SignalRService {
   }
 
   Future<void> _connectInternal() async {
-    const storage = FlutterSecureStorage();
+    final storage = SecureStorageService();
+    await storage.init();
     final token = await storage.read(key: StorageKeys.accessToken);
     if (token == null) {
       print('[SignalR] No access_token found in secure storage, skipping connection');
