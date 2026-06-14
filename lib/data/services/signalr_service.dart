@@ -360,7 +360,8 @@ class SignalRService {
   Future<void> disconnect() async {
     _isConnected = false;
     _connectFuture = null;
-    for (final entry in _connections.entries) {
+    final connections = _connections.entries.toList();
+    for (final entry in connections) {
       try {
         await entry.value.stop();
       } catch (e) {

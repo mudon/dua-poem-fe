@@ -15,6 +15,7 @@ import '../../blocs/poem_bloc/poem_event.dart' as poem_event;
 import '../../blocs/dua_bloc/dua_bloc.dart';
 import '../../blocs/poem_bloc/poem_bloc.dart';
 import '../../../data/services/fcm_service.dart';
+import '../../../data/services/device_token_service.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -120,6 +121,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onLogout(LogoutRequested event, Emitter<AuthState> emit) async {
+    try {
+      final token = await getIt<FcmService>().getToken();
+      if (token != null) {
+        await getIt<DeviceTokenService>().unregisterToken(token);
+      }
+    } catch (_) {}
     await _signalRService.disconnect();
     getIt<DuaBloc>().add(dua_event.ClearReturnedReports());
     getIt<PoemBloc>().add(poem_event.ClearReturnedReports());

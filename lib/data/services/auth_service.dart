@@ -51,5 +51,7 @@ class AuthService {
     });
   }
 
-  Future<void> logout() async {}
+  Future<void> logout() async {
+    await _dioClient.dio.post('/auth/logout');
+  }
 }

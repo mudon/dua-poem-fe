@@ -12,7 +12,7 @@ class DeviceTokenService {
     });
   }
 
-  Future<void> unregisterToken(String id) async {
-    await _dioClient.dio.delete('/device-tokens/$id');
+  Future<void> unregisterToken(String token) async {
+    await _dioClient.dio.delete('/device-tokens/by-token', queryParameters: {'token': token});
   }
 }
