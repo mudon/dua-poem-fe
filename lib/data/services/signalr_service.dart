@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:signalr_core/signalr_core.dart';
 import '../../core/services/secure_storage_service.dart';
-import '../../core/constants/api_config.dart';
+import '../../core/constants/app_config.dart';
 import '../../core/enums/hub_route.dart';
 import '../../core/constants/storage_keys.dart';
 import '../models/signalr/likes_update_model.dart';
@@ -57,7 +57,7 @@ class SignalRService {
   Stream<Map<String, dynamic>> get onPoemCreated => _poemCreatedController.stream;
 
   String get _hubBaseUrl =>
-      ApiConfig.baseUrl.replaceAll('/api', '');
+      AppConfig.apiBaseUrl.replaceAll('/api', '');
 
   Future<void> connect() async {
     if (_isConnected) {

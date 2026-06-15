@@ -64,6 +64,10 @@ dependencies:
   firebase_messaging: ^16.3.0
   flutter_local_notifications: ^18.0.1
 
+  # Firebase Auth + Google Sign-In
+  firebase_auth: ^6.5.2
+  google_sign_in: ^7.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -114,5 +118,10 @@ flutter:
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
   #
+dependency_overrides:
+  http: ^1.2.2
+  web_socket_channel: ^3.0.1
+  web: ^1.1.0
+
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package

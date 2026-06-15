@@ -53,3 +53,12 @@ class ResetPasswordSubmitted extends AuthEvent {
 }
 
 class CancelForgotPassword extends AuthEvent {}
+
+class GoogleLoginRequested extends AuthEvent {}
+
+class SetPasswordRequested extends AuthEvent {
+  final String email;
+  final String newPassword;
+  final String idToken;
+  SetPasswordRequested(this.email, this.newPassword, this.idToken);
+}

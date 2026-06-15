@@ -12,7 +12,20 @@
           "package_name": "com.company.duapoem"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "494112043315-1sd7o0b2pbs1eakvn4hgrukoeo9i98ev.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.company.duapoem",
+            "certificate_hash": "826affe2ce3bee718d8cf94db33cded286d7cd86"
+          }
+        },
+        {
+          "client_id": "494112043315-fi1np4uahhtrsp6rprrsim0b5r7but8k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBxlDFXpytu9YV6Yx_LQHFQwKKXa6t-2O0"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "494112043315-fi1np4uahhtrsp6rprrsim0b5r7but8k.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "494112043315-79103sbllhq1dabv1i7jch70cuulmqlt.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.company.duapoem"
+              }
+            }
+          ]
         }
       }
     }

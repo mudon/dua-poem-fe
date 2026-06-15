@@ -24,7 +24,9 @@ class _PasswordTextFieldState extends State<PasswordTextField> {
     return TextField(
       controller: widget.controller,
       obscureText: _obscure,
+      style: const TextStyle(overflow: TextOverflow.ellipsis),
       decoration: InputDecoration(
+        isDense: true,
         hintText: widget.hint,
         prefixIcon: Icon(widget.prefixIcon, color: const Color(0xFFB9AA97)),
         suffixIcon: IconButton(

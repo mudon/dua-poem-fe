@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fa;
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../../core/services/secure_storage_service.dart';
 import '../../../app/dependency_injection.dart';
 import '../../../core/constants/auth_error_codes.dart';
@@ -38,6 +41,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<CheckAuthStatus>(_onCheck);
     on<UpdateProfileRequested>(_onUpdateProfile);
     on<ClearAuthError>(_onClearError);
+    on<GoogleLoginRequested>(_onGoogleLogin);
+    on<SetPasswordRequested>(_onSetPassword);
   }
 
   Future<void> _onLogin(LoginRequested event, Emitter<AuthState> emit) async {
@@ -51,7 +56,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } else if (result.code == AuthErrorCodes.emailNotVerified) {
       emit(EmailNotVerified(event.email));
     } else {
-      emit(AuthError(result.error!));
+      emit(AuthError(result.error!, code: result.code));
     }
   }
 
@@ -171,6 +176,66 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _onClearError(ClearAuthError event, Emitter<AuthState> emit) {
     if (state is AuthError) {
       emit(AuthInitial());
+    }
+  }
+
+  Future<void> _onGoogleLogin(
+      GoogleLoginRequested event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+    try {
+      String firebaseIdToken;
+
+      if (kIsWeb) {
+        final provider = fa.GoogleAuthProvider();
+        final result = await fa.FirebaseAuth.instance.signInWithPopup(provider);
+        firebaseIdToken = await result.user?.getIdToken() ?? '';
+      } else {
+        final googleSignIn = GoogleSignIn.instance;
+        await googleSignIn.initialize();
+        final account = await googleSignIn.authenticate();
+        final idToken = account.authentication.idToken;
+        if (idToken == null) {
+          emit(const AuthError('No ID token received from Google'));
+          return;
+        }
+        final credential = fa.GoogleAuthProvider.credential(idToken: idToken);
+        await fa.FirebaseAuth.instance.signInWithCredential(credential);
+        firebaseIdToken =
+            await fa.FirebaseAuth.instance.currentUser?.getIdToken() ?? '';
+      }
+
+      if (firebaseIdToken == null) {
+        emit(const AuthError('Failed to get Firebase token'));
+        return;
+      }
+
+      final result = await _authRepo.googleLogin(firebaseIdToken);
+      if (result.isSuccess) {
+        await _saveUser(result.data!);
+        await _signalRService.connect();
+        await getIt<FcmService>().registerTokenWithBackend();
+        emit(Authenticated(result.data!));
+      } else {
+        emit(AuthError(result.error!, code: result.code));
+      }
+    } catch (e) {
+      final msg = e.toString().toLowerCase();
+      if (msg.contains('canceled') || msg.contains('cancelled')) return;
+      emit(AuthError(e.toString()));
+    }
+  }
+
+  Future<void> _onSetPassword(SetPasswordRequested event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+    try {
+      final result = await _authRepo.setPassword(event.email, event.newPassword, event.idToken);
+      if (result.isSuccess) {
+        emit(PasswordSetSuccess());
+      } else {
+        emit(AuthError(result.error!));
+      }
+    } catch (e) {
+      emit(AuthError(e.toString()));
     }
   }
 

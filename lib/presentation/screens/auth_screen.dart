@@ -1,15 +1,19 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fa;
+import 'package:google_sign_in/google_sign_in.dart';
 import '../blocs/auth_bloc/auth_bloc.dart';
 import '../blocs/auth_bloc/auth_state.dart';
 import '../blocs/auth_bloc/auth_event.dart';
 import '../widgets/auth/auth_toggle_buttons.dart';
 import '../widgets/auth/password_text_field.dart';
-import '../widgets/auth/social_login_buttons.dart';
 import '../widgets/auth/auth_error_widget.dart';
+import '../widgets/auth/social_login_buttons.dart';
 import '../widgets/common/gradient_button.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/constants/auth_error_codes.dart';
 import '../../core/themes/app_theme.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -454,6 +458,121 @@ class _AuthScreenState extends State<AuthScreen> {
     });
   }
 
+  void _showSetPasswordDialog(BuildContext context) {
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
+    var idToken = '';
+    var signedIn = false;
+    var loading = false;
+    var errorMsg = '';
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(signedIn ? 'Set Password' : 'Sign in with Google'),
+          content: SizedBox(
+            width: 400,
+            child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (!signedIn) ...[
+                const Text('This account uses Google Sign-In. Sign in with Google first, then set a password.'),
+                const SizedBox(height: 16),
+                if (errorMsg.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Text(errorMsg, style: const TextStyle(color: Colors.red)),
+                  ),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: loading ? null : () async {
+                      setDialogState(() { loading = true; errorMsg = ''; });
+                      try {
+                        if (kIsWeb) {
+                          final provider = fa.GoogleAuthProvider();
+                          final result = await fa.FirebaseAuth.instance.signInWithPopup(provider);
+                          idToken = await result.user?.getIdToken() ?? '';
+                        } else {
+                          final gsi = GoogleSignIn.instance;
+                          await gsi.initialize();
+                          final account = await gsi.authenticate();
+                          final token = account.authentication.idToken;
+                          if (token == null) throw Exception('No ID token');
+                          final credential = fa.GoogleAuthProvider.credential(idToken: token);
+                          await fa.FirebaseAuth.instance.signInWithCredential(credential);
+                          idToken = await fa.FirebaseAuth.instance.currentUser?.getIdToken() ?? '';
+                        }
+                        if (idToken.isNotEmpty) {
+                          emailController.text = fa.FirebaseAuth.instance.currentUser?.email ?? '';
+                          setDialogState(() { signedIn = true; loading = false; });
+                        }
+                      } catch (e) {
+                        final msg = e.toString().toLowerCase();
+                        if (msg.contains('canceled') || msg.contains('cancelled')) {
+                          setDialogState(() { loading = false; });
+                          return;
+                        }
+                        setDialogState(() { loading = false; errorMsg = e.toString(); });
+                      }
+                    },
+                    icon: loading
+                        ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                        : const Icon(Icons.login),
+                    label: const Text('Sign in with Google'),
+                  ),
+                ),
+              ] else ...[
+                const Text('Enter a password for email login.'),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: emailController,
+                  readOnly: true,
+                  style: const TextStyle(overflow: TextOverflow.ellipsis),
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    hintText: 'Email',
+                    prefixIcon: Icon(Icons.email_outlined),
+                    filled: true,
+                    fillColor: Color(0xFFF5F5F5),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xFFE0E0E0)),
+                    ),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                const SizedBox(height: 12),
+                PasswordTextField(
+                  controller: passwordController,
+                  hint: 'New password',
+                  prefixIcon: Icons.lock_outline,
+                ),
+              ],
+            ],
+          ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancel'),
+            ),
+            if (signedIn)
+              TextButton(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                  context.read<AuthBloc>().add(
+                    SetPasswordRequested(emailController.text.trim(), passwordController.text, idToken),
+                  );
+                },
+                child: const Text('Set Password'),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -482,6 +601,12 @@ class _AuthScreenState extends State<AuthScreen> {
               }
               if (state is PasswordResetSuccess) {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password has been reset successfully.')));
+              }
+              if (state is PasswordSetSuccess) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password set successfully. You can now log in with email.')));
+              }
+              if (state is AuthError && state.code == AuthErrorCodes.googleOnlyAccount) {
+                _showSetPasswordDialog(context);
               }
             },
             builder: (context, state) {
@@ -643,7 +768,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           Text(AppStrings.orContinueWith, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
                           const SizedBox(height: 12),
                           SocialLoginButtons(
-                            onGoogleTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Google login demo'))),
+                            onGoogleTap: () => context.read<AuthBloc>().add(GoogleLoginRequested()),
                             onAppleTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Apple login demo'))),
                           ),
                           const SizedBox(height: 16),

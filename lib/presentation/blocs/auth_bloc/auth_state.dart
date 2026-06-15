@@ -1,6 +1,8 @@
 import '../../../data/models/user_model.dart';
 
-abstract class AuthState {}
+abstract class AuthState {
+  const AuthState();
+}
 
 class AuthInitial extends AuthState {}
 
@@ -15,7 +17,8 @@ class Unauthenticated extends AuthState {}
 
 class AuthError extends AuthState {
   final String message;
-  AuthError(this.message);
+  final String? code;
+  const AuthError(this.message, {this.code});
 }
 
 class EmailNotVerified extends AuthState {
@@ -43,3 +46,5 @@ class ForgotPasswordMode extends AuthState {
 enum ForgotPasswordStep { email, reset }
 
 class PasswordResetSuccess extends AuthState {}
+
+class PasswordSetSuccess extends AuthState {}

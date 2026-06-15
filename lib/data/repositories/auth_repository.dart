@@ -26,6 +26,9 @@ class AuthRepository {
         if (respData is Map && respData['code'] == AuthErrorCodes.emailNotVerified) {
           return ApiResult.failure(e.userMessage, code: AuthErrorCodes.emailNotVerified);
         }
+        if (respData is Map && respData['code'] == AuthErrorCodes.googleOnlyAccount) {
+          return ApiResult.failure(e.userMessage, code: AuthErrorCodes.googleOnlyAccount);
+        }
       }
       return ApiResult.failure(e.userMessage);
     }
@@ -73,6 +76,33 @@ class AuthRepository {
   Future<ApiResult<String>> resetPassword(String email, String code, String newPassword) async {
     try {
       await _authService.resetPassword(email, code, newPassword);
+      return ApiResult.success(email);
+    } catch (e) {
+      return ApiResult.failure(e.userMessage);
+    }
+  }
+
+  Future<ApiResult<UserModel>> googleLogin(String idToken) async {
+    try {
+      final data = await _authService.googleLogin(idToken);
+      await _secureStorage.write(key: DioClient.accessTokenKey, value: data['accessToken']);
+      await _secureStorage.write(key: DioClient.refreshTokenKey, value: data['refreshToken']);
+      final user = UserModel.fromJson(data['user']);
+      return ApiResult.success(user);
+    } catch (e) {
+      if (e is DioException) {
+        final respData = e.response?.data;
+        if (respData is Map && respData['code'] == AuthErrorCodes.googleOnlyAccount) {
+          return ApiResult.failure(e.userMessage, code: AuthErrorCodes.googleOnlyAccount);
+        }
+      }
+      return ApiResult.failure(e.userMessage);
+    }
+  }
+
+  Future<ApiResult<String>> setPassword(String email, String newPassword, String idToken) async {
+    try {
+      await _authService.setPassword(email, newPassword, idToken);
       return ApiResult.success(email);
     } catch (e) {
       return ApiResult.failure(e.userMessage);

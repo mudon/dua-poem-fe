@@ -51,6 +51,21 @@ class AuthService {
     });
   }
 
+  Future<Map<String, dynamic>> googleLogin(String idToken) async {
+    final response = await _dioClient.dio.post('/auth/google', data: {
+      'idToken': idToken,
+    });
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<void> setPassword(String email, String newPassword, String idToken) async {
+    await _dioClient.dio.post('/auth/set-password', data: {
+      'email': email,
+      'newPassword': newPassword,
+      'idToken': idToken,
+    });
+  }
+
   Future<void> logout() async {
     await _dioClient.dio.post('/auth/logout');
   }

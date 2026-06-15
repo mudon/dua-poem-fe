@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../constants/api_config.dart';
+import '../constants/app_config.dart';
 import '../services/secure_storage_service.dart';
 import '../errors/error_helper.dart';
 
@@ -11,7 +11,7 @@ class DioClient {
   final SecureStorageService _secureStorage;
 
   DioClient(this._dio, this._secureStorage) {
-    _dio.options.baseUrl = ApiConfig.baseUrl;
+    _dio.options.baseUrl = AppConfig.apiBaseUrl;
     _dio.options.connectTimeout = const Duration(seconds: 30);
     _dio.options.receiveTimeout = const Duration(seconds: 30);
     _dio.interceptors.add(_AuthInterceptor(_secureStorage, _dio));

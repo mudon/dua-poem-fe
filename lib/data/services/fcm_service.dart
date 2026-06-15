@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
+import '../../core/constants/app_config.dart';
 import '../../core/services/browser_notification_stub.dart'
     if (dart.library.html) '../../core/services/browser_notification_web.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -28,7 +29,7 @@ class FcmService {
   }
 
   String? get _vapidKey => kIsWeb
-      ? 'BB4tbwfm7ypUqSlePNTNx1OsMB3N1ZE-74iQSx5bk11a2CI1iTmyn2vWBz6LDIK-K2h3ry9DF6AIX87JTi14dRE'
+      ? AppConfig.vapidKey
       : null;
 
   Future<void> initialize() async {
