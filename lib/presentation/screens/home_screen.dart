@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/enums/action_type.dart';
@@ -92,6 +93,18 @@ class _HomeFeedState extends State<_HomeFeed> {
     }
   }
 
+  Future<void> _onRefresh() async {
+    final homeBloc = context.read<HomeBloc>();
+    homeBloc.add(ClearSearch());
+    homeBloc.add(FetchLatestData());
+    await homeBloc.stream
+      .skipWhile((s) => !s.isLoading)
+      .firstWhere((s) => !s.isLoading);
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(0);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocListener(
@@ -121,7 +134,7 @@ class _HomeFeedState extends State<_HomeFeed> {
       ],
       child: BlocBuilder<HomeBloc, HomeState>(
         builder: (context, state) {
-          if (state.isLoading && !state.isSearching) {
+          if (state.isLoading && !state.isSearching && state.latestDuas.isEmpty && state.latestPoems.isEmpty) {
             return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
           }
           if (state.error != null && !state.isSearching && !state.isLoading) {
@@ -145,45 +158,71 @@ class _HomeFeedState extends State<_HomeFeed> {
               );
             }
             if (state.showDuasTab) {
-              return ListView.builder(
+              return RefreshIndicator(
+                onRefresh: _onRefresh,
+                child: ListView.builder(
+                  controller: _scrollController,
+                  itemCount: state.searchDuas.length + (state.loadingMoreSearch ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index == state.searchDuas.length) {
+                      return const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    final authState = context.watch<AuthBloc>().state;
+                    if (authState is! Authenticated) return const SizedBox.shrink();
+                    return DuaCard(key: ValueKey(state.searchDuas[index].id), dua: state.searchDuas[index], currentUser: authState.user);
+                  },
+                ),
+              );
+            }
+            return RefreshIndicator(
+              onRefresh: _onRefresh,
+              child: ListView.builder(
                 controller: _scrollController,
-                itemCount: state.searchDuas.length + (state.loadingMoreSearch ? 1 : 0),
+                itemCount: state.searchPoems.length + (state.loadingMoreSearch ? 1 : 0),
                 itemBuilder: (context, index) {
-                  if (index == state.searchDuas.length) {
+                  if (index == state.searchPoems.length) {
                     return const Padding(
                       padding: EdgeInsets.all(16),
                       child: Center(child: CircularProgressIndicator()),
                     );
                   }
-    final authState = context.watch<AuthBloc>().state;
+                  final authState = context.read<AuthBloc>().state;
                   if (authState is! Authenticated) return const SizedBox.shrink();
-                  return DuaCard(key: ValueKey(state.searchDuas[index].id), dua: state.searchDuas[index], currentUser: authState.user);
+                  return PoemCard(key: ValueKey(state.searchPoems[index].id), poem: state.searchPoems[index], currentUser: authState.user);
                 },
-              );
-            }
-            return ListView.builder(
-              controller: _scrollController,
-              itemCount: state.searchPoems.length + (state.loadingMoreSearch ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index == state.searchPoems.length) {
-                  return const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-                final authState = context.read<AuthBloc>().state;
-                if (authState is! Authenticated) return const SizedBox.shrink();
-                return PoemCard(key: ValueKey(state.searchPoems[index].id), poem: state.searchPoems[index], currentUser: authState.user);
-              },
+              ),
             );
           }
-
           if (state.showDuasTab) {
-            return ListView.builder(
+            return RefreshIndicator(
+              onRefresh: _onRefresh,
+              child: ListView.builder(
+                controller: _scrollController,
+                itemCount: state.latestDuas.length + (state.loadingMoreDuas ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index == state.latestDuas.length) {
+                    return const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  final authState = context.read<AuthBloc>().state;
+                  if (authState is! Authenticated) return const SizedBox.shrink();
+                  return DuaCard(key: ValueKey(state.latestDuas[index].id), dua: state.latestDuas[index], currentUser: authState.user);
+                },
+              ),
+            );
+          }
+          return RefreshIndicator(
+            onRefresh: _onRefresh,
+            child: ListView.builder(
               controller: _scrollController,
-              itemCount: state.latestDuas.length + (state.loadingMoreDuas ? 1 : 0),
+              itemCount: state.latestPoems.length + (state.loadingMorePoems ? 1 : 0),
               itemBuilder: (context, index) {
-                if (index == state.latestDuas.length) {
+                if (index == state.latestPoems.length) {
                   return const Padding(
                     padding: EdgeInsets.all(16),
                     child: Center(child: CircularProgressIndicator()),
@@ -191,26 +230,11 @@ class _HomeFeedState extends State<_HomeFeed> {
                 }
                 final authState = context.read<AuthBloc>().state;
                 if (authState is! Authenticated) return const SizedBox.shrink();
-                return DuaCard(key: ValueKey(state.latestDuas[index].id), dua: state.latestDuas[index], currentUser: authState.user);
+                return PoemCard(key: ValueKey(state.latestPoems[index].id), poem: state.latestPoems[index], currentUser: authState.user);
               },
+            ),
             );
-          }
-          return ListView.builder(
-            controller: _scrollController,
-            itemCount: state.latestPoems.length + (state.loadingMorePoems ? 1 : 0),
-            itemBuilder: (context, index) {
-              if (index == state.latestPoems.length) {
-                return const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-              final authState = context.read<AuthBloc>().state;
-              if (authState is! Authenticated) return const SizedBox.shrink();
-              return PoemCard(key: ValueKey(state.latestPoems[index].id), poem: state.latestPoems[index], currentUser: authState.user);
-            },
-          );
-        },
+          },
       ),
     );
   }

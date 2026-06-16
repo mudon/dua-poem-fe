@@ -135,6 +135,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProv
     }
   }
 
+  Future<void> _onRefresh() => _loadFavorites();
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocListener(
@@ -178,41 +180,71 @@ class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProv
             controller: _tabController,
             children: [
               _loadingDuas
-                  ? const Center(child: CircularProgressIndicator())
+                  ? RefreshIndicator(
+                      onRefresh: _onRefresh,
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: const SizedBox(height: 300, child: Center(child: CircularProgressIndicator())),
+                      ),
+                    )
                   : _favoriteDuas.isEmpty
-                      ? const Center(child: Text('No favorited duas yet'))
-                      : ListView.builder(
-                          controller: _duaScroll,
-                          itemCount: _favoriteDuas.length + (_hasMoreDuas ? 1 : 0),
-                          itemBuilder: (_, i) {
-                            if (i == _favoriteDuas.length) {
-                              return const Padding(
-                                padding: EdgeInsets.all(16),
-                                child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                              );
-                            }
-                            return DuaCard(key: ValueKey(_favoriteDuas[i].id), dua: _favoriteDuas[i], currentUser: widget.currentUser ?? _emptyUser);
-                          },
+                      ? RefreshIndicator(
+                          onRefresh: _onRefresh,
+                          child: SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: const Center(child: Text('No favorited duas yet')),
+                          ),
+                        )
+                      : RefreshIndicator(
+                          onRefresh: _onRefresh,
+                          child: ListView.builder(
+                            controller: _duaScroll,
+                            itemCount: _favoriteDuas.length + (_hasMoreDuas ? 1 : 0),
+                            itemBuilder: (_, i) {
+                              if (i == _favoriteDuas.length) {
+                                return const Padding(
+                                  padding: EdgeInsets.all(16),
+                                  child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                                );
+                              }
+                              return DuaCard(key: ValueKey(_favoriteDuas[i].id), dua: _favoriteDuas[i], currentUser: widget.currentUser ?? _emptyUser);
+                            },
+                          ),
                         ),
               _loadingPoems
-                  ? const Center(child: CircularProgressIndicator())
+                  ? RefreshIndicator(
+                      onRefresh: _onRefresh,
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: const SizedBox(height: 300, child: Center(child: CircularProgressIndicator())),
+                      ),
+                    )
                   : _favoritePoems.isEmpty
-                      ? const Center(child: Text('No favorited poems yet'))
-                      : ListView.builder(
-                          controller: _poemScroll,
-                          itemCount: _favoritePoems.length + (_hasMorePoems ? 1 : 0),
-                          itemBuilder: (_, i) {
-                            if (i == _favoritePoems.length) {
-                              return const Padding(
-                                padding: EdgeInsets.all(16),
-                                child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                              );
-                            }
-                            return PoemCard(key: ValueKey(_favoritePoems[i].id), poem: _favoritePoems[i], currentUser: widget.currentUser ?? _emptyUser);
-                          },
+                      ? RefreshIndicator(
+                          onRefresh: _onRefresh,
+                          child: SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: const Center(child: Text('No favorited poems yet')),
+                          ),
+                        )
+                      : RefreshIndicator(
+                          onRefresh: _onRefresh,
+                          child: ListView.builder(
+                            controller: _poemScroll,
+                            itemCount: _favoritePoems.length + (_hasMorePoems ? 1 : 0),
+                            itemBuilder: (_, i) {
+                              if (i == _favoritePoems.length) {
+                                return const Padding(
+                                  padding: EdgeInsets.all(16),
+                                  child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                                );
+                              }
+                              return PoemCard(key: ValueKey(_favoritePoems[i].id), poem: _favoritePoems[i], currentUser: widget.currentUser ?? _emptyUser);
+                            },
+                          ),
                         ),
-                      ],
-          ),
+                    ],
+        ),
       ),
     );
   }

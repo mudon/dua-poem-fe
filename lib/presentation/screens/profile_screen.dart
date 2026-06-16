@@ -323,8 +323,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: const [Padding(padding: EdgeInsets.only(right: 12), child: NotificationBell())],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+        child: RefreshIndicator(
+          onRefresh: _loadData,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -406,6 +409,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

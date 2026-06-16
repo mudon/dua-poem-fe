@@ -67,6 +67,18 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
     }
   }
 
+  Future<void> _onRefresh() async {
+    final homeBloc = context.read<HomeBloc>();
+    final user = (context.read<AuthBloc>().state as Authenticated).user;
+    homeBloc.add(FetchMyDuas(user.id));
+    homeBloc.add(FetchMyPoems(user.id));
+    await Future.doWhile(() async {
+      await Future.delayed(const Duration(milliseconds: 100));
+      final s = homeBloc.state;
+      return s.myDuasLoading || s.myPoemsLoading;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthBloc>().state;
@@ -163,31 +175,46 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
                         ),
                       ),
                       Expanded(
-                        child: loading
-                            ? const Center(child: CircularProgressIndicator())
+                        child: loading && items.isEmpty
+                            ? RefreshIndicator(
+                                onRefresh: _onRefresh,
+                                child: SingleChildScrollView(
+                                  physics: AlwaysScrollableScrollPhysics(),
+                                  child: const SizedBox(height: 300, child: Center(child: CircularProgressIndicator())),
+                                ),
+                              )
                             : items.isEmpty
-                                ? Center(
-                                    child: Text(
-                                      showDuas ? 'No duas yet' : 'No poems yet',
-                                      style: const TextStyle(color: Color(0xFF9A8C79)),
+                                ? RefreshIndicator(
+                                    onRefresh: _onRefresh,
+                                    child: SingleChildScrollView(
+                                      physics: AlwaysScrollableScrollPhysics(),
+                                      child: Center(
+                                        child: Text(
+                                          showDuas ? 'No duas yet' : 'No poems yet',
+                                          style: const TextStyle(color: Color(0xFF9A8C79)),
+                                        ),
+                                      ),
                                     ),
                                   )
-                                : ListView.builder(
-                                    controller: scrollController,
-                                    itemCount: items.length + (hasMore ? 1 : 0),
-                                    itemBuilder: (_, i) {
-                                      if (i >= items.length) {
-                                        return const Padding(
-                                          padding: EdgeInsets.all(16),
-                                          child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                                        );
-                                      }
-                                      if (showDuas) {
-                                        return DuaCard(key: ValueKey(duas[i].id), dua: duas[i], currentUser: user);
-                                      } else {
-                                        return PoemCard(key: ValueKey(poems[i].id), poem: poems[i], currentUser: user);
-                                      }
-                                    },
+                                : RefreshIndicator(
+                                    onRefresh: _onRefresh,
+                                    child: ListView.builder(
+                                      controller: scrollController,
+                                      itemCount: items.length + (hasMore ? 1 : 0),
+                                      itemBuilder: (_, i) {
+                                        if (i >= items.length) {
+                                          return const Padding(
+                                            padding: EdgeInsets.all(16),
+                                            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                                          );
+                                        }
+                                        if (showDuas) {
+                                          return DuaCard(key: ValueKey(duas[i].id), dua: duas[i], currentUser: user);
+                                        } else {
+                                          return PoemCard(key: ValueKey(poems[i].id), poem: poems[i], currentUser: user);
+                                        }
+                                      },
+                                    ),
                                   ),
                       ),
                     ],
