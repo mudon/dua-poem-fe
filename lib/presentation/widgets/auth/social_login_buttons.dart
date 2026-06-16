@@ -4,25 +4,16 @@ import '../../../core/themes/app_theme.dart';
 
 class SocialLoginButtons extends StatelessWidget {
   final VoidCallback onGoogleTap;
-  final VoidCallback onAppleTap;
 
-  const SocialLoginButtons({super.key, required this.onGoogleTap, required this.onAppleTap});
+  const SocialLoginButtons({super.key, required this.onGoogleTap});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _socialButton(FontAwesomeIcons.google, 'Google', onGoogleTap),
-        const SizedBox(width: 12),
-        _socialButton(FontAwesomeIcons.apple, 'Apple', onAppleTap),
-      ],
-    );
+    return _socialButton(FontAwesomeIcons.google, 'Google', onGoogleTap);
   }
 
   Widget _socialButton(dynamic icon, String label, VoidCallback onTap) {
-    return Expanded(
-      child: OutlinedButton(
+    return OutlinedButton(
         onPressed: onTap,
         style: OutlinedButton.styleFrom(
           side: BorderSide(color: AppTheme.warmGray),
@@ -37,7 +28,6 @@ class SocialLoginButtons extends StatelessWidget {
             Text(label, style: const TextStyle(color: Color(0xFF4E473D))),
           ],
         ),
-      ),
     );
   }
 }

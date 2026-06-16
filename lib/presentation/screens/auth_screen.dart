@@ -769,23 +769,6 @@ class _AuthScreenState extends State<AuthScreen> {
                           const SizedBox(height: 12),
                           SocialLoginButtons(
                             onGoogleTap: () => context.read<AuthBloc>().add(GoogleLoginRequested()),
-                            onAppleTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Apple login demo'))),
-                          ),
-                          const SizedBox(height: 16),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF7F3ED),
-                              borderRadius: BorderRadius.circular(40),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.science, size: 14, color: AppTheme.earthBrown),
-                                const SizedBox(width: 6),
-                                Text(AppStrings.demoNote, style: const TextStyle(fontSize: 11, color: Color(0xFFA69681))),
-                              ],
-                            ),
                           ),
                         ],
                       ),

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../core/constants/app_strings.dart';
 import '../../core/enums/action_type.dart';
 import '../../core/themes/app_theme.dart';
 import '../blocs/auth_bloc/auth_bloc.dart';
@@ -338,12 +339,7 @@ class _HeaderBar extends StatelessWidget {
                     child: const Icon(Icons.eco, color: Colors.white, size: 20),
                   ),
                   const SizedBox(width: 8),
-                  const Row(
-                    children: [
-                      Text('nur', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20, color: Color(0xFF3C4F34))),
-                      Text('·deen', style: TextStyle(fontWeight: FontWeight.w400, fontSize: 20, color: AppTheme.earthBrown)),
-                    ],
-                  ),
+                  Text(AppStrings.appName, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 20, color: Color(0xFF3C4F34))),
                 ],
               ),
               Row(

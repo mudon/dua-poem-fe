@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
           builder: (context) {
             final router = AppRouter(authBloc).router;
             return MaterialApp.router(
-              title: 'nur·deen',
+              title: 'Teduh',
               theme: AppTheme.lightTheme,
               routerConfig: router,
             );

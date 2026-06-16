@@ -1,5 +1,5 @@
 class AppStrings {
-  static const String appName = 'nur·deen';
+  static const String appName = 'Teduh';
   static const String tagline = 'duas · poems · reflections';
   static const String login = 'Log in';
   static const String signup = 'Sign up';
@@ -12,5 +12,4 @@ class AppStrings {
   static const String forgotPassword = 'Forgot password?';
   static const String termsAgree = 'I agree to the Terms and Privacy';
   static const String orContinueWith = 'or continue with';
-  static const String demoNote = 'demo: any email + password "demo123" | or create new account';
 }
