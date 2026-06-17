@@ -15,6 +15,9 @@ import '../data/services/admin_service.dart';
 import '../data/services/leaderboard_service.dart';
 import '../data/services/device_token_service.dart';
 import '../data/services/fcm_service.dart';
+import '../data/services/donation_service.dart';
+import '../data/repositories/donation_repository.dart';
+import '../presentation/blocs/donation_bloc/donation_bloc.dart';
 import '../data/repositories/auth_repository.dart';
 import '../data/repositories/notification_repository.dart';
 import '../data/repositories/admin_repository.dart';
@@ -57,6 +60,7 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton(() => LeaderboardService(getIt<DioClient>()));
   getIt.registerLazySingleton(() => DeviceTokenService(getIt<DioClient>()));
   getIt.registerLazySingleton(() => FcmService(getIt<DeviceTokenService>()));
+  getIt.registerLazySingleton(() => DonationService(getIt<DioClient>()));
 
   // Repositories
   getIt.registerLazySingleton(() => AuthRepository(getIt<AuthService>(), getIt<SecureStorageService>()));
@@ -67,6 +71,7 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton(() => NotificationRepository(getIt<NotificationService>()));
   getIt.registerLazySingleton(() => AdminRepository(getIt<AdminService>()));
   getIt.registerLazySingleton(() => LeaderboardRepository(getIt<LeaderboardService>()));
+  getIt.registerLazySingleton(() => DonationRepository(getIt<DonationService>()));
 
   // BLoCs
   getIt.registerFactory(() => AuthBloc(
@@ -80,4 +85,5 @@ Future<void> setupDependencies() async {
   getIt.registerFactory(() => CategoryBloc(getIt<CategoryRepository>()));
   getIt.registerFactory(() => TagBloc(getIt<TagRepository>()));
   getIt.registerLazySingleton(() => NotificationBloc(getIt<NotificationRepository>()));
+  getIt.registerFactory(() => DonationBloc(getIt<DonationRepository>()));
 }

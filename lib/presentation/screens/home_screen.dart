@@ -16,6 +16,7 @@ import '../blocs/poem_bloc/poem_state.dart';
 import '../widgets/common/dua_card.dart';
 import '../widgets/common/poem_card.dart';
 import '../widgets/common/home_tab_bar.dart';
+import '../widgets/common/coffee_button.dart';
 import '../widgets/common/notification_bell.dart';
 import '../../data/repositories/dua_repository.dart';
 import '../../data/repositories/poem_repository.dart';
@@ -344,6 +345,8 @@ class _HeaderBar extends StatelessWidget {
               ),
               Row(
                 children: [
+                  const CoffeeButton(),
+                  const SizedBox(width: 16),
                   const NotificationBell(),
                   const SizedBox(width: 16),
                   const Icon(Icons.person_outline, size: 18, color: Color(0xFF5C5346)),

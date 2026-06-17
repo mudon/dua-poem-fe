@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:async';
 import '../../data/models/user_model.dart';
+
 import '../../data/models/user_stats_model.dart';
 import '../../data/services/user_service.dart';
 import '../../data/services/signalr_service.dart';
