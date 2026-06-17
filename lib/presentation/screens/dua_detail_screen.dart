@@ -7,6 +7,7 @@ import '../../data/models/dua_model.dart';
 import '../../data/models/report_model.dart';
 import '../../core/enums/report_status.dart';
 import '../../core/enums/dua_report_reason.dart';
+import '../../core/enums/badge_category.dart';
 import '../../core/themes/app_theme.dart';
 import '../../data/repositories/dua_repository.dart';
 import '../../data/services/signalr_service.dart';
@@ -57,6 +58,19 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
     getIt<SignalRService>().leaveDuaGroup(widget.duaId);
     getIt<SignalRService>().leaveDuaReportGroup(widget.duaId);
     super.dispose();
+  }
+
+  Future<void> _onRefresh() async {
+    final repo = getIt<DuaRepository>();
+    final result = await repo.getDuaDetail(widget.duaId);
+    if (!mounted) return;
+    setState(() {
+      _dua = result.data;
+      _isLiked = result.data?.isLiked ?? false;
+      _likeCount = result.data?.likeCount ?? 0;
+      _isBookmarked = result.data?.isFavorited ?? false;
+      _bookmarkCount = result.data?.bookmarkCount ?? 0;
+    });
   }
 
   Future<void> _loadReports() async {
@@ -297,7 +311,9 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                       );
                     }
                   },
-                  child: SingleChildScrollView(
+                  child: RefreshIndicator(
+                    onRefresh: _onRefresh,
+                    child: SingleChildScrollView(
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -334,6 +350,88 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              if (_dua!.userName.isNotEmpty) ...[
+                                Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 14,
+                                      backgroundColor: const Color(0xFFD6B17E),
+                                      child: Text(
+                                        _dua!.userAvatar,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      _dua!.userName,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF3C3730),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (_dua!.createdByBadges.isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  SizedBox(
+                                    height: 28,
+                                    child: ListView.separated(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: _dua!.createdByBadges.length,
+                                      separatorBuilder: (_, __) =>
+                                          const SizedBox(width: 6),
+                                      itemBuilder: (context, index) {
+                                        final badge =
+                                            _dua!.createdByBadges[index];
+                                        final category =
+                                            BadgeCategory.fromSlugPrefix(
+                                                badge['slug']!);
+                                        return Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: category.color
+                                                .withValues(alpha: 0.12),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            border: Border.all(
+                                              color: category.color
+                                                  .withValues(alpha: 0.3),
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                category.icon,
+                                                size: 12,
+                                                color: category.color,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                badge['name']!,
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: category.color,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 12),
+                              ],
                               Text(
                                 _dua!.title,
                                 style: const TextStyle(
@@ -395,48 +493,48 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                                   children: _dua!.tags
                                       .map((t) => _TagPill(label: t))
                                       .toList(),
-                                ),
-                              ],
+                                 ),
+                                ],
                               const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  GestureDetector(
-                                    onTap: () {
-                                      final wasLiked = _isLiked;
-                                      final currentCount = _likeCount;
-                                      setState(() {
-                                        _isLiked = !_isLiked;
-                                        _likeCount += _isLiked ? 1 : -1;
-                                      });
-                                      getIt<DuaBloc>().add(
-                                        ToggleLike(
-                                          _dua!.id,
-                                          wasLiked,
-                                          currentCount,
-                                        ),
-                                      );
-                                    },
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          _isLiked
-                                              ? Icons.favorite
-                                              : Icons.favorite_border,
-                                          color: const Color(0xFFD6B17E),
-                                          size: 22,
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          '$_likeCount',
-                                          style: const TextStyle(
-                                            color: Color(0xFFD6B17E),
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 14,
+                                Row(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        final wasLiked = _isLiked;
+                                        final currentCount = _likeCount;
+                                        setState(() {
+                                          _isLiked = !_isLiked;
+                                          _likeCount += _isLiked ? 1 : -1;
+                                        });
+                                        getIt<DuaBloc>().add(
+                                          ToggleLike(
+                                            _dua!.id,
+                                            wasLiked,
+                                            currentCount,
                                           ),
-                                        ),
-                                      ],
+                                        );
+                                      },
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            _isLiked
+                                                ? Icons.favorite
+                                                : Icons.favorite_border,
+                                            color: const Color(0xFFD6B17E),
+                                            size: 22,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            '$_likeCount',
+                                            style: const TextStyle(
+                                              color: Color(0xFFD6B17E),
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
                                   const SizedBox(width: 24),
                                   GestureDetector(
                                     onTap: () {
@@ -641,6 +739,7 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                         ),
                       ],
                     ),
+                  ),
                   ),
                 ),
               ),
