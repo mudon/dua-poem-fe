@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/enums/user_role.dart';
 import '../../core/themes/app_theme.dart';
-import '../widgets/forms/create_flow_sheet.dart';
 import '../blocs/auth_bloc/auth_bloc.dart';
 import '../blocs/auth_bloc/auth_state.dart';
 import '../blocs/dua_bloc/dua_bloc.dart';
@@ -50,15 +49,6 @@ class _MainShellState extends State<MainShell> {
     return items;
   }
 
-  void _showCreatePicker() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const CreateFlowSheet(),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
@@ -70,42 +60,21 @@ class _MainShellState extends State<MainShell> {
         child: BadgeAwardPopup(
         child: Scaffold(
         body: widget.navigationShell,
-        bottomNavigationBar: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Container(
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: Color(0xFFEAE2D6))),
-              ),
-              child: BottomNavigationBar(
-                backgroundColor: const Color(0xFFFEFCF7),
-                selectedItemColor: AppTheme.sage,
-                unselectedItemColor: const Color(0xFF9D9080),
-                currentIndex: widget.navigationShell.currentIndex,
-                onTap: (i) => widget.navigationShell.goBranch(i),
-                type: BottomNavigationBarType.fixed,
-                selectedFontSize: 12,
-                unselectedFontSize: 12,
-                items: _buildNavItems(),
-              ),
-            ),
-            Positioned(
-              top: -24,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: SizedBox(
-                  width: 56,
-                  height: 56,
-                  child: FloatingActionButton(
-                    backgroundColor: AppTheme.sage,
-                    onPressed: _showCreatePicker,
-                    child: const Icon(Icons.add, color: Colors.white),
-                  ),
-                ),
-              ),
-            ),
-          ],
+        bottomNavigationBar: Container(
+          decoration: const BoxDecoration(
+            border: Border(top: BorderSide(color: Color(0xFFEAE2D6))),
+          ),
+          child: BottomNavigationBar(
+            backgroundColor: const Color(0xFFFEFCF7),
+            selectedItemColor: AppTheme.sage,
+            unselectedItemColor: const Color(0xFF9D9080),
+            currentIndex: widget.navigationShell.currentIndex,
+            onTap: (i) => widget.navigationShell.goBranch(i),
+            type: BottomNavigationBarType.fixed,
+            selectedFontSize: 12,
+            unselectedFontSize: 12,
+            items: _buildNavItems(),
+          ),
         ),
       ),
       ),

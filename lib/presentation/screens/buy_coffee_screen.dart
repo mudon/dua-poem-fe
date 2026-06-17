@@ -16,6 +16,7 @@ class _BuyCoffeeScreenState extends State<BuyCoffeeScreen> {
   final _amountController = TextEditingController();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   double _selectedAmount = 5;
 
   final List<double> _presetAmounts = [3, 5, 10, 20];
@@ -25,6 +26,7 @@ class _BuyCoffeeScreenState extends State<BuyCoffeeScreen> {
     _amountController.dispose();
     _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -147,6 +149,15 @@ class _BuyCoffeeScreenState extends State<BuyCoffeeScreen> {
                       border: OutlineInputBorder(),
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    decoration: const InputDecoration(
+                      labelText: 'Telefon (pilihan)',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
                   const SizedBox(height: 32),
                   SizedBox(
                     width: double.infinity,
@@ -159,6 +170,7 @@ class _BuyCoffeeScreenState extends State<BuyCoffeeScreen> {
                                     amount: _selectedAmount,
                                     name: _nameController.text.isNotEmpty ? _nameController.text : null,
                                     email: _emailController.text.isNotEmpty ? _emailController.text : null,
+                                    phone: _phoneController.text.isNotEmpty ? _phoneController.text : null,
                                   ));
                             },
                       style: ElevatedButton.styleFrom(

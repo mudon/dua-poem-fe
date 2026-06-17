@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/enums/action_type.dart';
+import '../widgets/forms/create_flow_sheet.dart';
 import '../../core/themes/app_theme.dart';
 import '../blocs/auth_bloc/auth_bloc.dart';
 import '../blocs/auth_bloc/auth_state.dart';
@@ -38,6 +39,16 @@ class HomeScreen extends StatelessWidget {
       )..add(FetchLatestData()),
       child: Scaffold(
         backgroundColor: const Color(0xFFF4F0E8),
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: AppTheme.sage,
+          onPressed: () => showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => const CreateFlowSheet(),
+          ),
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
         body: SafeArea(
           child: Column(
             children: [

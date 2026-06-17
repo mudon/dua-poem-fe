@@ -14,6 +14,7 @@ import '../blocs/home_bloc/home_state.dart';
 import '../widgets/common/dua_card.dart';
 import '../widgets/common/poem_card.dart';
 import '../widgets/common/notification_bell.dart';
+import '../widgets/forms/create_flow_sheet.dart';
 import '../../app/dependency_injection.dart';
 
 class MyPostsScreen extends StatefulWidget {
@@ -98,6 +99,10 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
                 final id = state.lastToggledDuaId;
                 if (id != null) ctx.read<HomeBloc>().add(RemoveDua(id));
               }
+              if (state.actionType == ActionType.created) {
+                final dua = state.createdDua;
+                if (dua != null) ctx.read<HomeBloc>().add(InsertDua(dua));
+              }
             },
           ),
           BlocListener<PoemBloc, PoemState>(
@@ -107,11 +112,25 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
                 final id = state.lastToggledPoemId;
                 if (id != null) ctx.read<HomeBloc>().add(RemovePoem(id));
               }
+              if (state.actionType == ActionType.created) {
+                final poem = state.createdPoem;
+                if (poem != null) ctx.read<HomeBloc>().add(InsertPoem(poem));
+              }
             },
           ),
         ],
         child: Scaffold(
           backgroundColor: const Color(0xFFF4F0E8),
+          floatingActionButton: FloatingActionButton(
+            backgroundColor: AppTheme.sage,
+            onPressed: () => showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (_) => const CreateFlowSheet(),
+            ),
+            child: const Icon(Icons.add, color: Colors.white),
+          ),
           appBar: AppBar(
             backgroundColor: const Color(0xFFFEFCF7),
             elevation: 0,
