@@ -233,22 +233,6 @@ class _DuaCardState extends State<DuaCard> {
                       Flexible(
                         child: Text(_title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                       ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: widget.dua.verified ? const Color(0xFFE2F0DA) : const Color(0xFFFFF1E0),
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: Text(
-                          widget.dua.verified ? 'Verified' : 'Pending',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                            color: widget.dua.verified ? const Color(0xFF3F7849) : const Color(0xFFC47D2E),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -289,11 +273,13 @@ class _DuaCardState extends State<DuaCard> {
               child: Text(_translation, style: const TextStyle(fontSize: 13, color: Color(0xFF4C473F))),
             ),
             const SizedBox(height: 8),
-            Row(
-              children: [
-                _MetaChip(icon: Icons.category_outlined, label: widget.dua.category),
-              ],
-            ),
+            if (widget.dua.category.isNotEmpty) ...[
+              Row(
+                children: [
+                  _MetaChip(icon: Icons.category_outlined, label: widget.dua.category),
+                ],
+              ),
+            ],
             if (widget.dua.tags.isNotEmpty) ...[
               const SizedBox(height: 8),
               Wrap(
@@ -445,15 +431,15 @@ class _MetaChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F5EF),
+        color: const Color(0xFFFFF3E0),
         borderRadius: BorderRadius.circular(30),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: const Color(0xFF8F8575)),
+          Icon(icon, size: 12, color: const Color(0xFFB8860B)),
           const SizedBox(width: 4),
-          Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF8F8575))),
+          Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFFB8860B))),
         ],
       ),
     );

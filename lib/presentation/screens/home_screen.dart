@@ -362,7 +362,7 @@ class _HeaderBar extends StatelessWidget {
                   const SizedBox(width: 16),
                   const Icon(Icons.person_outline, size: 18, color: Color(0xFF5C5346)),
                   const SizedBox(width: 6),
-                  const Text('As-salamu alaikum', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF5C5346))),
+                  const Text('Assalamualaikum', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF5C5346))),
                 ],
               ),
             ],

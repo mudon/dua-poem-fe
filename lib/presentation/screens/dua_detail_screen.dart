@@ -341,31 +341,6 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              const SizedBox(height: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 3,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: _dua!.verified
-                                      ? const Color(0xFFE2F0DA)
-                                      : const Color(0xFFFFF1E0),
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                                child: Text(
-                                  _dua!.verified
-                                      ? '✓ Verified'
-                                      : '⏳ Pending Review',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w500,
-                                    color: _dua!.verified
-                                        ? const Color(0xFF3F7849)
-                                        : const Color(0xFFC47D2E),
-                                  ),
-                                ),
-                              ),
                               if (_dua!.arabicText != null) ...[
                                 const SizedBox(height: 12),
                                 Container(
