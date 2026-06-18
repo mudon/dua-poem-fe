@@ -79,6 +79,9 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
           translation: update.translation,
           description: update.description,
           author: update.author,
+          category: update.category,
+          categoryId: update.categoryId,
+          tags: update.tags,
           updatedAt: update.updatedAt,
         ));
       } catch (_) {}
@@ -133,7 +136,11 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
       'content': event.content ?? '',
       'transliteration': event.transliteration,
       'translation': event.translation,
+      'description': event.description,
+      'author': event.author,
     };
+    if (event.categoryId != null) data['categoryId'] = event.categoryId;
+    if (event.tagIds.isNotEmpty) data['tagIds'] = event.tagIds;
     final result = await _poemRepo.updatePoem(event.poemId, data);
     emit(state.copyWith(isProcessing: false));
     if (result.isSuccess) {
@@ -147,6 +154,9 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
         translation: updated.translation,
         description: updated.description,
         author: updated.author,
+        category: updated.category,
+        categoryId: updated.categoryId,
+        tags: updated.tags,
         updatedAt: updated.updatedAt ?? '',
       );
       emit(state.copyWith(
@@ -188,6 +198,9 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
       translation: event.translation,
       description: event.description,
       author: event.author,
+      category: event.category,
+      categoryId: event.categoryId,
+      tags: event.tags,
       updatedAt: event.updatedAt,
     );
     emit(state.copyWith(

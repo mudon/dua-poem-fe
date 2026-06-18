@@ -81,6 +81,9 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
           whenToRecite: update.whenToRecite,
           occasion: update.occasion,
           repetitionCount: update.repetitionCount,
+          category: update.category,
+          categoryId: update.categoryId,
+          tags: update.tags,
           updatedAt: update.updatedAt,
         ));
       } catch (_) {}
@@ -135,7 +138,13 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
       'arabicText': event.arabicText ?? '',
       'transliteration': event.transliteration,
       'translation': event.translation,
+      'description': event.description,
+      'whenToRecite': event.whenToRecite,
+      'occasion': event.occasion,
+      'repetitionCount': event.repetitionCount,
     };
+    if (event.categoryId != null) data['categoryId'] = event.categoryId;
+    if (event.tagIds.isNotEmpty) data['tagIds'] = event.tagIds;
     final result = await _duaRepo.updateDua(event.duaId, data);
     emit(state.copyWith(isProcessing: false));
     if (result.isSuccess) {
@@ -151,6 +160,9 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
         whenToRecite: updated.whenToRecite,
         occasion: updated.occasion,
         repetitionCount: updated.repetitionCount ?? 0,
+        category: updated.category,
+        categoryId: updated.categoryId,
+        tags: updated.tags,
         updatedAt: updated.updatedAt ?? '',
       );
       emit(state.copyWith(
@@ -194,6 +206,9 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
       whenToRecite: event.whenToRecite,
       occasion: event.occasion,
       repetitionCount: event.repetitionCount,
+      category: event.category,
+      categoryId: event.categoryId,
+      tags: event.tags,
       updatedAt: event.updatedAt,
     );
     emit(state.copyWith(

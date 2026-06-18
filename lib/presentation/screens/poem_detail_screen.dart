@@ -5,12 +5,16 @@ import '../../core/enums/action_type.dart';
 import '../../data/models/user_model.dart';
 import '../../data/models/poem_model.dart';
 import '../../data/models/report_model.dart';
+import '../../data/models/category_model.dart';
+import '../../data/models/tag_model.dart';
 import '../../core/enums/poem_report_reason.dart';
 import '../../core/enums/report_status.dart';
 import '../../core/enums/badge_category.dart';
 import '../../core/themes/app_theme.dart';
 import '../../data/repositories/poem_repository.dart';
 import '../../data/services/signalr_service.dart';
+import '../../data/services/category_service.dart';
+import '../../data/services/tag_service.dart';
 import '../blocs/poem_bloc/poem_bloc.dart';
 import '../blocs/poem_bloc/poem_event.dart';
 import '../blocs/poem_bloc/poem_state.dart';
@@ -134,6 +138,20 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
     );
   }
 
+  String _formatTimestamp(String iso) {
+    try {
+      final dt = DateTime.parse(iso);
+      final y = dt.year.toString().padLeft(4, '0');
+      final mo = dt.month.toString().padLeft(2, '0');
+      final d = dt.day.toString().padLeft(2, '0');
+      final h = dt.hour.toString().padLeft(2, '0');
+      final mi = dt.minute.toString().padLeft(2, '0');
+      return '$y-$mo-$d $h:$mi';
+    } catch (_) {
+      return iso;
+    }
+  }
+
   Future<void> _loadPoem() async {
     final repo = getIt<PoemRepository>();
     final result = await repo.getPoemDetail(widget.poemId);
@@ -189,6 +207,10 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
         initialContent: _poem!.content ?? '',
         initialTransliteration: _poem!.transliteration ?? '',
         initialTranslation: _poem!.translation,
+        initialDescription: _poem!.description ?? '',
+        initialAuthor: _poem!.author ?? '',
+        initialCategoryId: _poem!.categoryId,
+        initialTags: _poem!.tags,
       ),
     );
   }
@@ -293,6 +315,9 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                             translation: update.translation,
                             description: update.description,
                             author: update.author,
+                            category: update.category,
+                            categoryId: update.categoryId,
+                            tags: update.tags,
                             updatedAt: update.updatedAt,
                           );
                         });
@@ -437,11 +462,13 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              const SizedBox(height: 12),
-                              DetailField(
-                                label: 'Author',
-                                value: _poem!.userName,
-                              ),
+                              if (_poem!.author != null && _poem!.author!.isNotEmpty) ...[
+                                const SizedBox(height: 12),
+                                DetailField(
+                                  label: 'Author',
+                                  value: _poem!.author!,
+                                ),
+                              ],
                               if (_poem!.content != null &&
                                   _poem!.content!.isNotEmpty) ...[
                                 const SizedBox(height: 12),
@@ -475,6 +502,41 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                                       .toList(),
                                  ),
                                 ],
+                              if (_poem!.transliteration != null && _poem!.transliteration!.isNotEmpty) ...[
+                                const SizedBox(height: 12),
+                                DetailField(
+                                  label: 'Transliteration',
+                                  value: _poem!.transliteration!,
+                                ),
+                              ],
+                              if (_poem!.description != null && _poem!.description!.isNotEmpty) ...[
+                                const SizedBox(height: 12),
+                                DetailField(
+                                  label: 'Description',
+                                  value: _poem!.description!,
+                                ),
+                              ],
+                              if (_poem!.category.isNotEmpty) ...[
+                                const SizedBox(height: 12),
+                                DetailField(
+                                  label: 'Category',
+                                  value: _poem!.category,
+                                ),
+                              ],
+                              if (_poem!.createdAt != null) ...[
+                                const SizedBox(height: 12),
+                                DetailField(
+                                  label: 'Created At',
+                                  value: _formatTimestamp(_poem!.createdAt!),
+                                ),
+                              ],
+                              if (_poem!.updatedAt != null) ...[
+                                const SizedBox(height: 12),
+                                DetailField(
+                                  label: 'Updated At',
+                                  value: _formatTimestamp(_poem!.updatedAt!),
+                                ),
+                              ],
                               const SizedBox(height: 16),
                                 Row(
                                   children: [
@@ -943,9 +1005,11 @@ class _PoemFixSheetState extends State<_PoemFixSheet> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         AppTheme.errorSnackBar(result.error ?? 'Failed to submit revision'),
-      );
-    }
+    );
   }
+}
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -1190,6 +1254,10 @@ class _PoemEditSheet extends StatefulWidget {
   final String initialContent;
   final String initialTransliteration;
   final String initialTranslation;
+  final String initialDescription;
+  final String initialAuthor;
+  final int? initialCategoryId;
+  final List<String> initialTags;
 
   const _PoemEditSheet({
     required this.poemId,
@@ -1197,6 +1265,10 @@ class _PoemEditSheet extends StatefulWidget {
     required this.initialContent,
     required this.initialTransliteration,
     required this.initialTranslation,
+    required this.initialDescription,
+    required this.initialAuthor,
+    this.initialCategoryId,
+    required this.initialTags,
   });
 
   @override
@@ -1208,6 +1280,14 @@ class _PoemEditSheetState extends State<_PoemEditSheet> {
   final _contentCtrl = TextEditingController();
   final _transliterationCtrl = TextEditingController();
   final _translationCtrl = TextEditingController();
+  final _descriptionCtrl = TextEditingController();
+  final _authorCtrl = TextEditingController();
+  CategoryModel? _selectedCategory;
+  Set<int> _selectedTagIds = {};
+  List<CategoryModel> _categories = [];
+  List<TagModel> _tags = [];
+  bool _loadingCategories = true;
+  bool _loadingTags = true;
   bool _saving = false;
 
   @override
@@ -1217,6 +1297,43 @@ class _PoemEditSheetState extends State<_PoemEditSheet> {
     _contentCtrl.text = widget.initialContent;
     _transliterationCtrl.text = widget.initialTransliteration;
     _translationCtrl.text = widget.initialTranslation;
+    _descriptionCtrl.text = widget.initialDescription;
+    _authorCtrl.text = widget.initialAuthor;
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final catService = getIt<CategoryService>();
+    final tagService = getIt<TagService>();
+    try {
+      final cats = await catService.getAll();
+      final tags = await tagService.getAll();
+      if (mounted) {
+        setState(() {
+          _categories = cats;
+          _tags = tags;
+          _loadingCategories = false;
+          _loadingTags = false;
+          if (widget.initialCategoryId != null) {
+            _selectedCategory = cats.cast<CategoryModel?>().firstWhere(
+              (c) => c!.id == widget.initialCategoryId,
+              orElse: () => null,
+            );
+          }
+          _selectedTagIds = tags
+              .where((t) => widget.initialTags.contains(t.name))
+              .map((t) => t.id)
+              .toSet();
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _loadingCategories = false;
+          _loadingTags = false;
+        });
+      }
+    }
   }
 
   @override
@@ -1225,6 +1342,8 @@ class _PoemEditSheetState extends State<_PoemEditSheet> {
     _contentCtrl.dispose();
     _transliterationCtrl.dispose();
     _translationCtrl.dispose();
+    _descriptionCtrl.dispose();
+    _authorCtrl.dispose();
     super.dispose();
   }
 
@@ -1243,6 +1362,10 @@ class _PoemEditSheetState extends State<_PoemEditSheet> {
         content: _contentCtrl.text,
         transliteration: _transliterationCtrl.text,
         translation: _translationCtrl.text,
+        description: _descriptionCtrl.text.isEmpty ? null : _descriptionCtrl.text,
+        author: _authorCtrl.text.isEmpty ? null : _authorCtrl.text,
+        categoryId: _selectedCategory?.id,
+        tagIds: _selectedTagIds.toList(),
       ),
     );
     Navigator.pop(context);
@@ -1252,7 +1375,7 @@ class _PoemEditSheetState extends State<_PoemEditSheet> {
   Widget build(BuildContext context) {
     return Container(
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.85,
+        maxHeight: MediaQuery.of(context).size.height * 0.9,
       ),
       decoration: const BoxDecoration(
         color: Color(0xFFFEFCF5),
@@ -1377,6 +1500,98 @@ class _PoemEditSheetState extends State<_PoemEditSheet> {
                     ),
                     maxLines: 2,
                   ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _descriptionCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Description',
+                      filled: true,
+                      fillColor: Color(0xFFF7F3ED),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                    ),
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _authorCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Author',
+                      filled: true,
+                      fillColor: Color(0xFFF7F3ED),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<CategoryModel>(
+                    value: _selectedCategory,
+                    decoration: const InputDecoration(
+                      labelText: 'Category',
+                      filled: true,
+                      fillColor: Color(0xFFF7F3ED),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                    ),
+                    items: _loadingCategories
+                        ? [DropdownMenuItem(value: null, child: const Text('Loading...'))]
+                        : _categories.map((c) => DropdownMenuItem(value: c, child: Text(c.name))).toList(),
+                    onChanged: (v) => setState(() => _selectedCategory = v),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Tags',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF9A8C79),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  _loadingTags
+                      ? const Text('Loading...', style: TextStyle(color: Color(0xFF9A8C79)))
+                      : Wrap(
+                          spacing: 6,
+                          children: _tags.map((t) {
+                            final isSelected = _selectedTagIds.contains(t.id);
+                            return FilterChip(
+                              label: Text(t.name, style: const TextStyle(fontSize: 12)),
+                              selected: isSelected,
+                              onSelected: (sel) {
+                                setState(() {
+                                  if (sel) {
+                                    _selectedTagIds.add(t.id);
+                                  } else {
+                                    _selectedTagIds.remove(t.id);
+                                  }
+                                });
+                              },
+                              backgroundColor: const Color(0xFFF1EEE7),
+                              selectedColor: const Color(0xFF5D6F4A).withValues(alpha: 0.12),
+                              checkmarkColor: const Color(0xFF5D6F4A),
+                              side: BorderSide.none,
+                              visualDensity: VisualDensity.compact,
+                            );
+                          }).toList(),
+                        ),
                 ],
               ),
             ),

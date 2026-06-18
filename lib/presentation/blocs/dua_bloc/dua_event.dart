@@ -64,12 +64,24 @@ class UpdateDua extends DuaEvent {
   final String? arabicText;
   final String? transliteration;
   final String? translation;
+  final String? description;
+  final String? whenToRecite;
+  final String? occasion;
+  final int repetitionCount;
+  final int? categoryId;
+  final List<int> tagIds;
   UpdateDua({
     required this.duaId,
     required this.title,
     this.arabicText,
     this.transliteration,
     this.translation,
+    this.description,
+    this.whenToRecite,
+    this.occasion,
+    this.repetitionCount = 1,
+    this.categoryId,
+    this.tagIds = const [],
   });
 }
 
@@ -125,6 +137,9 @@ class SignalRDuaContentUpdated extends DuaEvent {
   final String? whenToRecite;
   final String? occasion;
   final int repetitionCount;
+  final String? category;
+  final int? categoryId;
+  final List<String> tags;
   final String updatedAt;
   SignalRDuaContentUpdated({
     required this.duaId,
@@ -136,6 +151,9 @@ class SignalRDuaContentUpdated extends DuaEvent {
     this.whenToRecite,
     this.occasion,
     required this.repetitionCount,
+    this.category,
+    this.categoryId,
+    this.tags = const [],
     required this.updatedAt,
   });
 }

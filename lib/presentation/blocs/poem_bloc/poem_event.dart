@@ -64,12 +64,20 @@ class UpdatePoem extends PoemEvent {
   final String? content;
   final String? transliteration;
   final String? translation;
+  final String? description;
+  final String? author;
+  final int? categoryId;
+  final List<int> tagIds;
   UpdatePoem({
     required this.poemId,
     required this.title,
     this.content,
     this.transliteration,
     this.translation,
+    this.description,
+    this.author,
+    this.categoryId,
+    this.tagIds = const [],
   });
 }
 
@@ -123,6 +131,9 @@ class SignalRPoemContentUpdated extends PoemEvent {
   final String? translation;
   final String? description;
   final String? author;
+  final String? category;
+  final int? categoryId;
+  final List<String> tags;
   final String updatedAt;
   SignalRPoemContentUpdated({
     required this.poemId,
@@ -132,6 +143,9 @@ class SignalRPoemContentUpdated extends PoemEvent {
     this.translation,
     this.description,
     this.author,
+    this.category,
+    this.categoryId,
+    this.tags = const [],
     required this.updatedAt,
   });
 }

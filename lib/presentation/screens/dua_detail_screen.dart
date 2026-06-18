@@ -5,12 +5,16 @@ import '../../core/enums/action_type.dart';
 import '../../data/models/user_model.dart';
 import '../../data/models/dua_model.dart';
 import '../../data/models/report_model.dart';
+import '../../data/models/category_model.dart';
+import '../../data/models/tag_model.dart';
 import '../../core/enums/report_status.dart';
 import '../../core/enums/dua_report_reason.dart';
 import '../../core/enums/badge_category.dart';
 import '../../core/themes/app_theme.dart';
 import '../../data/repositories/dua_repository.dart';
 import '../../data/services/signalr_service.dart';
+import '../../data/services/category_service.dart';
+import '../../data/services/tag_service.dart';
 import '../blocs/dua_bloc/dua_bloc.dart';
 import '../blocs/dua_bloc/dua_event.dart';
 import '../blocs/dua_bloc/dua_state.dart';
@@ -91,6 +95,20 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
       _reports = reports;
       _pendingCount = pending;
     });
+  }
+
+  String _formatTimestamp(String iso) {
+    try {
+      final dt = DateTime.parse(iso);
+      final y = dt.year.toString().padLeft(4, '0');
+      final mo = dt.month.toString().padLeft(2, '0');
+      final d = dt.day.toString().padLeft(2, '0');
+      final h = dt.hour.toString().padLeft(2, '0');
+      final mi = dt.minute.toString().padLeft(2, '0');
+      return '$y-$mo-$d $h:$mi';
+    } catch (_) {
+      return iso;
+    }
   }
 
   Future<void> _loadDua() async {
@@ -189,6 +207,12 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
         initialArabicText: _dua!.arabicText ?? '',
         initialTransliteration: _dua!.transliteration ?? '',
         initialTranslation: _dua!.translation,
+        initialDescription: _dua!.description ?? '',
+        initialWhenToRecite: _dua!.whenToRecite ?? '',
+        initialOccasion: _dua!.occasion ?? '',
+        initialRepetitionCount: _dua!.repetitionCount ?? 1,
+        initialCategoryId: _dua!.categoryId,
+        initialTags: _dua!.tags,
       ),
     );
   }
@@ -295,6 +319,9 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                             whenToRecite: update.whenToRecite,
                             occasion: update.occasion,
                             repetitionCount: update.repetitionCount,
+                            category: update.category,
+                            categoryId: update.categoryId,
+                            tags: update.tags,
                             updatedAt: update.updatedAt,
                           );
                         });
@@ -439,26 +466,24 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              if (_dua!.arabicText != null) ...[
-                                const SizedBox(height: 12),
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF9F5EE),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(
-                                    _dua!.arabicText!,
-                                    textDirection: TextDirection.rtl,
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontFamily: 'serif',
-                                    ),
+                              const SizedBox(height: 12),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF9F5EE),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  _dua!.arabicText ?? '',
+                                  textDirection: TextDirection.rtl,
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontFamily: 'serif',
                                   ),
                                 ),
-                              ],
-                              if (_dua!.transliteration != null) ...[
+                              ),
+                              if (_dua!.transliteration != null && _dua!.transliteration!.isNotEmpty) ...[
                                 const SizedBox(height: 12),
                                 _DetailField(
                                   label: 'Transliteration',
@@ -472,11 +497,13 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                                   value: _dua!.translation,
                                 ),
                               ],
-                              const SizedBox(height: 12),
-                              _DetailField(
-                                label: 'Category',
-                                value: _dua!.category,
-                              ),
+                              if (_dua!.category.isNotEmpty) ...[
+                                const SizedBox(height: 12),
+                                _DetailField(
+                                  label: 'Category',
+                                  value: _dua!.category,
+                                ),
+                              ],
                               if (_dua!.tags.isNotEmpty) ...[
                                 const SizedBox(height: 12),
                                 const Text(
@@ -495,6 +522,48 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                                       .toList(),
                                  ),
                                 ],
+                              if (_dua!.description != null && _dua!.description!.isNotEmpty) ...[
+                                const SizedBox(height: 12),
+                                _DetailField(
+                                  label: 'Description',
+                                  value: _dua!.description!,
+                                ),
+                              ],
+                              if (_dua!.whenToRecite != null && _dua!.whenToRecite!.isNotEmpty) ...[
+                                const SizedBox(height: 12),
+                                _DetailField(
+                                  label: 'When to Recite',
+                                  value: _dua!.whenToRecite!,
+                                ),
+                              ],
+                              if (_dua!.occasion != null && _dua!.occasion!.isNotEmpty) ...[
+                                const SizedBox(height: 12),
+                                _DetailField(
+                                  label: 'Occasion',
+                                  value: _dua!.occasion!,
+                                ),
+                              ],
+                              if (_dua!.repetitionCount != null) ...[
+                                const SizedBox(height: 12),
+                                _DetailField(
+                                  label: 'Repetition Count',
+                                  value: _dua!.repetitionCount.toString(),
+                                ),
+                              ],
+                              if (_dua!.createdAt != null) ...[
+                                const SizedBox(height: 12),
+                                _DetailField(
+                                  label: 'Created At',
+                                  value: _formatTimestamp(_dua!.createdAt!),
+                                ),
+                              ],
+                              if (_dua!.updatedAt != null) ...[
+                                const SizedBox(height: 12),
+                                _DetailField(
+                                  label: 'Updated At',
+                                  value: _formatTimestamp(_dua!.updatedAt!),
+                                ),
+                              ],
                               const SizedBox(height: 16),
                                 Row(
                                   children: [
@@ -963,9 +1032,11 @@ class _DuaFixSheetState extends State<_DuaFixSheet> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         AppTheme.errorSnackBar(result.error ?? 'Failed to submit revision'),
-      );
-    }
+    );
   }
+}
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -1211,6 +1282,12 @@ class _DuaEditSheet extends StatefulWidget {
   final String initialArabicText;
   final String initialTransliteration;
   final String initialTranslation;
+  final String initialDescription;
+  final String initialWhenToRecite;
+  final String initialOccasion;
+  final int initialRepetitionCount;
+  final int? initialCategoryId;
+  final List<String> initialTags;
 
   const _DuaEditSheet({
     required this.duaId,
@@ -1218,6 +1295,12 @@ class _DuaEditSheet extends StatefulWidget {
     required this.initialArabicText,
     required this.initialTransliteration,
     required this.initialTranslation,
+    required this.initialDescription,
+    required this.initialWhenToRecite,
+    required this.initialOccasion,
+    required this.initialRepetitionCount,
+    this.initialCategoryId,
+    required this.initialTags,
   });
 
   @override
@@ -1229,6 +1312,17 @@ class _DuaEditSheetState extends State<_DuaEditSheet> {
   final _arabicCtrl = TextEditingController();
   final _transliterationCtrl = TextEditingController();
   final _translationCtrl = TextEditingController();
+  final _descriptionCtrl = TextEditingController();
+  final _whenToReciteCtrl = TextEditingController();
+  final _occasionCtrl = TextEditingController();
+  late int _repetitionCount;
+  final _repetitionCtrl = TextEditingController();
+  CategoryModel? _selectedCategory;
+  Set<int> _selectedTagIds = {};
+  List<CategoryModel> _categories = [];
+  List<TagModel> _tags = [];
+  bool _loadingCategories = true;
+  bool _loadingTags = true;
   bool _saving = false;
 
   @override
@@ -1238,6 +1332,46 @@ class _DuaEditSheetState extends State<_DuaEditSheet> {
     _arabicCtrl.text = widget.initialArabicText;
     _transliterationCtrl.text = widget.initialTransliteration;
     _translationCtrl.text = widget.initialTranslation;
+    _descriptionCtrl.text = widget.initialDescription;
+    _whenToReciteCtrl.text = widget.initialWhenToRecite;
+    _occasionCtrl.text = widget.initialOccasion;
+    _repetitionCount = widget.initialRepetitionCount;
+    _repetitionCtrl.text = widget.initialRepetitionCount.toString();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final catService = getIt<CategoryService>();
+    final tagService = getIt<TagService>();
+    try {
+      final cats = await catService.getAll();
+      final tags = await tagService.getAll();
+      if (mounted) {
+        setState(() {
+          _categories = cats;
+          _tags = tags;
+          _loadingCategories = false;
+          _loadingTags = false;
+          if (widget.initialCategoryId != null) {
+            _selectedCategory = cats.cast<CategoryModel?>().firstWhere(
+              (c) => c!.id == widget.initialCategoryId,
+              orElse: () => null,
+            );
+          }
+          _selectedTagIds = tags
+              .where((t) => widget.initialTags.contains(t.name))
+              .map((t) => t.id)
+              .toSet();
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _loadingCategories = false;
+          _loadingTags = false;
+        });
+      }
+    }
   }
 
   @override
@@ -1246,6 +1380,10 @@ class _DuaEditSheetState extends State<_DuaEditSheet> {
     _arabicCtrl.dispose();
     _transliterationCtrl.dispose();
     _translationCtrl.dispose();
+    _descriptionCtrl.dispose();
+    _whenToReciteCtrl.dispose();
+    _occasionCtrl.dispose();
+    _repetitionCtrl.dispose();
     super.dispose();
   }
 
@@ -1264,6 +1402,12 @@ class _DuaEditSheetState extends State<_DuaEditSheet> {
         arabicText: _arabicCtrl.text,
         transliteration: _transliterationCtrl.text,
         translation: _translationCtrl.text,
+        description: _descriptionCtrl.text.isEmpty ? null : _descriptionCtrl.text,
+        whenToRecite: _whenToReciteCtrl.text.isEmpty ? null : _whenToReciteCtrl.text,
+        occasion: _occasionCtrl.text.isEmpty ? null : _occasionCtrl.text,
+        repetitionCount: _repetitionCount,
+        categoryId: _selectedCategory?.id,
+        tagIds: _selectedTagIds.toList(),
       ),
     );
     Navigator.pop(context);
@@ -1273,7 +1417,7 @@ class _DuaEditSheetState extends State<_DuaEditSheet> {
   Widget build(BuildContext context) {
     return Container(
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.85,
+        maxHeight: MediaQuery.of(context).size.height * 0.9,
       ),
       decoration: const BoxDecoration(
         color: Color(0xFFFEFCF5),
@@ -1399,6 +1543,162 @@ class _DuaEditSheetState extends State<_DuaEditSheet> {
                     ),
                     maxLines: 2,
                   ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _descriptionCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Description',
+                      filled: true,
+                      fillColor: Color(0xFFF7F3ED),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                    ),
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _whenToReciteCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'When to Recite',
+                      filled: true,
+                      fillColor: Color(0xFFF7F3ED),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _occasionCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Occasion',
+                      filled: true,
+                      fillColor: Color(0xFFF7F3ED),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Text(
+                        'Repetition Count',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF3C3730),
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.remove_circle_outline, color: AppTheme.sage),
+                        onPressed: () {
+                          if (_repetitionCount > 1) {
+                            setState(() => _repetitionCount--);
+                            _repetitionCtrl.text = _repetitionCount.toString();
+                          }
+                        },
+                      ),
+                      SizedBox(
+                        width: 72,
+                        child: TextField(
+                          controller: _repetitionCtrl,
+                          textAlign: TextAlign.center,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                            filled: true,
+                            fillColor: Color(0xFFF7F3ED),
+                            border: OutlineInputBorder(
+                              borderSide: BorderSide.none,
+                              borderRadius: BorderRadius.all(Radius.circular(16)),
+                            ),
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.add_circle_outline, color: AppTheme.sage),
+                        onPressed: () {
+                          setState(() => _repetitionCount++);
+                          _repetitionCtrl.text = _repetitionCount.toString();
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<CategoryModel>(
+                    value: _selectedCategory,
+                    decoration: const InputDecoration(
+                      labelText: 'Category',
+                      filled: true,
+                      fillColor: Color(0xFFF7F3ED),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                    ),
+                    items: _loadingCategories
+                        ? [DropdownMenuItem(value: null, child: const Text('Loading...'))]
+                        : _categories.map((c) => DropdownMenuItem(value: c, child: Text(c.name))).toList(),
+                    onChanged: (v) => setState(() => _selectedCategory = v),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Tags',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF9A8C79),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  _loadingTags
+                      ? const Text('Loading...', style: TextStyle(color: Color(0xFF9A8C79)))
+                      : Wrap(
+                          spacing: 6,
+                          children: _tags.map((t) {
+                            final isSelected = _selectedTagIds.contains(t.id);
+                            return FilterChip(
+                              label: Text(t.name, style: const TextStyle(fontSize: 12)),
+                              selected: isSelected,
+                              onSelected: (sel) {
+                                setState(() {
+                                  if (sel) {
+                                    _selectedTagIds.add(t.id);
+                                  } else {
+                                    _selectedTagIds.remove(t.id);
+                                  }
+                                });
+                              },
+                              backgroundColor: const Color(0xFFF1EEE7),
+                              selectedColor: const Color(0xFF5D6F4A).withValues(alpha: 0.12),
+                              checkmarkColor: const Color(0xFF5D6F4A),
+                              side: BorderSide.none,
+                              visualDensity: VisualDensity.compact,
+                            );
+                          }).toList(),
+                        ),
                 ],
               ),
             ),

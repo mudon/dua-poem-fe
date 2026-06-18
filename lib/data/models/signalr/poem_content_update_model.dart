@@ -6,6 +6,9 @@ class PoemContentUpdateModel {
   final String? translation;
   final String? description;
   final String? author;
+  final String? category;
+  final int? categoryId;
+  final List<String> tags;
   final String updatedAt;
 
   PoemContentUpdateModel({
@@ -16,6 +19,9 @@ class PoemContentUpdateModel {
     this.translation,
     this.description,
     this.author,
+    this.category,
+    this.categoryId,
+    this.tags = const [],
     required this.updatedAt,
   });
 
@@ -28,6 +34,9 @@ class PoemContentUpdateModel {
       translation: json['translation'] as String?,
       description: json['description'] as String?,
       author: json['author'] as String?,
+      category: json['category'] as String?,
+      categoryId: json['categoryId'] as int?,
+      tags: (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
       updatedAt: json['updatedAt'] ?? '',
     );
   }

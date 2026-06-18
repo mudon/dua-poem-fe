@@ -8,6 +8,9 @@ class DuaContentUpdateModel {
   final String? whenToRecite;
   final String? occasion;
   final int repetitionCount;
+  final String? category;
+  final int? categoryId;
+  final List<String> tags;
   final String updatedAt;
 
   DuaContentUpdateModel({
@@ -20,6 +23,9 @@ class DuaContentUpdateModel {
     this.whenToRecite,
     this.occasion,
     required this.repetitionCount,
+    this.category,
+    this.categoryId,
+    this.tags = const [],
     required this.updatedAt,
   });
 
@@ -34,6 +40,9 @@ class DuaContentUpdateModel {
       whenToRecite: json['whenToRecite'] as String?,
       occasion: json['occasion'] as String?,
       repetitionCount: json['repetitionCount'] ?? 0,
+      category: json['category'] as String?,
+      categoryId: json['categoryId'] as int?,
+      tags: (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
       updatedAt: json['updatedAt'] ?? '',
     );
   }
