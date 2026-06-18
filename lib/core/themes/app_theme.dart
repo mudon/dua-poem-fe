@@ -40,6 +40,8 @@ class AppTheme {
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: softCream,
+      labelStyle: const TextStyle(color: Color(0xFF9A8C79)),
+      hintStyle: const TextStyle(color: Color(0xFF9A8C79)),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(28),
         borderSide: const BorderSide(color: warmGray),
