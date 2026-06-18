@@ -50,7 +50,7 @@ class _BuyCoffeeScreenState extends State<BuyCoffeeScreen> {
           }
           if (state is DonationError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
+              AppTheme.errorSnackBar(state.message),
             );
           }
         },

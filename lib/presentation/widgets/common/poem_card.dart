@@ -112,7 +112,7 @@ class _PoemCardState extends State<PoemCard> {
           if (state.error != null) {
             setState(() => _isLiked = !_isLiked);
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.error!)),
+              AppTheme.errorSnackBar(state.error!),
             );
           } else {
             final liked = state.likedStates[widget.poem.id];
@@ -128,7 +128,7 @@ class _PoemCardState extends State<PoemCard> {
           if (state.error != null) {
             setState(() => _isBookmarked = !_isBookmarked);
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.error!)),
+              AppTheme.errorSnackBar(state.error!),
             );
           } else {
             final fav = state.favoritedStates[widget.poem.id];
@@ -164,15 +164,6 @@ class _PoemCardState extends State<PoemCard> {
           final count = state.reportCounts[widget.poem.id];
           if (count != null) {
             setState(() => _activeReportCount = count);
-          }
-          if (state.error != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Report failed: ${state.error}')),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Report submitted')),
-            );
           }
         } else if (state.actionType == ActionType.contentUpdated) {
           if (state.lastToggledPoemId != widget.poem.id) return;

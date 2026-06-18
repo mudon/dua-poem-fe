@@ -597,13 +597,13 @@ class _AuthScreenState extends State<AuthScreen> {
                 _resendCooldown = 0;
               }
               if (state is Authenticated) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Welcome, ${state.user.firstName}!')));
+                ScaffoldMessenger.of(context).showSnackBar(AppTheme.successSnackBar('Welcome, ${state.user.firstName}!'));
               }
               if (state is PasswordResetSuccess) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password has been reset successfully.')));
+                ScaffoldMessenger.of(context).showSnackBar(AppTheme.successSnackBar('Password has been reset successfully.'));
               }
               if (state is PasswordSetSuccess) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password set successfully. You can now log in with email.')));
+                ScaffoldMessenger.of(context).showSnackBar(AppTheme.successSnackBar('Password set successfully. You can now log in with email.'));
               }
               if (state is AuthError && state.code == AuthErrorCodes.googleOnlyAccount) {
                 _showSetPasswordDialog(context);

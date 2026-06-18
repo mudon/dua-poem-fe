@@ -10,6 +10,25 @@ class AppTheme {
   static const Color warmGray = Color(0xFFEBE3D5);
   static const Color errorRed = Color(0xFFE05A4F);
 
+  static SnackBar snackBar(String message, {Color? backgroundColor}) {
+    return SnackBar(
+      content: Text(message, style: const TextStyle(color: Colors.white)),
+      backgroundColor: backgroundColor ?? const Color(0xFF3D4F3A),
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      duration: const Duration(seconds: 3),
+    );
+  }
+
+  static SnackBar successSnackBar(String message) {
+    return snackBar(message, backgroundColor: const Color(0xFF5A7A4A));
+  }
+
+  static SnackBar errorSnackBar(String message) {
+    return snackBar(message, backgroundColor: const Color(0xFFD95C4A));
+  }
+
   static ThemeData lightTheme = ThemeData(
     fontFamily: 'Inter',
     scaffoldBackgroundColor: const Color(0xFFF4F0E8),

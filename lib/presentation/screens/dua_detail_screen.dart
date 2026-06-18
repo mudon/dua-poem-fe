@@ -123,7 +123,7 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
     }
     if (pendingReports.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No pending reports to fix')),
+        AppTheme.snackBar('No pending reports to fix'),
       );
       return;
     }
@@ -143,9 +143,7 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
           _loadReports();
           Navigator.pop(ctx);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Revision submitted — reports updated'),
-            ),
+            AppTheme.successSnackBar('Revision submitted — reports updated'),
           );
         },
       ),
@@ -246,19 +244,20 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                 value: getIt<DuaBloc>(),
                 child: BlocListener<DuaBloc, DuaState>(
                   listener: (context, state) {
-                    if (state.error != null) {
+                    if (state.error != null && state.lastToggledDuaId == widget.duaId) {
+                      final wasAction = state.actionType;
                       setState(() {
-                        if (state.actionType == ActionType.like) {
+                        if (wasAction == ActionType.like) {
                           _isLiked = !_isLiked;
                           _likeCount += _isLiked ? 1 : -1;
-                        } else if (state.actionType == ActionType.bookmark) {
+                        } else if (wasAction == ActionType.bookmark) {
                           _isBookmarked = !_isBookmarked;
                           _bookmarkCount += _isBookmarked ? 1 : -1;
                         }
                       });
                       ScaffoldMessenger.of(
                         context,
-                      ).showSnackBar(SnackBar(content: Text(state.error!)));
+                      ).showSnackBar(AppTheme.errorSnackBar(state.error!));
                     }
                     final count = state.likeCounts[widget.duaId];
                     if (count != null && count != _likeCount) {
@@ -270,13 +269,16 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                         setState(() => _pendingCount = c);
                       }
                     }
-                    if (state.actionType == ActionType.report) {
+                    if (state.actionType == ActionType.report && state.lastToggledDuaId == widget.duaId) {
                       if (state.error != null) {
                         ScaffoldMessenger.of(
                           context,
-                        ).showSnackBar(SnackBar(content: Text(state.error!)));
+                        ).showSnackBar(AppTheme.errorSnackBar(state.error!));
                       } else {
                         _loadReports();
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(AppTheme.successSnackBar('Report submitted'));
                       }
                     }
                     if (state.actionType == ActionType.contentUpdated &&
@@ -305,9 +307,7 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                     }
                     if (state.actionType == ActionType.deleteError) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(state.error ?? 'Failed to delete'),
-                        ),
+                        AppTheme.errorSnackBar(state.error ?? 'Failed to delete'),
                       );
                     }
                   },
@@ -595,13 +595,6 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                                             ReportDua(_dua!.id, reason.value, desc),
                                           );
                                           Navigator.pop(ctx);
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            const SnackBar(
-                                              content: Text('Report submitted'),
-                                            ),
-                                          );
                                         },
                                       ),
                                     );
@@ -947,7 +940,7 @@ class _DuaFixSheetState extends State<_DuaFixSheet> {
   Future<void> _submit() async {
     if (_selectedReportIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Select at least one report to fix')),
+        AppTheme.snackBar('Select at least one report to fix'),
       );
       return;
     }
@@ -969,7 +962,7 @@ class _DuaFixSheetState extends State<_DuaFixSheet> {
       widget.onSubmit();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result.error ?? 'Failed to submit revision')),
+        AppTheme.errorSnackBar(result.error ?? 'Failed to submit revision'),
       );
     }
   }
@@ -1260,7 +1253,7 @@ class _DuaEditSheetState extends State<_DuaEditSheet> {
     if (_titleCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Title is required')));
+      ).showSnackBar(AppTheme.errorSnackBar('Title is required'));
       return;
     }
     setState(() => _saving = true);

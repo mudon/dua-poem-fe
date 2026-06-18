@@ -118,7 +118,7 @@ class _DuaCardState extends State<DuaCard> {
           if (state.error != null) {
             setState(() => _isLiked = !_isLiked);
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.error!)),
+              AppTheme.errorSnackBar(state.error!),
             );
           } else {
             final liked = state.likedStates[widget.dua.id];
@@ -134,7 +134,7 @@ class _DuaCardState extends State<DuaCard> {
           if (state.error != null) {
             setState(() => _isBookmarked = !_isBookmarked);
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.error!)),
+              AppTheme.errorSnackBar(state.error!),
             );
           } else {
             final fav = state.favoritedStates[widget.dua.id];
@@ -170,15 +170,6 @@ class _DuaCardState extends State<DuaCard> {
           final count = state.reportCounts[widget.dua.id];
           if (count != null) {
             setState(() => _activeReportCount = count);
-          }
-          if (state.error != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Report failed: ${state.error}')),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Report submitted')),
-            );
           }
         } else if (state.actionType == ActionType.contentUpdated) {
           if (state.lastToggledDuaId != widget.dua.id) return;

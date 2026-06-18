@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/dependency_injection.dart';
 import '../../../core/constants/route_paths.dart';
 import '../../../core/enums/content_type.dart';
+import '../../../core/themes/app_theme.dart';
 import '../../../data/repositories/admin_repository.dart';
 import '../../../data/services/admin_service.dart';
 import '../../blocs/admin_bloc/admin_bloc.dart';
@@ -48,12 +49,12 @@ class _AdminScreenState extends State<AdminScreen> {
           listener: (context, state) {
             if (state.reviewSuccess != null) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.reviewSuccess!), backgroundColor: const Color(0xFF3F7849)),
+                AppTheme.successSnackBar(state.reviewSuccess!),
               );
             }
             if (state.error != null) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.error!), backgroundColor: const Color(0xFFD9534F)),
+                AppTheme.errorSnackBar(state.error!),
               );
             }
           },

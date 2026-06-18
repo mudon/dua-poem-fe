@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../app/dependency_injection.dart';
 import '../../../core/enums/content_type.dart';
 import '../../../core/enums/report_status.dart';
+import '../../../core/themes/app_theme.dart';
 import '../../../data/repositories/admin_repository.dart';
 import '../../../data/services/admin_service.dart';
 
@@ -74,7 +75,7 @@ class _RevisionReviewScreenState extends State<RevisionReviewScreen> {
 
     if (actions.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No decisions made yet')),
+        AppTheme.snackBar('No decisions made yet'),
       );
       return;
     }
@@ -84,7 +85,7 @@ class _RevisionReviewScreenState extends State<RevisionReviewScreen> {
     if (result.isSuccess) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Review submitted'), backgroundColor: Color(0xFF3F7849)),
+          AppTheme.successSnackBar('Review submitted'),
         );
         Navigator.pop(context, true);
       }
@@ -92,7 +93,7 @@ class _RevisionReviewScreenState extends State<RevisionReviewScreen> {
       if (mounted) {
         setState(() => _isSubmitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.error ?? 'Error'), backgroundColor: const Color(0xFFD9534F)),
+          AppTheme.errorSnackBar(result.error ?? 'Error'),
         );
       }
     }
