@@ -10,6 +10,24 @@ class DuaRepository {
 
   DuaRepository(this._duaService);
 
+  Future<ApiResult<PagedResponse<DuaModel>>> getLatter(String id, {String? cursor, int limit = 20}) async {
+    try {
+      final result = await _duaService.getLatter(id, cursor: cursor, limit: limit);
+      return ApiResult.success(result);
+    } catch (e) {
+      return ApiResult.failure(e.userMessage);
+    }
+  }
+
+  Future<ApiResult<PagedResponse<DuaModel>>> getOlder(String id, {String? cursor, int limit = 20}) async {
+    try {
+      final result = await _duaService.getOlder(id, cursor: cursor, limit: limit);
+      return ApiResult.success(result);
+    } catch (e) {
+      return ApiResult.failure(e.userMessage);
+    }
+  }
+
   Future<ApiResult<PagedResponse<DuaModel>>> getLatestDuas({int limit = 20, String? cursor}) async {
     try {
       final result = await _duaService.getLatestDuas(limit: limit, cursor: cursor);

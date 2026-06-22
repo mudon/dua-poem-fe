@@ -8,6 +8,20 @@ class DuaService {
 
   DuaService(this._dioClient);
 
+  Future<PagedResponse<DuaModel>> getLatter(String id, {String? cursor, int limit = 20}) async {
+    final params = <String, dynamic>{'limit': limit};
+    if (cursor != null) params['cursor'] = cursor;
+    final response = await _dioClient.dio.get('/duas/$id/latter', queryParameters: params);
+    return PagedResponse.fromJson(response.data as Map<String, dynamic>, DuaModel.fromApiJson);
+  }
+
+  Future<PagedResponse<DuaModel>> getOlder(String id, {String? cursor, int limit = 20}) async {
+    final params = <String, dynamic>{'limit': limit};
+    if (cursor != null) params['cursor'] = cursor;
+    final response = await _dioClient.dio.get('/duas/$id/older', queryParameters: params);
+    return PagedResponse.fromJson(response.data as Map<String, dynamic>, DuaModel.fromApiJson);
+  }
+
   Future<PagedResponse<DuaModel>> getLatestDuas({int limit = 20, String? cursor}) async {
     final queryParams = <String, dynamic>{};
     queryParams['limit'] = limit;

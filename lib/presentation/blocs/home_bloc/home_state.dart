@@ -2,10 +2,8 @@ import '../../../data/models/dua_model.dart';
 import '../../../data/models/poem_model.dart';
 
 class HomeState {
-  final bool isLoading;
   final String? error;
-  final List<DuaModel> latestDuas;
-  final List<PoemModel> latestPoems;
+
   final bool showDuasTab;
   final bool showMyPostsDuasTab;
   final bool isSearching;
@@ -28,18 +26,9 @@ class HomeState {
   final String? myPoemsCursor;
   final bool hasMoreMyPoems;
   final bool loadingMoreMyPoems;
-  final String? duaCursor;
-  final String? poemCursor;
-  final bool hasMoreDuas;
-  final bool hasMorePoems;
-  final bool loadingMoreDuas;
-  final bool loadingMorePoems;
 
   HomeState({
-    this.isLoading = true,
     this.error,
-    this.latestDuas = const [],
-    this.latestPoems = const [],
     this.showDuasTab = true,
     this.showMyPostsDuasTab = true,
     this.isSearching = false,
@@ -62,19 +51,10 @@ class HomeState {
     this.myPoemsCursor,
     this.hasMoreMyPoems = true,
     this.loadingMoreMyPoems = false,
-    this.duaCursor,
-    this.poemCursor,
-    this.hasMoreDuas = true,
-    this.hasMorePoems = true,
-    this.loadingMoreDuas = false,
-    this.loadingMorePoems = false,
   });
 
   HomeState copyWith({
-    bool? isLoading,
     String? error,
-    List<DuaModel>? latestDuas,
-    List<PoemModel>? latestPoems,
     bool? showDuasTab,
     bool? showMyPostsDuasTab,
     bool? isSearching,
@@ -97,18 +77,10 @@ class HomeState {
     String? myPoemsCursor,
     bool? hasMoreMyPoems,
     bool? loadingMoreMyPoems,
-    String? duaCursor,
-    String? poemCursor,
-    bool? hasMoreDuas,
-    bool? hasMorePoems,
-    bool? loadingMoreDuas,
-    bool? loadingMorePoems,
+    bool clearError = false,
   }) {
     return HomeState(
-      isLoading: isLoading ?? this.isLoading,
-      error: error ?? this.error,
-      latestDuas: latestDuas ?? this.latestDuas,
-      latestPoems: latestPoems ?? this.latestPoems,
+      error: clearError ? null : (error ?? this.error),
       showDuasTab: showDuasTab ?? this.showDuasTab,
       showMyPostsDuasTab: showMyPostsDuasTab ?? this.showMyPostsDuasTab,
       isSearching: isSearching ?? this.isSearching,
@@ -131,12 +103,6 @@ class HomeState {
       myPoemsCursor: myPoemsCursor ?? this.myPoemsCursor,
       hasMoreMyPoems: hasMoreMyPoems ?? this.hasMoreMyPoems,
       loadingMoreMyPoems: loadingMoreMyPoems ?? this.loadingMoreMyPoems,
-      duaCursor: duaCursor ?? this.duaCursor,
-      poemCursor: poemCursor ?? this.poemCursor,
-      hasMoreDuas: hasMoreDuas ?? this.hasMoreDuas,
-      hasMorePoems: hasMorePoems ?? this.hasMorePoems,
-      loadingMoreDuas: loadingMoreDuas ?? this.loadingMoreDuas,
-      loadingMorePoems: loadingMorePoems ?? this.loadingMorePoems,
     );
   }
 }

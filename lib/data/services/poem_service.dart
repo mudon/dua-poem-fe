@@ -8,6 +8,20 @@ class PoemService {
 
   PoemService(this._dioClient);
 
+  Future<PagedResponse<PoemModel>> getLatter(String id, {String? cursor, int limit = 20}) async {
+    final params = <String, dynamic>{'limit': limit};
+    if (cursor != null) params['cursor'] = cursor;
+    final response = await _dioClient.dio.get('/poems/$id/latter', queryParameters: params);
+    return PagedResponse.fromJson(response.data as Map<String, dynamic>, PoemModel.fromApiJson);
+  }
+
+  Future<PagedResponse<PoemModel>> getOlder(String id, {String? cursor, int limit = 20}) async {
+    final params = <String, dynamic>{'limit': limit};
+    if (cursor != null) params['cursor'] = cursor;
+    final response = await _dioClient.dio.get('/poems/$id/older', queryParameters: params);
+    return PagedResponse.fromJson(response.data as Map<String, dynamic>, PoemModel.fromApiJson);
+  }
+
   Future<PagedResponse<PoemModel>> getLatestPoems({int limit = 20, String? cursor}) async {
     final queryParams = <String, dynamic>{};
     queryParams['limit'] = limit;

@@ -204,7 +204,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             await fa.FirebaseAuth.instance.currentUser?.getIdToken() ?? '';
       }
 
-      if (firebaseIdToken == null) {
+      if (firebaseIdToken.isEmpty) {
         emit(const AuthError('Failed to get Firebase token'));
         return;
       }

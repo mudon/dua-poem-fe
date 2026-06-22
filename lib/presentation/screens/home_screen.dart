@@ -1,19 +1,19 @@
-import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../../core/constants/app_strings.dart';
-import '../../core/enums/action_type.dart';
 import '../widgets/forms/create_flow_sheet.dart';
 import '../../core/themes/app_theme.dart';
 import '../blocs/auth_bloc/auth_bloc.dart';
 import '../blocs/auth_bloc/auth_state.dart';
-import '../blocs/dua_bloc/dua_bloc.dart';
-import '../blocs/dua_bloc/dua_state.dart';
 import '../blocs/home_bloc/home_bloc.dart';
 import '../blocs/home_bloc/home_event.dart';
 import '../blocs/home_bloc/home_state.dart';
-import '../blocs/poem_bloc/poem_bloc.dart';
-import '../blocs/poem_bloc/poem_state.dart';
+import '../blocs/dua_feed_bloc/dua_feed_bloc.dart';
+import '../blocs/dua_feed_bloc/dua_feed_event.dart';
+import '../blocs/poem_feed_bloc/poem_feed_bloc.dart';
+import '../blocs/poem_feed_bloc/poem_feed_event.dart';
 import '../widgets/common/dua_card.dart';
 import '../widgets/common/poem_card.dart';
 import '../widgets/common/home_tab_bar.dart';
@@ -36,7 +36,7 @@ class HomeScreen extends StatelessWidget {
       create: (context) => HomeBloc(
         RepositoryProvider.of<DuaRepository>(context),
         RepositoryProvider.of<PoemRepository>(context),
-      )..add(FetchLatestData()),
+      ),
       child: Scaffold(
         backgroundColor: const Color(0xFFF4F0E8),
         floatingActionButton: FloatingActionButton(
@@ -63,6 +63,7 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
+
 class _HomeFeed extends StatefulWidget {
   const _HomeFeed();
 
@@ -71,86 +72,73 @@ class _HomeFeed extends StatefulWidget {
 }
 
 class _HomeFeedState extends State<_HomeFeed> {
-  final _scrollController = ScrollController();
+  final _searchDuasScrollController = ItemScrollController();
+  final _searchDuasPositionsListener = ItemPositionsListener.create();
+  final _searchPoemsScrollController = ItemScrollController();
+  final _searchPoemsPositionsListener = ItemPositionsListener.create();
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
+    _searchDuasPositionsListener.itemPositions.addListener(_onSearchDuasPositionsChanged);
+    _searchPoemsPositionsListener.itemPositions.addListener(_onSearchPoemsPositionsChanged);
   }
 
   @override
   void dispose() {
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
+    _searchDuasPositionsListener.itemPositions.removeListener(_onSearchDuasPositionsChanged);
+    _searchPoemsPositionsListener.itemPositions.removeListener(_onSearchPoemsPositionsChanged);
     super.dispose();
   }
 
-  void _onScroll() {
-    if (_scrollController.position.pixels < _scrollController.position.maxScrollExtent - 300) return;
+  void _onSearchDuasPositionsChanged() {
     final homeBloc = context.read<HomeBloc>();
     final s = homeBloc.state;
-    if (s.isSearching) {
-      if (s.isSearchLoading || s.loadingMoreSearch) return;
-      if (s.showDuasTab && s.hasMoreSearchDuas) {
-        homeBloc.add(FetchMoreSearchResults(query: s.searchQuery, showDuasTab: true));
-      } else if (!s.showDuasTab && s.hasMoreSearchPoems) {
-        homeBloc.add(FetchMoreSearchResults(query: s.searchQuery, showDuasTab: false));
-      }
-      return;
-    }
-    if (s.showDuasTab && s.hasMoreDuas && !s.loadingMoreDuas && s.duaCursor != null) {
-      homeBloc.add(FetchMoreDuas(limit: 20, cursor: s.duaCursor!));
-    } else if (!s.showDuasTab && s.hasMorePoems && !s.loadingMorePoems && s.poemCursor != null) {
-      homeBloc.add(FetchMorePoems(limit: 20, cursor: s.poemCursor!));
+    if (!s.isSearching || !s.showDuasTab) return;
+    final positions = _searchDuasPositionsListener.itemPositions.value;
+    if (positions.isEmpty) return;
+    final last = positions.map((p) => p.index).reduce(max);
+    if (s.isSearchLoading || s.loadingMoreSearch) return;
+    if (last >= s.searchDuas.length - 2 && s.hasMoreSearchDuas) {
+      homeBloc.add(FetchMoreSearchResults(query: s.searchQuery, showDuasTab: true));
     }
   }
 
-  Future<void> _onRefresh() async {
+  void _onSearchPoemsPositionsChanged() {
     final homeBloc = context.read<HomeBloc>();
-    homeBloc.add(ClearSearch());
-    homeBloc.add(FetchLatestData());
-    await homeBloc.stream
-      .skipWhile((s) => !s.isLoading)
-      .firstWhere((s) => !s.isLoading);
-    if (_scrollController.hasClients) {
-      _scrollController.jumpTo(0);
+    final s = homeBloc.state;
+    if (!s.isSearching || s.showDuasTab) return;
+    final positions = _searchPoemsPositionsListener.itemPositions.value;
+    if (positions.isEmpty) return;
+    final last = positions.map((p) => p.index).reduce(max);
+    if (s.isSearchLoading || s.loadingMoreSearch) return;
+    if (last >= s.searchPoems.length - 2 && s.hasMoreSearchPoems) {
+      homeBloc.add(FetchMoreSearchResults(query: s.searchQuery, showDuasTab: false));
     }
+  }
+
+  Future<void> _onSearchRefresh() async {
+    context.read<HomeBloc>().add(ClearSearch());
   }
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocListener(
-      listeners: [
-        BlocListener<DuaBloc, DuaState>(
-          listener: (context, state) {
-            if (state.error != null) return;
-            if (state.actionType == ActionType.created && state.createdDua != null) {
-              context.read<HomeBloc>().add(InsertDua(state.createdDua!));
-            } else if (state.actionType == ActionType.deleted) {
-              final id = state.lastToggledDuaId;
-              if (id != null) context.read<HomeBloc>().add(RemoveDua(id));
-            }
-          },
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => DuaFeedBloc(
+            RepositoryProvider.of<DuaRepository>(context),
+          )..add(FetchLatestDuas()),
         ),
-        BlocListener<PoemBloc, PoemState>(
-          listener: (context, state) {
-            if (state.error != null) return;
-            if (state.actionType == ActionType.created && state.createdPoem != null) {
-              context.read<HomeBloc>().add(InsertPoem(state.createdPoem!));
-            } else if (state.actionType == ActionType.deleted) {
-              final id = state.lastToggledPoemId;
-              if (id != null) context.read<HomeBloc>().add(RemovePoem(id));
-            }
-          },
+        BlocProvider(
+          create: (context) => PoemFeedBloc(
+            RepositoryProvider.of<PoemRepository>(context),
+          )..add(FetchLatestPoems()),
         ),
       ],
       child: BlocBuilder<HomeBloc, HomeState>(
         builder: (context, state) {
-          if (state.isLoading && !state.isSearching && state.latestDuas.isEmpty && state.latestPoems.isEmpty) {
-            return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
-          }
-          if (state.error != null && !state.isSearching && !state.isLoading) {
+          if (state.error != null) {
             return Center(child: Text(state.error!));
           }
 
@@ -170,85 +158,364 @@ class _HomeFeedState extends State<_HomeFeed> {
                 child: Center(child: Text('No results found')),
               );
             }
-            if (state.showDuasTab) {
-              return RefreshIndicator(
-                onRefresh: _onRefresh,
-                child: ListView.builder(
-                  controller: _scrollController,
-                  itemCount: state.searchDuas.length + (state.loadingMoreSearch ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    if (index == state.searchDuas.length) {
-                      return const Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Center(child: CircularProgressIndicator()),
-                      );
-                    }
-                    final authState = context.watch<AuthBloc>().state;
-                    if (authState is! Authenticated) return const SizedBox.shrink();
-                    return DuaCard(key: ValueKey(state.searchDuas[index].id), dua: state.searchDuas[index], currentUser: authState.user);
-                  },
+            return IndexedStack(
+              index: state.showDuasTab ? 0 : 1,
+              children: [
+                RefreshIndicator(
+                  onRefresh: _onSearchRefresh,
+                  child: ScrollablePositionedList.builder(
+                    key: const ValueKey('search_duas_feed'),
+                    itemScrollController: _searchDuasScrollController,
+                    itemPositionsListener: _searchDuasPositionsListener,
+                    itemCount: state.searchDuas.length + (state.loadingMoreSearch ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index == state.searchDuas.length) {
+                        return const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
+                      final authState = context.watch<AuthBloc>().state;
+                      if (authState is! Authenticated) return const SizedBox.shrink();
+                      return DuaCard(key: ValueKey(state.searchDuas[index].id), dua: state.searchDuas[index], currentUser: authState.user);
+                    },
+                  ),
                 ),
-              );
-            }
-            return RefreshIndicator(
-              onRefresh: _onRefresh,
-              child: ListView.builder(
-                controller: _scrollController,
-                itemCount: state.searchPoems.length + (state.loadingMoreSearch ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (index == state.searchPoems.length) {
-                    return const Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-                  final authState = context.read<AuthBloc>().state;
-                  if (authState is! Authenticated) return const SizedBox.shrink();
-                  return PoemCard(key: ValueKey(state.searchPoems[index].id), poem: state.searchPoems[index], currentUser: authState.user);
-                },
-              ),
+                RefreshIndicator(
+                  onRefresh: _onSearchRefresh,
+                  child: ScrollablePositionedList.builder(
+                    key: const ValueKey('search_poems_feed'),
+                    itemScrollController: _searchPoemsScrollController,
+                    itemPositionsListener: _searchPoemsPositionsListener,
+                    itemCount: state.searchPoems.length + (state.loadingMoreSearch ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index == state.searchPoems.length) {
+                        return const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
+                      final authState = context.read<AuthBloc>().state;
+                      if (authState is! Authenticated) return const SizedBox.shrink();
+                      return PoemCard(key: ValueKey(state.searchPoems[index].id), poem: state.searchPoems[index], currentUser: authState.user);
+                    },
+                  ),
+                ),
+              ],
             );
           }
-          if (state.showDuasTab) {
-            return RefreshIndicator(
-              onRefresh: _onRefresh,
-              child: ListView.builder(
-                controller: _scrollController,
-                itemCount: state.latestDuas.length + (state.loadingMoreDuas ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (index == state.latestDuas.length) {
-                    return const Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-                  final authState = context.read<AuthBloc>().state;
-                  if (authState is! Authenticated) return const SizedBox.shrink();
-                  return DuaCard(key: ValueKey(state.latestDuas[index].id), dua: state.latestDuas[index], currentUser: authState.user);
-                },
-              ),
-            );
-          }
-          return RefreshIndicator(
-            onRefresh: _onRefresh,
-            child: ListView.builder(
-              controller: _scrollController,
-              itemCount: state.latestPoems.length + (state.loadingMorePoems ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index == state.latestPoems.length) {
-                  return const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-                final authState = context.read<AuthBloc>().state;
-                if (authState is! Authenticated) return const SizedBox.shrink();
-                return PoemCard(key: ValueKey(state.latestPoems[index].id), poem: state.latestPoems[index], currentUser: authState.user);
-              },
-            ),
-            );
-          },
+
+          return IndexedStack(
+            index: state.showDuasTab ? 0 : 1,
+            children: const [
+              _DuaFeed(),
+              _PoemFeed(),
+            ],
+          );
+        },
       ),
+    );
+  }
+}
+
+
+class _DuaFeed extends StatefulWidget {
+  const _DuaFeed();
+
+  @override
+  State<_DuaFeed> createState() => _DuaFeedState();
+}
+
+class _DuaFeedState extends State<_DuaFeed> {
+  final _scrollController = ItemScrollController();
+  final _positionsListener = ItemPositionsListener.create();
+
+  int _lastTriggeredLatterIndex = -1;
+  int _lastTriggeredOlderIndex = -1;
+  int _lastRefillWindowStart = -1;
+  bool _showScrollTopButton = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _positionsListener.itemPositions.addListener(_onPositionsChanged);
+  }
+
+  @override
+  void dispose() {
+    _positionsListener.itemPositions.removeListener(_onPositionsChanged);
+    super.dispose();
+  }
+
+  void _onPositionsChanged() {
+    final homeBloc = context.read<HomeBloc>();
+    if (!homeBloc.state.showDuasTab) return;
+    final positions = _positionsListener.itemPositions.value;
+    if (positions.isEmpty) return;
+    final first = positions.map((p) => p.index).reduce(min);
+    final last = positions.map((p) => p.index).reduce(max);
+    final bloc = context.read<DuaFeedBloc>();
+    final s = bloc.state;
+
+    final showButton = first > 5;
+    if (showButton != _showScrollTopButton) {
+      setState(() => _showScrollTopButton = showButton);
+    }
+
+    final cacheEnd = s.windowDuasStart + s.windowDuas.length - 1;
+    debugPrint('[DUA_FEED] visible=[$first..$last] '
+        'cache=[${s.windowDuasStart}..$cacheEnd](${s.windowDuas.length}) total=${s.totalLoadedDuas} '
+        'latter=${s.hasMoreLatterDuas}/${s.loadingLatterDuas} older=${s.hasMoreOlderDuas}/${s.loadingOlderDuas}');
+
+    if (first <= 2 && s.hasMoreLatterDuas && !s.loadingLatterDuas && first != _lastTriggeredLatterIndex) {
+      _lastTriggeredLatterIndex = first;
+      debugPrint('[DUA_FEED_TRIGGER] fetching latter, first=$first');
+      bloc.add(FetchLatterDuas());
+    }
+    if (s.windowDuasStart > 0 && first < s.windowDuasStart && s.hasMoreLatterDuas && !s.loadingLatterDuas && s.windowDuasStart != _lastRefillWindowStart) {
+      _lastRefillWindowStart = s.windowDuasStart;
+      debugPrint('[DUA_FEED_TRIGGER] refill up, first=$first, windowStart=${s.windowDuasStart}');
+      bloc.add(FetchLatterDuas());
+    }
+    if (s.windowDuas.isNotEmpty) {
+      final cacheBottom = s.windowDuasStart + s.windowDuas.length - 1;
+      if (last >= cacheBottom - 3 && s.hasMoreOlderDuas && !s.loadingOlderDuas && last != _lastTriggeredOlderIndex) {
+        _lastTriggeredOlderIndex = last;
+        debugPrint('[DUA_FEED_TRIGGER] fetching older, last=$last, cacheBottom=$cacheBottom');
+        bloc.add(FetchOlderDuas());
+      }
+    }
+  }
+
+  Future<void> _onRefresh() async {
+    context.read<HomeBloc>().add(ClearSearch());
+    final bloc = context.read<DuaFeedBloc>();
+    bloc.add(ResetDuas());
+    await bloc.stream.firstWhere((s) => !s.isLoading);
+    _lastTriggeredLatterIndex = -1;
+    _lastTriggeredOlderIndex = -1;
+    _lastRefillWindowStart = -1;
+    _scrollController.scrollTo(index: 0, duration: const Duration(milliseconds: 1));
+    setState(() => _showScrollTopButton = false);
+  }
+
+  Future<void> _scrollToTop() async {
+    context.read<HomeBloc>().add(ClearSearch());
+    final bloc = context.read<DuaFeedBloc>();
+    bloc.add(ResetDuas());
+    await bloc.stream.firstWhere((s) => !s.isLoading);
+    _lastTriggeredLatterIndex = -1;
+    _lastTriggeredOlderIndex = -1;
+    _lastRefillWindowStart = -1;
+    _scrollController.scrollTo(index: 0, duration: const Duration(milliseconds: 400));
+    setState(() => _showScrollTopButton = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<DuaFeedBloc>().state;
+
+    if (state.isLoading && state.windowDuas.isEmpty) {
+      return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
+    }
+
+    final latterLoading = state.loadingLatterDuas ? 1 : 0;
+    final olderLoading = state.loadingOlderDuas ? 1 : 0;
+
+    return Stack(
+      children: [
+        RefreshIndicator(
+          onRefresh: _onRefresh,
+          child: ScrollablePositionedList.builder(
+            itemScrollController: _scrollController,
+            itemPositionsListener: _positionsListener,
+            itemCount: state.totalLoadedDuas + olderLoading + latterLoading,
+            itemBuilder: (context, index) {
+              if (latterLoading > 0 && index == 0) {
+                return const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              final adjustedIndex = index - latterLoading;
+              if (olderLoading > 0 && adjustedIndex == state.totalLoadedDuas) {
+                return const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              final cacheIndex = adjustedIndex - state.windowDuasStart;
+              if (cacheIndex < 0 || cacheIndex >= state.windowDuas.length) {
+                return const SizedBox(height: 200);
+              }
+              final authState = context.read<AuthBloc>().state;
+              if (authState is! Authenticated) return const SizedBox.shrink();
+              return DuaCard(key: ValueKey(state.windowDuas[cacheIndex].id), dua: state.windowDuas[cacheIndex], currentUser: authState.user);
+            },
+          ),
+        ),
+        if (_showScrollTopButton)
+          Positioned(
+            right: 16,
+            bottom: 88,
+            child: FloatingActionButton.small(
+              backgroundColor: AppTheme.sage,
+              onPressed: _scrollToTop,
+              child: const Icon(Icons.arrow_upward, color: Colors.white),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+
+class _PoemFeed extends StatefulWidget {
+  const _PoemFeed();
+
+  @override
+  State<_PoemFeed> createState() => _PoemFeedState();
+}
+
+class _PoemFeedState extends State<_PoemFeed> {
+  final _scrollController = ItemScrollController();
+  final _positionsListener = ItemPositionsListener.create();
+
+  int _lastTriggeredLatterIndex = -1;
+  int _lastTriggeredOlderIndex = -1;
+  int _lastRefillWindowStart = -1;
+  bool _showScrollTopButton = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _positionsListener.itemPositions.addListener(_onPositionsChanged);
+  }
+
+  @override
+  void dispose() {
+    _positionsListener.itemPositions.removeListener(_onPositionsChanged);
+    super.dispose();
+  }
+
+  void _onPositionsChanged() {
+    final homeBloc = context.read<HomeBloc>();
+    if (homeBloc.state.showDuasTab) return;
+    final positions = _positionsListener.itemPositions.value;
+    if (positions.isEmpty) return;
+    final first = positions.map((p) => p.index).reduce(min);
+    final last = positions.map((p) => p.index).reduce(max);
+    final bloc = context.read<PoemFeedBloc>();
+    final s = bloc.state;
+
+    final showButton = first > 5;
+    if (showButton != _showScrollTopButton) {
+      setState(() => _showScrollTopButton = showButton);
+    }
+
+    final cacheEnd = s.windowPoemsStart + s.windowPoems.length - 1;
+    debugPrint('[POEM_FEED] visible=[$first..$last] '
+        'cache=[${s.windowPoemsStart}..$cacheEnd](${s.windowPoems.length}) total=${s.totalLoadedPoems} '
+        'latter=${s.hasMoreLatterPoems}/${s.loadingLatterPoems} older=${s.hasMoreOlderPoems}/${s.loadingOlderPoems}');
+
+    if (first <= 2 && s.hasMoreLatterPoems && !s.loadingLatterPoems && first != _lastTriggeredLatterIndex) {
+      _lastTriggeredLatterIndex = first;
+      debugPrint('[POEM_FEED_TRIGGER] fetching latter, first=$first');
+      bloc.add(FetchLatterPoems());
+    }
+    if (s.windowPoemsStart > 0 && first < s.windowPoemsStart && s.hasMoreLatterPoems && !s.loadingLatterPoems && s.windowPoemsStart != _lastRefillWindowStart) {
+      _lastRefillWindowStart = s.windowPoemsStart;
+      debugPrint('[POEM_FEED_TRIGGER] refill up, first=$first, windowStart=${s.windowPoemsStart}');
+      bloc.add(FetchLatterPoems());
+    }
+    if (s.windowPoems.isNotEmpty) {
+      final cacheBottom = s.windowPoemsStart + s.windowPoems.length - 1;
+      if (last >= cacheBottom - 3 && s.hasMoreOlderPoems && !s.loadingOlderPoems && last != _lastTriggeredOlderIndex) {
+        _lastTriggeredOlderIndex = last;
+        debugPrint('[POEM_FEED_TRIGGER] fetching older, last=$last, cacheBottom=$cacheBottom');
+        bloc.add(FetchOlderPoems());
+      }
+    }
+  }
+
+  Future<void> _onRefresh() async {
+    context.read<HomeBloc>().add(ClearSearch());
+    final bloc = context.read<PoemFeedBloc>();
+    bloc.add(ResetPoems());
+    await bloc.stream.firstWhere((s) => !s.isLoading);
+    _lastTriggeredLatterIndex = -1;
+    _lastTriggeredOlderIndex = -1;
+    _lastRefillWindowStart = -1;
+    _scrollController.scrollTo(index: 0, duration: const Duration(milliseconds: 1));
+    setState(() => _showScrollTopButton = false);
+  }
+
+  Future<void> _scrollToTop() async {
+    context.read<HomeBloc>().add(ClearSearch());
+    final bloc = context.read<PoemFeedBloc>();
+    bloc.add(ResetPoems());
+    await bloc.stream.firstWhere((s) => !s.isLoading);
+    _lastTriggeredLatterIndex = -1;
+    _lastTriggeredOlderIndex = -1;
+    _lastRefillWindowStart = -1;
+    _scrollController.scrollTo(index: 0, duration: const Duration(milliseconds: 400));
+    setState(() => _showScrollTopButton = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<PoemFeedBloc>().state;
+
+    if (state.isLoading && state.windowPoems.isEmpty) {
+      return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
+    }
+
+    final latterLoading = state.loadingLatterPoems ? 1 : 0;
+    final olderLoading = state.loadingOlderPoems ? 1 : 0;
+
+    return Stack(
+      children: [
+        RefreshIndicator(
+          onRefresh: _onRefresh,
+          child: ScrollablePositionedList.builder(
+            itemScrollController: _scrollController,
+            itemPositionsListener: _positionsListener,
+            itemCount: state.totalLoadedPoems + olderLoading + latterLoading,
+            itemBuilder: (context, index) {
+              if (latterLoading > 0 && index == 0) {
+                return const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              final adjustedIndex = index - latterLoading;
+              if (olderLoading > 0 && adjustedIndex == state.totalLoadedPoems) {
+                return const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              final cacheIndex = adjustedIndex - state.windowPoemsStart;
+              if (cacheIndex < 0 || cacheIndex >= state.windowPoems.length) {
+                return const SizedBox(height: 200);
+              }
+              final authState = context.read<AuthBloc>().state;
+              if (authState is! Authenticated) return const SizedBox.shrink();
+              return PoemCard(key: ValueKey(state.windowPoems[cacheIndex].id), poem: state.windowPoems[cacheIndex], currentUser: authState.user);
+            },
+          ),
+        ),
+        if (_showScrollTopButton)
+          Positioned(
+            right: 16,
+            bottom: 88,
+            child: FloatingActionButton.small(
+              backgroundColor: AppTheme.sage,
+              onPressed: _scrollToTop,
+              child: const Icon(Icons.arrow_upward, color: Colors.white),
+            ),
+          ),
+      ],
     );
   }
 }
@@ -320,6 +587,7 @@ class _SearchBarState extends State<_SearchBar> {
     );
   }
 }
+
 
 class _HeaderBar extends StatelessWidget {
   final dynamic user;

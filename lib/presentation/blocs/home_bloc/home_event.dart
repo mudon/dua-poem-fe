@@ -3,23 +3,6 @@ import '../../../data/models/poem_model.dart';
 
 abstract class HomeEvent {}
 
-class FetchLatestData extends HomeEvent {
-  final int limit;
-  FetchLatestData({this.limit = 20});
-}
-
-class FetchMoreDuas extends HomeEvent {
-  final int limit;
-  final String cursor;
-  FetchMoreDuas({required this.limit, required this.cursor});
-}
-
-class FetchMorePoems extends HomeEvent {
-  final int limit;
-  final String cursor;
-  FetchMorePoems({required this.limit, required this.cursor});
-}
-
 class ToggleHomeTab extends HomeEvent {
   final bool showDuas;
   ToggleHomeTab(this.showDuas);
@@ -36,16 +19,6 @@ class SearchRequested extends HomeEvent {
 }
 
 class ClearSearch extends HomeEvent {}
-
-class InsertDua extends HomeEvent {
-  final DuaModel dua;
-  InsertDua(this.dua);
-}
-
-class InsertPoem extends HomeEvent {
-  final PoemModel poem;
-  InsertPoem(this.poem);
-}
 
 class FetchMoreSearchResults extends HomeEvent {
   final String query;
@@ -74,6 +47,26 @@ class FetchMoreMyPoems extends HomeEvent {
   final String userId;
   final String cursor;
   FetchMoreMyPoems({required this.userId, required this.cursor});
+}
+
+class InsertDua extends HomeEvent {
+  final DuaModel dua;
+  InsertDua(this.dua);
+}
+
+class InsertPoem extends HomeEvent {
+  final PoemModel poem;
+  InsertPoem(this.poem);
+}
+
+class RemoveDua extends HomeEvent {
+  final String duaId;
+  RemoveDua(this.duaId);
+}
+
+class RemovePoem extends HomeEvent {
+  final String poemId;
+  RemovePoem(this.poemId);
 }
 
 class UpdateDua extends HomeEvent {
@@ -111,16 +104,6 @@ class UpdateDua extends HomeEvent {
     this.repetitionCount,
     this.updatedAt,
   });
-}
-
-class RemoveDua extends HomeEvent {
-  final String duaId;
-  RemoveDua(this.duaId);
-}
-
-class RemovePoem extends HomeEvent {
-  final String poemId;
-  RemovePoem(this.poemId);
 }
 
 class UpdatePoem extends HomeEvent {

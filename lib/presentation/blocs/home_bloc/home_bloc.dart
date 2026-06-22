@@ -1,8 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../core/network/api_result.dart';
-import '../../../data/models/dua_model.dart';
-import '../../../data/models/paged_response.dart';
-import '../../../data/models/poem_model.dart';
 import '../../../data/repositories/dua_repository.dart';
 import '../../../data/repositories/poem_repository.dart';
 import 'home_event.dart';
@@ -13,9 +9,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final PoemRepository _poemRepo;
 
   HomeBloc(this._duaRepo, this._poemRepo) : super(HomeState()) {
-    on<FetchLatestData>(_fetchLatestData);
-    on<FetchMoreDuas>(_fetchMoreDuas);
-    on<FetchMorePoems>(_fetchMorePoems);
     on<ToggleHomeTab>((event, emit) => emit(state.copyWith(showDuasTab: event.showDuas)));
     on<ToggleMyPostsTab>((event, emit) => emit(state.copyWith(showMyPostsDuasTab: event.showDuas)));
     on<SearchRequested>(_search);
@@ -29,74 +22,74 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<FetchMoreMyDuas>(_fetchMoreMyDuas);
     on<FetchMyPoems>(_fetchMyPoems);
     on<FetchMoreMyPoems>(_fetchMoreMyPoems);
-    on<UpdateDua>(_onUpdateDua);
-    on<UpdatePoem>(_onUpdatePoem);
-    on<RemoveDua>(_onRemoveDua);
-    on<RemovePoem>(_onRemovePoem);
     on<InsertDua>(_onInsertDua);
     on<InsertPoem>(_onInsertPoem);
+    on<RemoveDua>(_onRemoveDua);
+    on<RemovePoem>(_onRemovePoem);
+    on<UpdateDua>(_onUpdateDua);
+    on<UpdatePoem>(_onUpdatePoem);
   }
 
-  Future<void> _fetchLatestData(FetchLatestData event, Emitter<HomeState> emit) async {
-    emit(state.copyWith(isLoading: true));
-    final results = await Future.wait([
-      _duaRepo.getLatestDuas(limit: event.limit),
-      _poemRepo.getLatestPoems(limit: event.limit),
-    ]);
-    final duasResult = results[0] as ApiResult<PagedResponse<DuaModel>>;
-    final poemsResult = results[1] as ApiResult<PagedResponse<PoemModel>>;
-    if (duasResult.isSuccess && poemsResult.isSuccess) {
-      final duasPaged = duasResult.data!;
-      final poemsPaged = poemsResult.data!;
-      emit(state.copyWith(
-        isLoading: false,
-        latestDuas: duasPaged.data,
-        duaCursor: duasPaged.nextCursor,
-        hasMoreDuas: duasPaged.hasMore,
-        latestPoems: poemsPaged.data,
-        poemCursor: poemsPaged.nextCursor,
-        hasMorePoems: poemsPaged.hasMore,
-      ));
-    } else {
-      emit(state.copyWith(
-        isLoading: false,
-        error: duasResult.error ?? poemsResult.error,
-      ));
-    }
+  void _onInsertDua(InsertDua event, Emitter<HomeState> emit) {
+    emit(state.copyWith(myDuas: [event.dua, ...state.myDuas]));
   }
 
-  Future<void> _fetchMoreDuas(FetchMoreDuas event, Emitter<HomeState> emit) async {
-    if (state.loadingMoreDuas || !state.hasMoreDuas) return;
-    emit(state.copyWith(loadingMoreDuas: true));
-    final result = await _duaRepo.getLatestDuas(limit: event.limit, cursor: event.cursor);
-    if (result.isSuccess) {
-      final paged = result.data!;
-      emit(state.copyWith(
-        loadingMoreDuas: false,
-        latestDuas: [...state.latestDuas, ...paged.data],
-        duaCursor: paged.nextCursor,
-        hasMoreDuas: paged.hasMore,
-      ));
-    } else {
-      emit(state.copyWith(loadingMoreDuas: false, error: result.error));
-    }
+  void _onInsertPoem(InsertPoem event, Emitter<HomeState> emit) {
+    emit(state.copyWith(myPoems: [event.poem, ...state.myPoems]));
   }
 
-  Future<void> _fetchMorePoems(FetchMorePoems event, Emitter<HomeState> emit) async {
-    if (state.loadingMorePoems || !state.hasMorePoems) return;
-    emit(state.copyWith(loadingMorePoems: true));
-    final result = await _poemRepo.getLatestPoems(limit: event.limit, cursor: event.cursor);
-    if (result.isSuccess) {
-      final paged = result.data!;
-      emit(state.copyWith(
-        loadingMorePoems: false,
-        latestPoems: [...state.latestPoems, ...paged.data],
-        poemCursor: paged.nextCursor,
-        hasMorePoems: paged.hasMore,
-      ));
-    } else {
-      emit(state.copyWith(loadingMorePoems: false, error: result.error));
-    }
+  void _onRemoveDua(RemoveDua event, Emitter<HomeState> emit) {
+    emit(state.copyWith(myDuas: state.myDuas.where((d) => d.id != event.duaId).toList()));
+  }
+
+  void _onRemovePoem(RemovePoem event, Emitter<HomeState> emit) {
+    emit(state.copyWith(myPoems: state.myPoems.where((p) => p.id != event.poemId).toList()));
+  }
+
+  void _onUpdateDua(UpdateDua event, Emitter<HomeState> emit) {
+    final updatedMy = state.myDuas.map((d) {
+      if (d.id != event.duaId) return d;
+      return d.copyWith(
+        title: event.title,
+        arabicText: event.arabicText,
+        transliteration: event.transliteration,
+        translation: event.translation,
+        description: event.description,
+        whenToRecite: event.whenToRecite,
+        occasion: event.occasion,
+        repetitionCount: event.repetitionCount,
+        updatedAt: event.updatedAt,
+        isLiked: event.isLiked,
+        likeCount: event.likeCount,
+        isFavorited: event.isFavorited,
+        bookmarkCount: event.bookmarkCount,
+        views: event.views,
+        activeReportCount: event.reportCount,
+      );
+    }).toList();
+    emit(state.copyWith(myDuas: updatedMy));
+  }
+
+  void _onUpdatePoem(UpdatePoem event, Emitter<HomeState> emit) {
+    final updatedMyPoems = state.myPoems.map((p) {
+      if (p.id != event.poemId) return p;
+      return p.copyWith(
+        title: event.title,
+        content: event.content,
+        transliteration: event.transliteration,
+        translation: event.translation,
+        description: event.description,
+        author: event.author,
+        updatedAt: event.updatedAt,
+        isLiked: event.isLiked,
+        likeCount: event.likeCount,
+        isFavorited: event.isFavorited,
+        bookmarkCount: event.bookmarkCount,
+        views: event.views,
+        activeReportCount: event.reportCount,
+      );
+    }).toList();
+    emit(state.copyWith(myPoems: updatedMyPoems));
   }
 
   Future<void> _fetchMyDuas(FetchMyDuas event, Emitter<HomeState> emit) async {
@@ -163,120 +156,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     } else {
       emit(state.copyWith(loadingMoreMyPoems: false, error: result.error));
     }
-  }
-
-  void _onUpdateDua(UpdateDua event, Emitter<HomeState> emit) {
-    final updatedLatest = state.latestDuas.map((d) {
-      if (d.id != event.duaId) return d;
-      return d.copyWith(
-        title: event.title,
-        arabicText: event.arabicText,
-        transliteration: event.transliteration,
-        translation: event.translation,
-        description: event.description,
-        whenToRecite: event.whenToRecite,
-        occasion: event.occasion,
-        repetitionCount: event.repetitionCount,
-        updatedAt: event.updatedAt,
-        isLiked: event.isLiked,
-        likeCount: event.likeCount,
-        isFavorited: event.isFavorited,
-        bookmarkCount: event.bookmarkCount,
-        views: event.views,
-        activeReportCount: event.reportCount,
-      );
-    }).toList();
-    final updatedMy = state.myDuas.map((d) {
-      if (d.id != event.duaId) return d;
-      return d.copyWith(
-        title: event.title,
-        arabicText: event.arabicText,
-        transliteration: event.transliteration,
-        translation: event.translation,
-        description: event.description,
-        whenToRecite: event.whenToRecite,
-        occasion: event.occasion,
-        repetitionCount: event.repetitionCount,
-        updatedAt: event.updatedAt,
-        isLiked: event.isLiked,
-        likeCount: event.likeCount,
-        isFavorited: event.isFavorited,
-        bookmarkCount: event.bookmarkCount,
-        views: event.views,
-        activeReportCount: event.reportCount,
-      );
-    }).toList();
-    emit(state.copyWith(latestDuas: updatedLatest, myDuas: updatedMy));
-  }
-
-  void _onUpdatePoem(UpdatePoem event, Emitter<HomeState> emit) {
-    final updatedLatest = state.latestPoems.map((p) {
-      if (p.id != event.poemId) return p;
-      return p.copyWith(
-        title: event.title,
-        content: event.content,
-        transliteration: event.transliteration,
-        translation: event.translation,
-        description: event.description,
-        author: event.author,
-        updatedAt: event.updatedAt,
-        isLiked: event.isLiked,
-        likeCount: event.likeCount,
-        isFavorited: event.isFavorited,
-        bookmarkCount: event.bookmarkCount,
-        views: event.views,
-        activeReportCount: event.reportCount,
-      );
-    }).toList();
-    final updatedMy = state.myPoems.map((p) {
-      if (p.id != event.poemId) return p;
-      return p.copyWith(
-        title: event.title,
-        content: event.content,
-        transliteration: event.transliteration,
-        translation: event.translation,
-        description: event.description,
-        author: event.author,
-        updatedAt: event.updatedAt,
-        isLiked: event.isLiked,
-        likeCount: event.likeCount,
-        isFavorited: event.isFavorited,
-        bookmarkCount: event.bookmarkCount,
-        views: event.views,
-        activeReportCount: event.reportCount,
-      );
-    }).toList();
-    emit(state.copyWith(latestPoems: updatedLatest, myPoems: updatedMy));
-  }
-
-  void _onRemoveDua(RemoveDua event, Emitter<HomeState> emit) {
-    emit(state.copyWith(
-      latestDuas: state.latestDuas.where((d) => d.id != event.duaId).toList(),
-      myDuas: state.myDuas.where((d) => d.id != event.duaId).toList(),
-    ));
-  }
-
-  void _onRemovePoem(RemovePoem event, Emitter<HomeState> emit) {
-    emit(state.copyWith(
-      latestPoems: state.latestPoems.where((p) => p.id != event.poemId).toList(),
-      myPoems: state.myPoems.where((p) => p.id != event.poemId).toList(),
-    ));
-  }
-
-  void _onInsertDua(InsertDua event, Emitter<HomeState> emit) {
-    if (state.latestDuas.any((d) => d.id == event.dua.id)) return;
-    emit(state.copyWith(
-      latestDuas: [event.dua, ...state.latestDuas],
-      myDuas: [event.dua, ...state.myDuas],
-    ));
-  }
-
-  void _onInsertPoem(InsertPoem event, Emitter<HomeState> emit) {
-    if (state.latestPoems.any((p) => p.id == event.poem.id)) return;
-    emit(state.copyWith(
-      latestPoems: [event.poem, ...state.latestPoems],
-      myPoems: [event.poem, ...state.myPoems],
-    ));
   }
 
   Future<void> _search(SearchRequested event, Emitter<HomeState> emit) async {

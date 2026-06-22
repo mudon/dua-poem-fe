@@ -25,61 +25,6 @@ class MyPostsScreen extends StatefulWidget {
 }
 
 class _MyPostsScreenState extends State<MyPostsScreen> {
-  final ScrollController _duaScrollController = ScrollController();
-  final ScrollController _poemScrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    _duaScrollController.addListener(_onDuaScroll);
-    _poemScrollController.addListener(_onPoemScroll);
-  }
-
-  @override
-  void dispose() {
-    _duaScrollController.removeListener(_onDuaScroll);
-    _poemScrollController.removeListener(_onPoemScroll);
-    _duaScrollController.dispose();
-    _poemScrollController.dispose();
-    super.dispose();
-  }
-
-  void _onDuaScroll() {
-    if (_duaScrollController.position.pixels >= _duaScrollController.position.maxScrollExtent - 200) {
-      final homeState = context.read<HomeBloc>().state;
-      if (!homeState.loadingMoreMyDuas && homeState.hasMoreMyDuas && homeState.myDuasCursor != null) {
-        context.read<HomeBloc>().add(FetchMoreMyDuas(
-          userId: (context.read<AuthBloc>().state as Authenticated).user.id,
-          cursor: homeState.myDuasCursor!,
-        ));
-      }
-    }
-  }
-
-  void _onPoemScroll() {
-    if (_poemScrollController.position.pixels >= _poemScrollController.position.maxScrollExtent - 200) {
-      final homeState = context.read<HomeBloc>().state;
-      if (!homeState.loadingMoreMyPoems && homeState.hasMoreMyPoems && homeState.myPoemsCursor != null) {
-        context.read<HomeBloc>().add(FetchMoreMyPoems(
-          userId: (context.read<AuthBloc>().state as Authenticated).user.id,
-          cursor: homeState.myPoemsCursor!,
-        ));
-      }
-    }
-  }
-
-  Future<void> _onRefresh() async {
-    final homeBloc = context.read<HomeBloc>();
-    final user = (context.read<AuthBloc>().state as Authenticated).user;
-    homeBloc.add(FetchMyDuas(user.id));
-    homeBloc.add(FetchMyPoems(user.id));
-    await Future.doWhile(() async {
-      await Future.delayed(const Duration(milliseconds: 100));
-      final s = homeBloc.state;
-      return s.myDuasLoading || s.myPoemsLoading;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthBloc>().state;
@@ -139,19 +84,14 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
             actions: const [Padding(padding: EdgeInsets.only(right: 12), child: NotificationBell())],
           ),
           body: SafeArea(
-            child: BlocBuilder<HomeBloc, HomeState>(
-              builder: (context, state) {
-                final duas = state.myDuas;
-                final poems = state.myPoems;
-                final showDuas = state.showMyPostsDuasTab;
-                final loading = showDuas ? state.myDuasLoading : state.myPoemsLoading;
-                final items = showDuas ? duas : poems;
-                final hasMore = showDuas ? state.hasMoreMyDuas : state.hasMoreMyPoems;
-                final scrollController = showDuas ? _duaScrollController : _poemScrollController;
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+              child: BlocBuilder<HomeBloc, HomeState>(
+                builder: (context, state) {
+                  final showDuas = state.showMyPostsDuasTab;
+                  final count = showDuas ? state.myDuas.length : state.myPoems.length;
 
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
-                  child: Column(
+                  return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
@@ -166,7 +106,7 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
                               color: AppTheme.sageMist,
                               borderRadius: BorderRadius.circular(40),
                             ),
-                            child: Text('${items.length}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFF4A5B3E))),
+                            child: Text('$count', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFF4A5B3E))),
                           ),
                         ],
                       ),
@@ -194,52 +134,18 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
                         ),
                       ),
                       Expanded(
-                        child: loading && items.isEmpty
-                            ? RefreshIndicator(
-                                onRefresh: _onRefresh,
-                                child: SingleChildScrollView(
-                                  physics: AlwaysScrollableScrollPhysics(),
-                                  child: const SizedBox(height: 300, child: Center(child: CircularProgressIndicator())),
-                                ),
-                              )
-                            : items.isEmpty
-                                ? RefreshIndicator(
-                                    onRefresh: _onRefresh,
-                                    child: SingleChildScrollView(
-                                      physics: AlwaysScrollableScrollPhysics(),
-                                      child: Center(
-                                        child: Text(
-                                          showDuas ? 'No duas yet' : 'No poems yet',
-                                          style: const TextStyle(color: Color(0xFF9A8C79)),
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                : RefreshIndicator(
-                                    onRefresh: _onRefresh,
-                                    child: ListView.builder(
-                                      controller: scrollController,
-                                      itemCount: items.length + (hasMore ? 1 : 0),
-                                      itemBuilder: (_, i) {
-                                        if (i >= items.length) {
-                                          return const Padding(
-                                            padding: EdgeInsets.all(16),
-                                            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                                          );
-                                        }
-                                        if (showDuas) {
-                                          return DuaCard(key: ValueKey(duas[i].id), dua: duas[i], currentUser: user);
-                                        } else {
-                                          return PoemCard(key: ValueKey(poems[i].id), poem: poems[i], currentUser: user);
-                                        }
-                                      },
-                                    ),
-                                  ),
+                        child: IndexedStack(
+                          index: showDuas ? 0 : 1,
+                          children: const [
+                            _MyDuasFeed(),
+                            _MyPoemsFeed(),
+                          ],
+                        ),
                       ),
                     ],
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ),
         ),
@@ -278,6 +184,248 @@ class _MyPostsTabItem extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _MyDuasFeed extends StatefulWidget {
+  const _MyDuasFeed();
+
+  @override
+  State<_MyDuasFeed> createState() => _MyDuasFeedState();
+}
+
+class _MyDuasFeedState extends State<_MyDuasFeed> {
+  final _scrollController = ScrollController();
+  bool _showScrollTopButton = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final homeBloc = context.read<HomeBloc>();
+    if (!homeBloc.state.showMyPostsDuasTab) return;
+
+    final showButton = _scrollController.position.pixels > 500;
+    if (showButton != _showScrollTopButton) {
+      setState(() => _showScrollTopButton = showButton);
+    }
+
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      final homeState = homeBloc.state;
+      if (!homeState.loadingMoreMyDuas && homeState.hasMoreMyDuas && homeState.myDuasCursor != null) {
+        homeBloc.add(FetchMoreMyDuas(
+          userId: (context.read<AuthBloc>().state as Authenticated).user.id,
+          cursor: homeState.myDuasCursor!,
+        ));
+      }
+    }
+  }
+
+  Future<void> _onRefresh() async {
+    final homeBloc = context.read<HomeBloc>();
+    final user = (context.read<AuthBloc>().state as Authenticated).user;
+    homeBloc.add(FetchMyDuas(user.id));
+    await Future.doWhile(() async {
+      await Future.delayed(const Duration(milliseconds: 100));
+      return homeBloc.state.myDuasLoading;
+    });
+  }
+
+  void _scrollToTop() {
+    _scrollController.animateTo(0, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+    setState(() => _showScrollTopButton = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<HomeBloc>().state;
+    final authState = context.watch<AuthBloc>().state;
+    if (authState is! Authenticated) return const SizedBox.shrink();
+    final user = authState.user;
+
+    if (state.myDuasLoading && state.myDuas.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: _onRefresh,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: const SizedBox(height: 300, child: Center(child: CircularProgressIndicator())),
+        ),
+      );
+    }
+
+    if (state.myDuas.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: _onRefresh,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Center(
+            child: Text('No duas yet', style: const TextStyle(color: Color(0xFF9A8C79))),
+          ),
+        ),
+      );
+    }
+
+    return Stack(
+      children: [
+        RefreshIndicator(
+          onRefresh: _onRefresh,
+          child: ListView.builder(
+            controller: _scrollController,
+            itemCount: state.myDuas.length + (state.hasMoreMyDuas ? 1 : 0),
+            itemBuilder: (_, i) {
+              if (i >= state.myDuas.length) {
+                return const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                );
+              }
+              return DuaCard(key: ValueKey(state.myDuas[i].id), dua: state.myDuas[i], currentUser: user);
+            },
+          ),
+        ),
+        if (_showScrollTopButton)
+          Positioned(
+            right: 16,
+            bottom: 88,
+            child: FloatingActionButton.small(
+              backgroundColor: AppTheme.sage,
+              onPressed: _scrollToTop,
+              child: const Icon(Icons.arrow_upward, color: Colors.white),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _MyPoemsFeed extends StatefulWidget {
+  const _MyPoemsFeed();
+
+  @override
+  State<_MyPoemsFeed> createState() => _MyPoemsFeedState();
+}
+
+class _MyPoemsFeedState extends State<_MyPoemsFeed> {
+  final _scrollController = ScrollController();
+  bool _showScrollTopButton = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final homeBloc = context.read<HomeBloc>();
+    if (homeBloc.state.showMyPostsDuasTab) return;
+
+    final showButton = _scrollController.position.pixels > 500;
+    if (showButton != _showScrollTopButton) {
+      setState(() => _showScrollTopButton = showButton);
+    }
+
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      final homeState = homeBloc.state;
+      if (!homeState.loadingMoreMyPoems && homeState.hasMoreMyPoems && homeState.myPoemsCursor != null) {
+        homeBloc.add(FetchMoreMyPoems(
+          userId: (context.read<AuthBloc>().state as Authenticated).user.id,
+          cursor: homeState.myPoemsCursor!,
+        ));
+      }
+    }
+  }
+
+  Future<void> _onRefresh() async {
+    final homeBloc = context.read<HomeBloc>();
+    final user = (context.read<AuthBloc>().state as Authenticated).user;
+    homeBloc.add(FetchMyPoems(user.id));
+    await Future.doWhile(() async {
+      await Future.delayed(const Duration(milliseconds: 100));
+      return homeBloc.state.myPoemsLoading;
+    });
+  }
+
+  void _scrollToTop() {
+    _scrollController.animateTo(0, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+    setState(() => _showScrollTopButton = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<HomeBloc>().state;
+    final authState = context.watch<AuthBloc>().state;
+    if (authState is! Authenticated) return const SizedBox.shrink();
+    final user = authState.user;
+
+    if (state.myPoemsLoading && state.myPoems.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: _onRefresh,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: const SizedBox(height: 300, child: Center(child: CircularProgressIndicator())),
+        ),
+      );
+    }
+
+    if (state.myPoems.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: _onRefresh,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Center(
+            child: Text('No poems yet', style: const TextStyle(color: Color(0xFF9A8C79))),
+          ),
+        ),
+      );
+    }
+
+    return Stack(
+      children: [
+        RefreshIndicator(
+          onRefresh: _onRefresh,
+          child: ListView.builder(
+            controller: _scrollController,
+            itemCount: state.myPoems.length + (state.hasMoreMyPoems ? 1 : 0),
+            itemBuilder: (_, i) {
+              if (i >= state.myPoems.length) {
+                return const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                );
+              }
+              return PoemCard(key: ValueKey(state.myPoems[i].id), poem: state.myPoems[i], currentUser: user);
+            },
+          ),
+        ),
+        if (_showScrollTopButton)
+          Positioned(
+            right: 16,
+            bottom: 88,
+            child: FloatingActionButton.small(
+              backgroundColor: AppTheme.sage,
+              onPressed: _scrollToTop,
+              child: const Icon(Icons.arrow_upward, color: Colors.white),
+            ),
+          ),
+      ],
     );
   }
 }

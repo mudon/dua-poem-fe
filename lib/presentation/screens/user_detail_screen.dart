@@ -48,40 +48,15 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
   bool _hasMorePoems = true;
   bool _loadingPoems = false;
 
-  final ScrollController _duaScrollController = ScrollController();
-  final ScrollController _poemScrollController = ScrollController();
-
   @override
   void initState() {
     super.initState();
     _loadData();
-    _duaScrollController.addListener(_onDuaScroll);
-    _poemScrollController.addListener(_onPoemScroll);
   }
 
   @override
   void dispose() {
-    _duaScrollController.removeListener(_onDuaScroll);
-    _poemScrollController.removeListener(_onPoemScroll);
-    _duaScrollController.dispose();
-    _poemScrollController.dispose();
     super.dispose();
-  }
-
-  void _onDuaScroll() {
-    if (_duaScrollController.position.pixels >= _duaScrollController.position.maxScrollExtent - 200) {
-      if (!_loadingDuas && _hasMoreDuas && _duaCursor != null) {
-        _loadMoreDuas();
-      }
-    }
-  }
-
-  void _onPoemScroll() {
-    if (_poemScrollController.position.pixels >= _poemScrollController.position.maxScrollExtent - 200) {
-      if (!_loadingPoems && _hasMorePoems && _poemCursor != null) {
-        _loadMorePoems();
-      }
-    }
   }
 
   Future<void> _loadData() async {
@@ -270,14 +245,31 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                     ),
                     const SizedBox(height: 12),
                     Expanded(
-                      child: _selectedTab == 0
-                          ? SingleChildScrollView(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: _buildDetails(),
-                            )
-                          : _selectedTab == 1
-                              ? _buildDuasList(currentUser)
-                              : _buildPoemsList(currentUser),
+                      child: IndexedStack(
+                        index: _selectedTab,
+                        children: [
+                          SingleChildScrollView(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: _buildDetails(),
+                          ),
+                          _UserDuasList(
+                            isActive: _selectedTab == 1,
+                            duas: _userDuas,
+                            hasMore: _hasMoreDuas,
+                            loading: _loadingDuas,
+                            currentUser: currentUser,
+                            onLoadMore: _loadMoreDuas,
+                          ),
+                          _UserPoemsList(
+                            isActive: _selectedTab == 2,
+                            poems: _userPoems,
+                            hasMore: _hasMorePoems,
+                            loading: _loadingPoems,
+                            currentUser: currentUser,
+                            onLoadMore: _loadMorePoems,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -316,52 +308,6 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
           ],
         ],
       ),
-    );
-  }
-
-  Widget _buildDuasList(UserModel currentUser) {
-    if (_userDuas.isEmpty) {
-      return const Center(child: Text('No duas yet', style: TextStyle(color: Color(0xFF9A8C79))));
-    }
-    return ListView.builder(
-      controller: _duaScrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: _userDuas.length + (_hasMoreDuas ? 1 : 0),
-      itemBuilder: (_, i) {
-        if (i >= _userDuas.length) {
-          return const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-          );
-        }
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: DuaCard(dua: _userDuas[i], currentUser: currentUser),
-        );
-      },
-    );
-  }
-
-  Widget _buildPoemsList(UserModel currentUser) {
-    if (_userPoems.isEmpty) {
-      return const Center(child: Text('No poems yet', style: TextStyle(color: Color(0xFF9A8C79))));
-    }
-    return ListView.builder(
-      controller: _poemScrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: _userPoems.length + (_hasMorePoems ? 1 : 0),
-      itemBuilder: (_, i) {
-        if (i >= _userPoems.length) {
-          return const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-          );
-        }
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: PoemCard(poem: _userPoems[i], currentUser: currentUser),
-        );
-      },
     );
   }
 }
@@ -413,6 +359,202 @@ class _UserDetailField extends StatelessWidget {
         Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF9A8C79))),
         const SizedBox(height: 4),
         Text(value, style: const TextStyle(fontSize: 14, color: Color(0xFF3C3730))),
+      ],
+    );
+  }
+}
+
+class _UserDuasList extends StatefulWidget {
+  final bool isActive;
+  final List<DuaModel> duas;
+  final bool hasMore;
+  final bool loading;
+  final UserModel currentUser;
+  final VoidCallback onLoadMore;
+
+  const _UserDuasList({
+    required this.isActive,
+    required this.duas,
+    required this.hasMore,
+    required this.loading,
+    required this.currentUser,
+    required this.onLoadMore,
+  });
+
+  @override
+  State<_UserDuasList> createState() => _UserDuasListState();
+}
+
+class _UserDuasListState extends State<_UserDuasList> {
+  final _scrollController = ScrollController();
+  bool _showScrollTopButton = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!widget.isActive) return;
+
+    final showButton = _scrollController.position.pixels > 500;
+    if (showButton != _showScrollTopButton) {
+      setState(() => _showScrollTopButton = showButton);
+    }
+
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      if (!widget.loading && widget.hasMore) {
+        widget.onLoadMore();
+      }
+    }
+  }
+
+  void _scrollToTop() {
+    _scrollController.animateTo(0, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+    setState(() => _showScrollTopButton = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.duas.isEmpty) {
+      return const Center(child: Text('No duas yet', style: TextStyle(color: Color(0xFF9A8C79))));
+    }
+
+    return Stack(
+      children: [
+        ListView.builder(
+          controller: _scrollController,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: widget.duas.length + (widget.hasMore ? 1 : 0),
+          itemBuilder: (_, i) {
+            if (i >= widget.duas.length) {
+              return const Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+              );
+            }
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: DuaCard(dua: widget.duas[i], currentUser: widget.currentUser),
+            );
+          },
+        ),
+        if (_showScrollTopButton)
+          Positioned(
+            right: 16,
+            bottom: 88,
+            child: FloatingActionButton.small(
+              backgroundColor: AppTheme.sage,
+              onPressed: _scrollToTop,
+              child: const Icon(Icons.arrow_upward, color: Colors.white),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _UserPoemsList extends StatefulWidget {
+  final bool isActive;
+  final List<PoemModel> poems;
+  final bool hasMore;
+  final bool loading;
+  final UserModel currentUser;
+  final VoidCallback onLoadMore;
+
+  const _UserPoemsList({
+    required this.isActive,
+    required this.poems,
+    required this.hasMore,
+    required this.loading,
+    required this.currentUser,
+    required this.onLoadMore,
+  });
+
+  @override
+  State<_UserPoemsList> createState() => _UserPoemsListState();
+}
+
+class _UserPoemsListState extends State<_UserPoemsList> {
+  final _scrollController = ScrollController();
+  bool _showScrollTopButton = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!widget.isActive) return;
+
+    final showButton = _scrollController.position.pixels > 500;
+    if (showButton != _showScrollTopButton) {
+      setState(() => _showScrollTopButton = showButton);
+    }
+
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      if (!widget.loading && widget.hasMore) {
+        widget.onLoadMore();
+      }
+    }
+  }
+
+  void _scrollToTop() {
+    _scrollController.animateTo(0, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+    setState(() => _showScrollTopButton = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.poems.isEmpty) {
+      return const Center(child: Text('No poems yet', style: TextStyle(color: Color(0xFF9A8C79))));
+    }
+
+    return Stack(
+      children: [
+        ListView.builder(
+          controller: _scrollController,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: widget.poems.length + (widget.hasMore ? 1 : 0),
+          itemBuilder: (_, i) {
+            if (i >= widget.poems.length) {
+              return const Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+              );
+            }
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: PoemCard(poem: widget.poems[i], currentUser: widget.currentUser),
+            );
+          },
+        ),
+        if (_showScrollTopButton)
+          Positioned(
+            right: 16,
+            bottom: 88,
+            child: FloatingActionButton.small(
+              backgroundColor: AppTheme.sage,
+              onPressed: _scrollToTop,
+              child: const Icon(Icons.arrow_upward, color: Colors.white),
+            ),
+          ),
       ],
     );
   }

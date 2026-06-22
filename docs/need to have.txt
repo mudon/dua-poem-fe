@@ -1,1 +1,0 @@
-make sure the ui invoke proper service and that service invoke proper repo and that repo invoke proper endpoints.

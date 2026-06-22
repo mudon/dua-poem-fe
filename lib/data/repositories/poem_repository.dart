@@ -10,6 +10,24 @@ class PoemRepository {
 
   PoemRepository(this._poemService);
 
+  Future<ApiResult<PagedResponse<PoemModel>>> getLatter(String id, {String? cursor, int limit = 20}) async {
+    try {
+      final result = await _poemService.getLatter(id, cursor: cursor, limit: limit);
+      return ApiResult.success(result);
+    } catch (e) {
+      return ApiResult.failure(e.userMessage);
+    }
+  }
+
+  Future<ApiResult<PagedResponse<PoemModel>>> getOlder(String id, {String? cursor, int limit = 20}) async {
+    try {
+      final result = await _poemService.getOlder(id, cursor: cursor, limit: limit);
+      return ApiResult.success(result);
+    } catch (e) {
+      return ApiResult.failure(e.userMessage);
+    }
+  }
+
   Future<ApiResult<PagedResponse<PoemModel>>> getLatestPoems({int limit = 20, String? cursor}) async {
     try {
       final result = await _poemService.getLatestPoems(limit: limit, cursor: cursor);
