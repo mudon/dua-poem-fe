@@ -114,6 +114,7 @@ class SignalRProfileUpdated extends DuaEvent {
   final String? avatarType;
   final String? avatarValue;
   final String? selectedBadgeSlug;
+  final String? selectedBadgeColor;
 
   String get userName => '$firstName $lastName';
 
@@ -124,6 +125,7 @@ class SignalRProfileUpdated extends DuaEvent {
     this.avatarType,
     this.avatarValue,
     this.selectedBadgeSlug,
+    this.selectedBadgeColor,
   });
 }
 

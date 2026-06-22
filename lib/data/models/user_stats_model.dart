@@ -5,6 +5,7 @@ class UserBadgeModel {
   final String name;
   final String? description;
   final String? iconUrl;
+  final String? color;
   final DateTime awardedAt;
 
   UserBadgeModel({
@@ -12,6 +13,7 @@ class UserBadgeModel {
     required this.name,
     this.description,
     this.iconUrl,
+    this.color,
     required this.awardedAt,
   });
 
@@ -21,6 +23,7 @@ class UserBadgeModel {
       name: json['name'] as String? ?? '',
       description: json['description'] as String?,
       iconUrl: json['iconUrl'] as String?,
+      color: json['color'] as String?,
       awardedAt: DateTime.tryParse(json['awardedAt'] as String? ?? '') ?? DateTime.now(),
     );
   }
@@ -31,6 +34,7 @@ class CatalogBadgeModel {
   final String name;
   final String? description;
   final String? iconUrl;
+  final String? color;
   final bool isEarned;
   final DateTime? awardedAt;
 
@@ -39,6 +43,7 @@ class CatalogBadgeModel {
     required this.name,
     this.description,
     this.iconUrl,
+    this.color,
     required this.isEarned,
     this.awardedAt,
   });
@@ -62,6 +67,7 @@ class CatalogBadgeModel {
       name: json['name'] as String? ?? '',
       description: json['description'] as String?,
       iconUrl: json['iconUrl'] as String?,
+      color: json['color'] as String?,
       isEarned: json['isEarned'] as bool? ?? false,
       awardedAt: json['awardedAt'] != null
           ? DateTime.tryParse(json['awardedAt'] as String)

@@ -13,6 +13,7 @@ class UserModel {
   final AvatarType? avatarType;
   final String? avatarValue;
   final String? selectedBadgeSlug;
+  final String? selectedBadgeColor;
   final String joinedDate;
 
   String get fullName => '$firstName $lastName';
@@ -29,6 +30,7 @@ class UserModel {
     this.avatarType,
     this.avatarValue,
     this.selectedBadgeSlug,
+    this.selectedBadgeColor,
     String? joinedDate,
   }) : joinedDate = joinedDate ?? _formatDate(createdAt);
 
@@ -46,6 +48,7 @@ class UserModel {
       avatarType: AvatarType.fromValue(json['avatarType'] as String?),
       avatarValue: json['avatarValue'],
       selectedBadgeSlug: json['selectedBadgeSlug'],
+      selectedBadgeColor: json['selectedBadgeColor'],
       joinedDate: json['joinedDate'],
     );
   }
@@ -61,6 +64,7 @@ class UserModel {
     AvatarType? avatarType,
     String? avatarValue,
     String? selectedBadgeSlug,
+    String? selectedBadgeColor,
     String? joinedDate,
   }) {
     return UserModel(
@@ -75,6 +79,7 @@ class UserModel {
       avatarType: avatarType ?? this.avatarType,
       avatarValue: avatarValue ?? this.avatarValue,
       selectedBadgeSlug: selectedBadgeSlug ?? this.selectedBadgeSlug,
+      selectedBadgeColor: selectedBadgeColor ?? this.selectedBadgeColor,
       joinedDate: joinedDate ?? this.joinedDate,
     );
   }

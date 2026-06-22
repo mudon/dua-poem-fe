@@ -18,7 +18,7 @@ class PoemModel {
   final AvatarType? createdByAvatarType;
   final String? createdByAvatarValue;
   final String? createdBySelectedBadgeSlug;
-  final List<Map<String, String>> createdByBadges;
+  final List<Map<String, String?>> createdByBadges;
   final int views;
   final int bookmarkCount;
   final int likeCount;
@@ -47,7 +47,7 @@ class PoemModel {
     this.createdByAvatarType,
     this.createdByAvatarValue,
     this.createdBySelectedBadgeSlug,
-    this.createdByBadges = const [],
+    this.createdByBadges = const <Map<String, String?>>[],
     required this.views,
     required this.bookmarkCount,
     required this.likeCount,
@@ -93,6 +93,7 @@ class PoemModel {
               ?.map((b) => {
                     'slug': b['slug']?.toString() ?? '',
                     'name': b['name']?.toString() ?? '',
+                    'color': b['color']?.toString(),
                   })
               .toList() ??
           [],
@@ -118,7 +119,7 @@ class PoemModel {
     AvatarType? createdByAvatarType,
     String? createdByAvatarValue,
     String? createdBySelectedBadgeSlug,
-    List<Map<String, String>>? createdByBadges,
+    List<Map<String, String?>>? createdByBadges,
     int? views,
     int? bookmarkCount,
     int? likeCount,

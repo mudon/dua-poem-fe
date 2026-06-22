@@ -274,6 +274,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       'avatarType': user.avatarType?.value,
       'avatarValue': user.avatarValue,
       'selectedBadgeSlug': user.selectedBadgeSlug,
+      'selectedBadgeColor': user.selectedBadgeColor,
       'joinedDate': user.joinedDate,
     }));
   }

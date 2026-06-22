@@ -90,12 +90,20 @@ class _BadgeTile extends StatelessWidget {
 
   const _BadgeTile({required this.badge, required this.color});
 
+  Color get _badgeColor {
+    if (badge.color != null) {
+      return Color(int.parse(badge.color!.replaceFirst('#', '0xFF')));
+    }
+    return color;
+  }
+
   @override
   Widget build(BuildContext context) {
     final isEarned = badge.isEarned;
-    final bgColor = isEarned ? color.withValues(alpha: 0.1) : const Color(0xFFF3F0EA);
-    final fgColor = isEarned ? color : const Color(0xFFB5A99A);
-    final borderColor = isEarned ? color.withValues(alpha: 0.3) : const Color(0xFFE8E2D8);
+    final tileColor = _badgeColor;
+    final bgColor = isEarned ? tileColor.withValues(alpha: 0.1) : const Color(0xFFF3F0EA);
+    final fgColor = isEarned ? tileColor : const Color(0xFFB5A99A);
+    final borderColor = isEarned ? tileColor.withValues(alpha: 0.3) : const Color(0xFFE8E2D8);
 
     return Container(
       width: 92,

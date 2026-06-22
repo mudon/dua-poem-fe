@@ -7,6 +7,7 @@ class ProfileUpdateModel {
   final AvatarType? avatarType;
   final String? avatarValue;
   final String? selectedBadgeSlug;
+  final String? selectedBadgeColor;
 
   String get userName => '$firstName $lastName';
 
@@ -20,6 +21,7 @@ class ProfileUpdateModel {
     this.avatarType,
     this.avatarValue,
     this.selectedBadgeSlug,
+    this.selectedBadgeColor,
   });
 
   factory ProfileUpdateModel.fromJson(Map<String, dynamic> json) {
@@ -30,6 +32,7 @@ class ProfileUpdateModel {
       avatarType: AvatarType.fromValue(json['avatarType'] as String?),
       avatarValue: json['avatarValue'] as String?,
       selectedBadgeSlug: json['selectedBadgeSlug'] as String?,
+      selectedBadgeColor: json['selectedBadgeColor'] as String?,
     );
   }
 }

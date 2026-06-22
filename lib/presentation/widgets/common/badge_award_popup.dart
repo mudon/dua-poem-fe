@@ -22,16 +22,16 @@ class _BadgeAwardPopupState extends State<BadgeAwardPopup> with SingleTickerProv
   @override
   void initState() {
     super.initState();
-    _awardSub = getIt<SignalRService>().onBadgeAwarded.listen((b) => _onBadge(b.name));
-    _revokeSub = getIt<SignalRService>().onBadgeRevoked.listen((b) => _onBadge(b.name, isAward: false));
+    _awardSub = getIt<SignalRService>().onBadgeAwarded.listen((b) => _onBadge(b.name, color: b.color));
+    _revokeSub = getIt<SignalRService>().onBadgeRevoked.listen((b) => _onBadge(b.name, color: b.color, isAward: false));
   }
 
-  void _onBadge(String name, {bool isAward = true}) {
+  void _onBadge(String name, {bool isAward = true, String? color}) {
     _dismissTimer?.cancel();
     _overlay?.remove();
     _overlay = null;
 
-    _overlay = OverlayEntry(builder: (_) => _BadgeToast(name: name, isAward: isAward));
+    _overlay = OverlayEntry(builder: (_) => _BadgeToast(name: name, isAward: isAward, badgeColor: color));
     Overlay.of(context).insert(_overlay!);
     HapticFeedback.mediumImpact();
 
@@ -59,7 +59,8 @@ class _BadgeAwardPopupState extends State<BadgeAwardPopup> with SingleTickerProv
 class _BadgeToast extends StatefulWidget {
   final String name;
   final bool isAward;
-  const _BadgeToast({required this.name, required this.isAward});
+  final String? badgeColor;
+  const _BadgeToast({required this.name, required this.isAward, this.badgeColor});
   @override
   State<_BadgeToast> createState() => _BadgeToastState();
 }
@@ -92,6 +93,14 @@ class _BadgeToastState extends State<_BadgeToast> with SingleTickerProviderState
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).padding.bottom + 100;
     final isAward = widget.isAward;
+    final badgeCol = widget.badgeColor != null
+        ? Color(int.parse(widget.badgeColor!.replaceFirst('#', '0xFF')))
+        : null;
+    final gradientColors = isAward
+        ? (badgeCol != null
+            ? [badgeCol, badgeCol.withValues(alpha: 0.8)]
+            : [const Color(0xFF3A7D44), const Color(0xFF2D6A3B)])
+        : [const Color(0xFFC25A3F), const Color(0xFFA1442C)];
     return Stack(
       children: [
         GestureDetector(
@@ -114,16 +123,14 @@ class _BadgeToastState extends State<_BadgeToast> with SingleTickerProviderState
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: isAward
-                          ? [const Color(0xFF3A7D44), const Color(0xFF2D6A3B)]
-                          : [const Color(0xFFC25A3F), const Color(0xFFA1442C)],
+                      colors: gradientColors,
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: (isAward ? const Color(0xFF2D6A3B) : const Color(0xFFA1442C)).withValues(alpha: 0.3),
+                        color: gradientColors.last.withValues(alpha: 0.3),
                         blurRadius: 16,
                         offset: const Offset(0, 6),
                       ),

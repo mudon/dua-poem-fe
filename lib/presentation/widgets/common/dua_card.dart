@@ -42,6 +42,7 @@ class _DuaCardState extends State<DuaCard> {
   late AvatarType? _avatarType;
   late String? _avatarValue;
   late String? _selectedBadgeSlug;
+  late String? _selectedBadgeColor;
 
   @override
   void initState() {
@@ -63,6 +64,7 @@ class _DuaCardState extends State<DuaCard> {
     _avatarType = widget.dua.createdByAvatarType;
     _avatarValue = widget.dua.createdByAvatarValue;
     _selectedBadgeSlug = widget.dua.createdBySelectedBadgeSlug;
+    _selectedBadgeColor = _resolveBadgeColor(widget.dua.createdByBadges, widget.dua.createdBySelectedBadgeSlug);
   }
 
   @override
@@ -79,7 +81,8 @@ class _DuaCardState extends State<DuaCard> {
         oldWidget.dua.userName != widget.dua.userName ||
         oldWidget.dua.createdByAvatarType != widget.dua.createdByAvatarType ||
         oldWidget.dua.createdByAvatarValue != widget.dua.createdByAvatarValue ||
-        oldWidget.dua.createdBySelectedBadgeSlug != widget.dua.createdBySelectedBadgeSlug) {
+        oldWidget.dua.createdBySelectedBadgeSlug != widget.dua.createdBySelectedBadgeSlug ||
+        oldWidget.dua.createdByBadges != widget.dua.createdByBadges) {
       final blocState = context.read<DuaBloc>().state;
       final contentUpdate = blocState.contentUpdates[widget.dua.id];
       _isLiked = blocState.likedStates[widget.dua.id] ?? widget.dua.isLiked;
@@ -97,6 +100,7 @@ class _DuaCardState extends State<DuaCard> {
       _avatarType = widget.dua.createdByAvatarType;
       _avatarValue = widget.dua.createdByAvatarValue;
       _selectedBadgeSlug = widget.dua.createdBySelectedBadgeSlug;
+      _selectedBadgeColor = _resolveBadgeColor(widget.dua.createdByBadges, widget.dua.createdBySelectedBadgeSlug);
     }
   }
 
@@ -191,6 +195,7 @@ class _DuaCardState extends State<DuaCard> {
               _avatarType = update.avatarType;
               _avatarValue = update.avatarValue;
               _selectedBadgeSlug = update.selectedBadgeSlug;
+              _selectedBadgeColor = update.selectedBadgeColor;
             });
           }
         }
@@ -294,6 +299,7 @@ class _DuaCardState extends State<DuaCard> {
                         avatarValue: _avatarValue,
                         name: _userName,
                         showBadge: _selectedBadgeSlug != null,
+                        badgeColor: _selectedBadgeColor,
                         size: 16,
                       ),
                       const SizedBox(width: 8),
@@ -382,6 +388,14 @@ class _DuaCardState extends State<DuaCard> {
         ),
       ),
     );
+  }
+
+  String? _resolveBadgeColor(List<Map<String, String?>> badges, String? selectedSlug) {
+    if (selectedSlug == null) return null;
+    for (final b in badges) {
+      if (b['slug'] == selectedSlug) return b['color'];
+    }
+    return null;
   }
 
   Future<void> _showReportsPopup(BuildContext context) async {

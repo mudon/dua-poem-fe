@@ -102,6 +102,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
           avatarType: update.avatarType?.toString(),
           avatarValue: update.avatarValue,
           selectedBadgeSlug: update.selectedBadgeSlug,
+          selectedBadgeColor: update.selectedBadgeColor,
         ));
       } catch (_) {}
     });
@@ -179,6 +180,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
       avatarType: event.avatarType != null ? AvatarType.fromValue(event.avatarType) : null,
       avatarValue: event.avatarValue,
       selectedBadgeSlug: event.selectedBadgeSlug,
+      selectedBadgeColor: event.selectedBadgeColor,
     );
     emit(state.copyWith(
       profileUpdates: newProfileUpdates,

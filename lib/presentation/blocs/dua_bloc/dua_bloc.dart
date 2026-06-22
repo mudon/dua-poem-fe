@@ -104,6 +104,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
           avatarType: update.avatarType?.toString(),
           avatarValue: update.avatarValue,
           selectedBadgeSlug: update.selectedBadgeSlug,
+          selectedBadgeColor: update.selectedBadgeColor,
         ));
       } catch (_) {}
     });
@@ -185,6 +186,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
       avatarType: event.avatarType != null ? AvatarType.fromValue(event.avatarType) : null,
       avatarValue: event.avatarValue,
       selectedBadgeSlug: event.selectedBadgeSlug,
+      selectedBadgeColor: event.selectedBadgeColor,
     );
     emit(state.copyWith(
       profileUpdates: newProfileUpdates,

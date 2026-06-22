@@ -66,11 +66,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   AvatarType? _selectedAvatarType;
   String? _selectedAvatarValue;
   String? _selectedBadgeSlug;
+  String? _selectedBadgeColor;
 
   void _showEditProfileDialog(UserModel user) {
     _selectedAvatarType = user.avatarType;
     _selectedAvatarValue = user.avatarValue;
     _selectedBadgeSlug = user.selectedBadgeSlug;
+    _selectedBadgeColor = user.selectedBadgeColor;
     final firstNameCtrl = TextEditingController(text: user.firstName);
     final lastNameCtrl = TextEditingController(text: user.lastName);
     final bioCtrl = TextEditingController(text: user.bio ?? '');
@@ -90,6 +92,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   avatarValue: _selectedAvatarValue,
                   name: user.fullName,
                   showBadge: _selectedBadgeSlug != null,
+                  badgeColor: _selectedBadgeColor,
                   size: 50,
                 ),
               ),
@@ -266,17 +269,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 runSpacing: 8,
                 children: earned.map((badge) {
                   final selected = _selectedBadgeSlug == badge.slug;
+                  final badgeCol = badge.color != null
+                      ? Color(int.parse(badge.color!.replaceFirst('#', '0xFF')))
+                      : const Color(0xFF7C9A6E);
                   return GestureDetector(
                     onTap: () {
-                      setDialogState(() => _selectedBadgeSlug = badge.slug);
+                      setDialogState(() {
+                        _selectedBadgeSlug = badge.slug;
+                        _selectedBadgeColor = badge.color;
+                      });
                       Navigator.pop(ctx);
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: selected ? const Color(0xFFDCE8D3) : const Color(0xFFF3F0EA),
+                        color: selected ? badgeCol.withValues(alpha: 0.15) : const Color(0xFFF3F0EA),
                         borderRadius: BorderRadius.circular(12),
-                        border: selected ? Border.all(color: const Color(0xFF7C9A6E), width: 2) : null,
+                        border: selected ? Border.all(color: badgeCol, width: 2) : null,
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -284,7 +293,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Icon(
                             Icons.emoji_events_rounded,
                             size: 16,
-                            color: selected ? const Color(0xFF4A5B3E) : const Color(0xFF9A8C79),
+                            color: selected ? badgeCol : const Color(0xFF9A8C79),
                           ),
                           const SizedBox(width: 6),
                           Text(
@@ -292,7 +301,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                              color: selected ? const Color(0xFF3C3730) : const Color(0xFF6E6558),
+                              color: selected ? badgeCol : const Color(0xFF6E6558),
                             ),
                           ),
                         ],
@@ -345,6 +354,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       avatarValue: user.avatarValue,
                       name: user.fullName,
                       showBadge: user.selectedBadgeSlug != null,
+                      badgeColor: user.selectedBadgeColor,
                     ),
                     const SizedBox(width: 16),
                     Expanded(

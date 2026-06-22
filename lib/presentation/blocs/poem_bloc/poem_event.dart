@@ -110,6 +110,7 @@ class SignalRProfileUpdated extends PoemEvent {
   final String? avatarType;
   final String? avatarValue;
   final String? selectedBadgeSlug;
+  final String? selectedBadgeColor;
 
   String get userName => '$firstName $lastName';
 
@@ -120,6 +121,7 @@ class SignalRProfileUpdated extends PoemEvent {
     this.avatarType,
     this.avatarValue,
     this.selectedBadgeSlug,
+    this.selectedBadgeColor,
   });
 }
 

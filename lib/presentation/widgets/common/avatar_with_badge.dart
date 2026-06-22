@@ -7,6 +7,7 @@ class AvatarWithBadge extends StatelessWidget {
   final String? avatarValue;
   final String name;
   final bool showBadge;
+  final String? badgeColor;
   final double size;
 
   const AvatarWithBadge({
@@ -15,6 +16,7 @@ class AvatarWithBadge extends StatelessWidget {
     this.avatarValue,
     required this.name,
     this.showBadge = false,
+    this.badgeColor,
     this.size = 35,
   });
 
@@ -53,7 +55,7 @@ class AvatarWithBadge extends StatelessWidget {
                   ),
                 ),
         ),
-        if (showBadge)
+        if (showBadge && badgeColor != null)
           Positioned(
             right: -2,
             bottom: -2,
@@ -61,7 +63,7 @@ class AvatarWithBadge extends StatelessWidget {
               width: badgeRadius * 2,
               height: badgeRadius * 2,
               decoration: BoxDecoration(
-                color: const Color(0xFF7C9A6E),
+                color: Color(int.parse(badgeColor!.replaceFirst('#', '0xFF'))),
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 2),
               ),

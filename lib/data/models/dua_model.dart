@@ -20,7 +20,7 @@ class DuaModel {
   final AvatarType? createdByAvatarType;
   final String? createdByAvatarValue;
   final String? createdBySelectedBadgeSlug;
-  final List<Map<String, String>> createdByBadges;
+  final List<Map<String, String?>> createdByBadges;
   final int views;
   final int reportCount;
   final int activeReportCount;
@@ -51,7 +51,7 @@ class DuaModel {
     this.createdByAvatarType,
     this.createdByAvatarValue,
     this.createdBySelectedBadgeSlug,
-    this.createdByBadges = const [],
+    this.createdByBadges = const <Map<String, String?>>[],
     required this.views,
     required this.reportCount,
     this.activeReportCount = 0,
@@ -99,6 +99,7 @@ class DuaModel {
               ?.map((b) => {
                     'slug': b['slug']?.toString() ?? '',
                     'name': b['name']?.toString() ?? '',
+                    'color': b['color']?.toString(),
                   })
               .toList() ??
           [],
@@ -124,7 +125,7 @@ class DuaModel {
     AvatarType? createdByAvatarType,
     String? createdByAvatarValue,
     String? createdBySelectedBadgeSlug,
-    List<Map<String, String>>? createdByBadges,
+    List<Map<String, String?>>? createdByBadges,
     int? views,
     int? bookmarkCount,
     int? likeCount,

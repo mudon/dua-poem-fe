@@ -40,6 +40,7 @@ class _PoemCardState extends State<PoemCard> {
   late AvatarType? _avatarType;
   late String? _avatarValue;
   late String? _selectedBadgeSlug;
+  late String? _selectedBadgeColor;
 
   @override
   void initState() {
@@ -59,6 +60,7 @@ class _PoemCardState extends State<PoemCard> {
     _avatarType = widget.poem.createdByAvatarType;
     _avatarValue = widget.poem.createdByAvatarValue;
     _selectedBadgeSlug = widget.poem.createdBySelectedBadgeSlug;
+    _selectedBadgeColor = _resolveBadgeColor(widget.poem.createdByBadges, widget.poem.createdBySelectedBadgeSlug);
   }
 
   @override
@@ -75,7 +77,8 @@ class _PoemCardState extends State<PoemCard> {
         oldWidget.poem.userName != widget.poem.userName ||
         oldWidget.poem.createdByAvatarType != widget.poem.createdByAvatarType ||
         oldWidget.poem.createdByAvatarValue != widget.poem.createdByAvatarValue ||
-        oldWidget.poem.createdBySelectedBadgeSlug != widget.poem.createdBySelectedBadgeSlug) {
+        oldWidget.poem.createdBySelectedBadgeSlug != widget.poem.createdBySelectedBadgeSlug ||
+        oldWidget.poem.createdByBadges != widget.poem.createdByBadges) {
       final blocState = context.read<PoemBloc>().state;
       final contentUpdate = blocState.contentUpdates[widget.poem.id];
       _isLiked = blocState.likedStates[widget.poem.id] ?? widget.poem.isLiked;
@@ -91,6 +94,7 @@ class _PoemCardState extends State<PoemCard> {
       _avatarType = widget.poem.createdByAvatarType;
       _avatarValue = widget.poem.createdByAvatarValue;
       _selectedBadgeSlug = widget.poem.createdBySelectedBadgeSlug;
+      _selectedBadgeColor = _resolveBadgeColor(widget.poem.createdByBadges, widget.poem.createdBySelectedBadgeSlug);
     }
   }
 
@@ -183,6 +187,7 @@ class _PoemCardState extends State<PoemCard> {
               _avatarType = update.avatarType;
               _avatarValue = update.avatarValue;
               _selectedBadgeSlug = update.selectedBadgeSlug;
+              _selectedBadgeColor = update.selectedBadgeColor;
             });
           }
         }
@@ -274,6 +279,7 @@ class _PoemCardState extends State<PoemCard> {
                         avatarValue: _avatarValue,
                         name: _userName,
                         showBadge: _selectedBadgeSlug != null,
+                        badgeColor: _selectedBadgeColor,
                         size: 16,
                       ),
                       const SizedBox(width: 8),
@@ -374,6 +380,14 @@ class _PoemCardState extends State<PoemCard> {
     final wasBookmarked = _isBookmarked;
     setState(() => _isBookmarked = !wasBookmarked);
     context.read<PoemBloc>().add(ToggleBookmark(widget.poem.id, wasBookmarked, _bookmarkCount));
+  }
+
+  String? _resolveBadgeColor(List<Map<String, String?>> badges, String? selectedSlug) {
+    if (selectedSlug == null) return null;
+    for (final b in badges) {
+      if (b['slug'] == selectedSlug) return b['color'];
+    }
+    return null;
   }
 
   Future<void> _showReportsPopup() async {

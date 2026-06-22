@@ -220,6 +220,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                                 avatarValue: _profile?.avatarValue,
                                 name: _profile?.fullName ?? name,
                                 showBadge: _profile?.selectedBadgeSlug != null,
+                                badgeColor: _profile?.selectedBadgeColor,
                                 size: 35,
                               ),
                               const SizedBox(width: 16),

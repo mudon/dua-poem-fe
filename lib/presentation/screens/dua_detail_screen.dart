@@ -415,21 +415,26 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                                       itemBuilder: (context, index) {
                                         final badge =
                                             _dua!.createdByBadges[index];
-                                        final category =
-                                            BadgeCategory.fromSlugPrefix(
-                                                badge['slug']!);
+                                        final badgeHex = badge['color'];
+                                        final badgeColor = badgeHex != null
+                                            ? Color(int.parse(
+                                                badgeHex.replaceFirst(
+                                                    '#', '0xFF')))
+                                            : BadgeCategory.fromSlugPrefix(
+                                                    badge['slug']!)
+                                                .color;
                                         return Container(
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 8,
                                             vertical: 4,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: category.color
+                                            color: badgeColor
                                                 .withValues(alpha: 0.12),
                                             borderRadius:
                                                 BorderRadius.circular(12),
                                             border: Border.all(
-                                              color: category.color
+                                              color: badgeColor
                                                   .withValues(alpha: 0.3),
                                             ),
                                           ),
@@ -437,9 +442,11 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               Icon(
-                                                category.icon,
+                                                BadgeCategory.fromSlugPrefix(
+                                                        badge['slug']!)
+                                                    .icon,
                                                 size: 12,
-                                                color: category.color,
+                                                color: badgeColor,
                                               ),
                                               const SizedBox(width: 4),
                                               Text(
@@ -447,7 +454,7 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                                                 style: TextStyle(
                                                   fontSize: 11,
                                                   fontWeight: FontWeight.w600,
-                                                  color: category.color,
+                                                  color: badgeColor,
                                                 ),
                                               ),
                                             ],
