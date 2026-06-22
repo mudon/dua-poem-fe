@@ -1,4 +1,4 @@
-package com.example.dua_poem_system
+package com.company.teduh
 
 import io.flutter.embedding.android.FlutterActivity
 

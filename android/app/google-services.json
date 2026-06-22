@@ -7,20 +7,12 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:494112043315:android:391c042c1037fe29e08e46",
+        "mobilesdk_app_id": "1:494112043315:android:3a3cd4a9d333eecce08e46",
         "android_client_info": {
-          "package_name": "com.company.duapoem"
+          "package_name": "com.company.teduh"
         }
       },
       "oauth_client": [
-        {
-          "client_id": "494112043315-1sd7o0b2pbs1eakvn4hgrukoeo9i98ev.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.company.duapoem",
-            "certificate_hash": "826affe2ce3bee718d8cf94db33cded286d7cd86"
-          }
-        },
         {
           "client_id": "494112043315-fi1np4uahhtrsp6rprrsim0b5r7but8k.apps.googleusercontent.com",
           "client_type": 3

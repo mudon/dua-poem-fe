@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import '../../core/constants/app_config.dart';
@@ -44,7 +45,7 @@ class FcmService {
       iOS: iosSettings,
     );
     await _localNotifications.initialize(
-      settings,
+      settings: settings,
       onDidReceiveNotificationResponse: _onNotificationTap,
     );
     print('[FCM] flutter_local_notifications initialized');
@@ -116,8 +117,6 @@ class FcmService {
         body: notification.body ?? '',
         payload: message.data['data'],
       );
-
-      _dispatchToNotificationBloc(message);
     });
   }
 
@@ -157,7 +156,13 @@ class FcmService {
       android: androidDetails,
       iOS: iosDetails,
     );
-    await _localNotifications.show(id, title, body, details, payload: payload);
+    await _localNotifications.show(
+      id: id,
+      title: title,
+      body: body,
+      notificationDetails: details,
+      payload: payload,
+    );
     print('[FCM] Local notification shown');
   }
 
@@ -204,5 +209,10 @@ class FcmService {
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  try {
+    await Firebase.initializeApp();
+  } catch (_) {
+    // Firebase already initialized on native side
+  }
   print('[FCM Background] Message received: ${message.notification?.title}');
 }
