@@ -605,7 +605,7 @@ class _HeaderBar extends StatelessWidget {
       child: Column(
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Row(
                 children: [
@@ -622,15 +622,27 @@ class _HeaderBar extends StatelessWidget {
                   Text(AppStrings.appName, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 20, color: Color(0xFF3C4F34))),
                 ],
               ),
-              Row(
+              const Spacer(),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const CoffeeButton(),
-                  const SizedBox(width: 16),
-                  const NotificationBell(),
-                  const SizedBox(width: 16),
-                  const Icon(Icons.person_outline, size: 18, color: Color(0xFF5C5346)),
-                  const SizedBox(width: 6),
-                  const Text('Assalamualaikum', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF5C5346))),
+                  const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.person_outline, size: 18, color: Color(0xFF5C5346)),
+                      SizedBox(width: 6),
+                      Text('Assalamualaikum', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF5C5346))),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CoffeeButton(),
+                      const SizedBox(width: 16),
+                      const NotificationBell(),
+                    ],
+                  ),
                 ],
               ),
             ],

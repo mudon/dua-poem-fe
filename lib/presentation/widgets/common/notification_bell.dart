@@ -99,7 +99,7 @@ class _NotificationBellState extends State<NotificationBell> {
     final position = box.localToGlobal(Offset.zero);
     final screenWidth = MediaQuery.of(context).size.width;
 
-    const popupWidth = 340.0;
+    final popupWidth = screenWidth - 32 < 340 ? screenWidth - 32 : 340.0;
     final right = screenWidth - position.dx - box.size.width;
     final distFromRight = right < 0 ? 0.0 : right;
 
@@ -324,6 +324,8 @@ class _NotificationItem extends StatelessWidget {
                 children: [
                   Text(
                     notification.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontWeight: notification.isRead ? FontWeight.w400 : FontWeight.w600,
                       fontSize: 13,
