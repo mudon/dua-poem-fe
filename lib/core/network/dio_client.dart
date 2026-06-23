@@ -1,11 +1,14 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import '../constants/app_config.dart';
 import '../services/secure_storage_service.dart';
 import '../errors/error_helper.dart';
+import '../themes/app_theme.dart';
 
 class DioClient {
   static const String accessTokenKey = 'access_token';
   static const String refreshTokenKey = 'refresh_token';
+  static GlobalKey<NavigatorState>? navigatorKey;
 
   final Dio _dio;
   final SecureStorageService _secureStorage;
@@ -90,6 +93,23 @@ class _AuthInterceptor extends Interceptor {
 class _ErrorInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
+    if (err.response?.statusCode == 429) {
+      final headers = err.response?.headers.map;
+      final rawRetryAfter = err.response?.headers.value('retry-after');
+      print('[RateLimit] 429 received. All response headers: $headers');
+      print('[RateLimit] Raw Retry-After header value: "$rawRetryAfter"');
+      print('[RateLimit] Response body: ${err.response?.data}');
+      final context = DioClient.navigatorKey?.currentContext;
+      if (context != null) {
+        final retryAfter = rawRetryAfter;
+        final message = retryAfter != null
+            ? 'Too many requests. Try again in ~${retryAfter}s.'
+            : 'Too many requests. Please wait.';
+        ScaffoldMessenger.of(context).showSnackBar(
+          AppTheme.errorSnackBar(message),
+        );
+      }
+    }
     final cleanMessage = ErrorHelper.getUserFriendlyMessage(err);
     handler.next(DioException(
       requestOptions: err.requestOptions,

@@ -7,6 +7,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'firebase_options.dart';
 import 'app/dependency_injection.dart';
 import 'app/router.dart';
+import 'core/network/dio_client.dart';
 import 'presentation/blocs/auth_bloc/auth_bloc.dart';
 import 'presentation/blocs/auth_bloc/auth_event.dart';
 import 'core/themes/app_theme.dart';
@@ -28,6 +29,7 @@ void main() async {
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   }
   await setupDependencies();
+  DioClient.navigatorKey = AppRouter.navigatorKey;
   final fcm = getIt<FcmService>();
   await fcm.initialize();
   await fcm.requestPermission();
