@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../../core/constants/app_strings.dart';
@@ -37,8 +38,13 @@ class HomeScreen extends StatelessWidget {
         RepositoryProvider.of<DuaRepository>(context),
         RepositoryProvider.of<PoemRepository>(context),
       ),
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF4F0E8),
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+          statusBarColor: AppTheme.sageMist,
+          statusBarIconBrightness: Brightness.dark,
+        ),
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF4F0E8),
         floatingActionButton: FloatingActionButton(
           backgroundColor: AppTheme.sage,
           onPressed: () => showModalBottomSheet(
@@ -58,6 +64,7 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }
