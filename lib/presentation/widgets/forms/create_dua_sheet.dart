@@ -137,6 +137,11 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
       final translated = response.data['translatedText'] as String?;
       if (translated != null && translated.isNotEmpty) {
         _arabicCtrl.text = translated;
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            AppTheme.snackBar('Auto-translation (English only) may not be fully accurate. Please review before publishing.'),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -181,7 +186,7 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
                           Row(
                             children: [
                               Tooltip(
-                                message: 'Auto-translation may not be fully accurate. Please review before publishing.',
+                                message: 'Auto-translation (English only) may not be fully accurate. Please review before publishing.',
                                 child: Icon(Icons.info_outline, size: 16, color: AppTheme.earthBrown),
                               ),
                               const SizedBox(width: 6),
