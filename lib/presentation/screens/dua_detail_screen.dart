@@ -19,6 +19,7 @@ import '../blocs/dua_bloc/dua_bloc.dart';
 import '../blocs/dua_bloc/dua_event.dart';
 import '../blocs/dua_bloc/dua_state.dart';
 import '../../app/dependency_injection.dart';
+import '../widgets/common/avatar_with_badge.dart';
 
 class DuaDetailScreen extends StatefulWidget {
   final String duaId;
@@ -97,19 +98,7 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
     });
   }
 
-  String _formatTimestamp(String iso) {
-    try {
-      final dt = DateTime.parse(iso);
-      final y = dt.year.toString().padLeft(4, '0');
-      final mo = dt.month.toString().padLeft(2, '0');
-      final d = dt.day.toString().padLeft(2, '0');
-      final h = dt.hour.toString().padLeft(2, '0');
-      final mi = dt.minute.toString().padLeft(2, '0');
-      return '$y-$mo-$d $h:$mi';
-    } catch (_) {
-      return iso;
-    }
-  }
+  String _formatTimestamp(String iso) => formatTimestamp(iso);
 
   Future<void> _loadDua() async {
     final repo = getIt<DuaRepository>();
@@ -380,17 +369,16 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                               if (_dua!.userName.isNotEmpty) ...[
                                 Row(
                                   children: [
-                                    CircleAvatar(
-                                      radius: 14,
-                                      backgroundColor: const Color(0xFFD6B17E),
-                                      child: Text(
-                                        _dua!.userAvatar,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
+                                    AvatarWithBadge(
+                                      avatarType: _dua!.createdByAvatarType,
+                                      avatarValue: _dua!.createdByAvatarValue,
+                                      name: _dua!.userName,
+                                      showBadge: _dua!.createdBySelectedBadgeSlug != null,
+                                      badgeColor: _dua!.createdByBadges.firstWhere(
+                                        (b) => b['slug'] == _dua!.createdBySelectedBadgeSlug,
+                                        orElse: () => <String, String?>{},
+                                      )['color'],
+                                      size: 14,
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
@@ -946,7 +934,7 @@ class _ReportListSheet extends StatelessWidget {
                           if (r.createdAt != null) ...[
                             const SizedBox(height: 4),
                             Text(
-                              r.createdAt!,
+                              formatTimestamp(r.createdAt!),
                               style: const TextStyle(
                                 fontSize: 11,
                                 color: Color(0xFFAB9F8E),
@@ -1959,5 +1947,20 @@ class _DetailReportSheetState extends State<_DetailReportSheet> {
         ],
       ),
     );
+  }
+}
+
+String formatTimestamp(String iso) {
+  try {
+    final dt = DateTime.parse(iso);
+    final local = dt.toLocal();
+    final y = local.year.toString().padLeft(4, '0');
+    final mo = local.month.toString().padLeft(2, '0');
+    final d = local.day.toString().padLeft(2, '0');
+    final h = local.hour.toString().padLeft(2, '0');
+    final mi = local.minute.toString().padLeft(2, '0');
+    return '$y-$mo-$d $h:$mi';
+  } catch (_) {
+    return iso;
   }
 }

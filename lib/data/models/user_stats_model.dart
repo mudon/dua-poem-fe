@@ -24,7 +24,7 @@ class UserBadgeModel {
       description: json['description'] as String?,
       iconUrl: json['iconUrl'] as String?,
       color: json['color'] as String?,
-      awardedAt: DateTime.tryParse(json['awardedAt'] as String? ?? '') ?? DateTime.now(),
+      awardedAt: DateTime.tryParse(json['awardedAt'] as String? ?? '') ?? DateTime.now().toUtc(),
     );
   }
 }

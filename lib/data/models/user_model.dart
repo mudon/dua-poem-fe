@@ -85,10 +85,11 @@ class UserModel {
   }
 
   static String _formatDate(DateTime dt) {
+    final local = dt.toLocal();
     final months = [
       'January', 'February', 'March', 'April', 'May', 'June',
       'July', 'August', 'September', 'October', 'November', 'December'
     ];
-    return 'Joined ${months[dt.month - 1]} ${dt.year}';
+    return 'Joined ${months[local.month - 1]} ${local.year}';
   }
 }

@@ -165,7 +165,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           firstName: '',
           lastName: '',
           email: '',
-          createdAt: DateTime.now(),
+          createdAt: DateTime.now().toUtc(),
         )));
       }
     } else {
