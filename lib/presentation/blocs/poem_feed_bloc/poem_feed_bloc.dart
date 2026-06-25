@@ -88,6 +88,7 @@ class PoemFeedBloc extends Bloc<PoemFeedEvent, PoemFeedState> {
         loadingLatterPoems: false,
         windowPoems: updatedWindow,
         windowPoemsStart: newStart,
+        totalLoadedPoems: state.totalLoadedPoems + newItems.length,
         latterCursorPoems: paged.nextCursor,
         hasMoreLatterPoems: paged.hasMore && paged.data.length == _pageSize,
       ));

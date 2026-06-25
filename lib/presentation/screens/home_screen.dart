@@ -265,7 +265,7 @@ class _DuaFeedState extends State<_DuaFeed> {
     final s = bloc.state;
 
     final showButton = first > 5;
-    if (showButton != _showScrollTopButton) {
+    if (showButton != _showScrollTopButton && mounted) {
       setState(() => _showScrollTopButton = showButton);
     }
 
@@ -416,7 +416,7 @@ class _PoemFeedState extends State<_PoemFeed> {
     final s = bloc.state;
 
     final showButton = first > 5;
-    if (showButton != _showScrollTopButton) {
+    if (showButton != _showScrollTopButton && mounted) {
       setState(() => _showScrollTopButton = showButton);
     }
 

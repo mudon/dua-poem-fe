@@ -88,6 +88,7 @@ class DuaFeedBloc extends Bloc<DuaFeedEvent, DuaFeedState> {
         loadingLatterDuas: false,
         windowDuas: updatedWindow,
         windowDuasStart: newStart,
+        totalLoadedDuas: state.totalLoadedDuas + newItems.length,
         latterCursorDuas: paged.nextCursor,
         hasMoreLatterDuas: paged.hasMore && paged.data.length == _pageSize,
       ));

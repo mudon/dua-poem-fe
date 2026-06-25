@@ -203,8 +203,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final queryAtCall = event.query;
 
     if (event.showDuasTab) {
-      if (!state.hasMoreSearchDuas || state.searchDuaCursor == null) {
+      if (!state.hasMoreSearchDuas) {
         emit(state.copyWith(loadingMoreSearch: false));
+        return;
+      }
+      if (state.searchDuaCursor == null) {
+        emit(state.copyWith(loadingMoreSearch: false, hasMoreSearchDuas: false));
         return;
       }
       final result = await _duaRepo.search(event.query, limit: event.limit, cursor: state.searchDuaCursor);
@@ -221,8 +225,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         emit(state.copyWith(loadingMoreSearch: false));
       }
     } else {
-      if (!state.hasMoreSearchPoems || state.searchPoemCursor == null) {
+      if (!state.hasMoreSearchPoems) {
         emit(state.copyWith(loadingMoreSearch: false));
+        return;
+      }
+      if (state.searchPoemCursor == null) {
+        emit(state.copyWith(loadingMoreSearch: false, hasMoreSearchPoems: false));
         return;
       }
       final result = await _poemRepo.search(event.query, limit: event.limit, cursor: state.searchPoemCursor);
