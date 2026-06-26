@@ -223,7 +223,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
   void _onSignalRDuaCreated(SignalRDuaCreated event, Emitter<DuaState> emit) {
     print('[SignalR] DuaBloc received SignalRDuaCreated: duaId=${event.dua.id}, title=${event.dua.title}');
     emit(state.copyWith(
-      actionType: ActionType.created,
+      actionType: ActionType.signalrCreated,
       lastToggledDuaId: event.dua.id,
       createdDua: event.dua,
       error: null,
@@ -255,7 +255,7 @@ class DuaBloc extends Bloc<DuaEvent, DuaState> {
   }
 
   void _onSignalRDuaDeleted(SignalRDuaDeleted event, Emitter<DuaState> emit) {
-    emit(state.copyWith(actionType: ActionType.deleted, lastToggledDuaId: event.duaId));
+    emit(state.copyWith(actionType: ActionType.signalrDeleted, lastToggledDuaId: event.duaId));
   }
 
   void _onSignalRLikeCountUpdated(SignalRLikeCountUpdated event, Emitter<DuaState> emit) {

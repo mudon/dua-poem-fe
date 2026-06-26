@@ -1,3 +1,4 @@
+import '../../../data/models/user_model.dart';
 import '../../../core/enums/avatar_type.dart';
 
 abstract class AuthEvent {}
@@ -24,6 +25,11 @@ class UpdateProfileRequested extends AuthEvent {
   final String? avatarValue;
   final String? selectedBadgeSlug;
   UpdateProfileRequested(this.firstName, this.lastName, {this.bio, this.avatarType, this.avatarValue, this.selectedBadgeSlug});
+}
+
+class UserRefreshed extends AuthEvent {
+  final UserModel user;
+  UserRefreshed(this.user);
 }
 
 class ClearAuthError extends AuthEvent {}

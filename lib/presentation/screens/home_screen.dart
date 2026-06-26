@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/enums/action_type.dart';
 import '../widgets/forms/create_flow_sheet.dart';
 import '../../core/themes/app_theme.dart';
 import '../blocs/auth_bloc/auth_bloc.dart';
@@ -13,8 +14,12 @@ import '../blocs/home_bloc/home_event.dart';
 import '../blocs/home_bloc/home_state.dart';
 import '../blocs/dua_feed_bloc/dua_feed_bloc.dart';
 import '../blocs/dua_feed_bloc/dua_feed_event.dart';
+import '../blocs/dua_bloc/dua_bloc.dart';
+import '../blocs/dua_bloc/dua_state.dart';
 import '../blocs/poem_feed_bloc/poem_feed_bloc.dart';
 import '../blocs/poem_feed_bloc/poem_feed_event.dart';
+import '../blocs/poem_bloc/poem_bloc.dart';
+import '../blocs/poem_bloc/poem_state.dart';
 import '../widgets/common/dua_card.dart';
 import '../widgets/common/poem_card.dart';
 import '../widgets/common/home_tab_bar.dart';
@@ -143,7 +148,30 @@ class _HomeFeedState extends State<_HomeFeed> {
           )..add(FetchLatestPoems()),
         ),
       ],
-      child: BlocBuilder<HomeBloc, HomeState>(
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<DuaBloc, DuaState>(
+            listener: (ctx, state) {
+              if (state.actionType == ActionType.created && state.createdDua != null) {
+                ctx.read<DuaFeedBloc>().add(InsertDuaToFeed(state.createdDua!));
+              }
+              if (state.actionType == ActionType.deleted && state.lastToggledDuaId != null) {
+                ctx.read<DuaFeedBloc>().add(RemoveDuaFromFeed(state.lastToggledDuaId!));
+              }
+            },
+          ),
+          BlocListener<PoemBloc, PoemState>(
+            listener: (ctx, state) {
+              if (state.actionType == ActionType.created && state.createdPoem != null) {
+                ctx.read<PoemFeedBloc>().add(InsertPoemToFeed(state.createdPoem!));
+              }
+              if (state.actionType == ActionType.deleted && state.lastToggledPoemId != null) {
+                ctx.read<PoemFeedBloc>().add(RemovePoemFromFeed(state.lastToggledPoemId!));
+              }
+            },
+          ),
+        ],
+        child: BlocBuilder<HomeBloc, HomeState>(
         builder: (context, state) {
           if (state.error != null) {
             return Center(child: Text(state.error!));
@@ -221,6 +249,7 @@ class _HomeFeedState extends State<_HomeFeed> {
           );
         },
       ),
+      ),
     );
   }
 }
@@ -237,9 +266,7 @@ class _DuaFeedState extends State<_DuaFeed> {
   final _scrollController = ItemScrollController();
   final _positionsListener = ItemPositionsListener.create();
 
-  int _lastTriggeredLatterIndex = -1;
   int _lastTriggeredOlderIndex = -1;
-  int _lastRefillWindowStart = -1;
   bool _showScrollTopButton = false;
 
   @override
@@ -269,24 +296,13 @@ class _DuaFeedState extends State<_DuaFeed> {
       setState(() => _showScrollTopButton = showButton);
     }
 
-    final cacheEnd = s.windowDuasStart + s.windowDuas.length - 1;
     debugPrint('[DUA_FEED] visible=[$first..$last] '
-        'cache=[${s.windowDuasStart}..$cacheEnd](${s.windowDuas.length}) total=${s.totalLoadedDuas} '
-        'latter=${s.hasMoreLatterDuas}/${s.loadingLatterDuas} older=${s.hasMoreOlderDuas}/${s.loadingOlderDuas}');
+        'cache=[0..${s.windowDuas.length - 1}](${s.windowDuas.length}) total=${s.totalLoadedDuas} '
+        'older=${s.hasMoreOlderDuas}/${s.loadingOlderDuas}');
 
-    if (first <= 2 && s.hasMoreLatterDuas && !s.loadingLatterDuas && first != _lastTriggeredLatterIndex) {
-      _lastTriggeredLatterIndex = first;
-      debugPrint('[DUA_FEED_TRIGGER] fetching latter, first=$first');
-      bloc.add(FetchLatterDuas());
-    }
-    if (s.windowDuasStart > 0 && first < s.windowDuasStart && s.hasMoreLatterDuas && !s.loadingLatterDuas && s.windowDuasStart != _lastRefillWindowStart) {
-      _lastRefillWindowStart = s.windowDuasStart;
-      debugPrint('[DUA_FEED_TRIGGER] refill up, first=$first, windowStart=${s.windowDuasStart}');
-      bloc.add(FetchLatterDuas());
-    }
     if (s.windowDuas.isNotEmpty) {
-      final cacheBottom = s.windowDuasStart + s.windowDuas.length - 1;
-      if (last >= cacheBottom - 3 && s.hasMoreOlderDuas && !s.loadingOlderDuas && last != _lastTriggeredOlderIndex) {
+      final cacheBottom = s.windowDuas.length - 1;
+      if (last >= cacheBottom && s.hasMoreOlderDuas && !s.loadingOlderDuas && last != _lastTriggeredOlderIndex) {
         _lastTriggeredOlderIndex = last;
         debugPrint('[DUA_FEED_TRIGGER] fetching older, last=$last, cacheBottom=$cacheBottom');
         bloc.add(FetchOlderDuas());
@@ -299,9 +315,7 @@ class _DuaFeedState extends State<_DuaFeed> {
     final bloc = context.read<DuaFeedBloc>();
     bloc.add(ResetDuas());
     await bloc.stream.firstWhere((s) => !s.isLoading);
-    _lastTriggeredLatterIndex = -1;
     _lastTriggeredOlderIndex = -1;
-    _lastRefillWindowStart = -1;
     _scrollController.scrollTo(index: 0, duration: const Duration(milliseconds: 1));
     setState(() => _showScrollTopButton = false);
   }
@@ -311,9 +325,7 @@ class _DuaFeedState extends State<_DuaFeed> {
     final bloc = context.read<DuaFeedBloc>();
     bloc.add(ResetDuas());
     await bloc.stream.firstWhere((s) => !s.isLoading);
-    _lastTriggeredLatterIndex = -1;
     _lastTriggeredOlderIndex = -1;
-    _lastRefillWindowStart = -1;
     _scrollController.scrollTo(index: 0, duration: const Duration(milliseconds: 400));
     setState(() => _showScrollTopButton = false);
   }
@@ -326,7 +338,6 @@ class _DuaFeedState extends State<_DuaFeed> {
       return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
     }
 
-    final latterLoading = state.loadingLatterDuas ? 1 : 0;
     final olderLoading = state.loadingOlderDuas ? 1 : 0;
 
     return Stack(
@@ -336,28 +347,17 @@ class _DuaFeedState extends State<_DuaFeed> {
           child: ScrollablePositionedList.builder(
             itemScrollController: _scrollController,
             itemPositionsListener: _positionsListener,
-            itemCount: state.totalLoadedDuas + olderLoading + latterLoading,
+            itemCount: state.windowDuas.length + olderLoading,
             itemBuilder: (context, index) {
-              if (latterLoading > 0 && index == 0) {
+              if (olderLoading > 0 && index == state.windowDuas.length) {
                 return const Padding(
                   padding: EdgeInsets.all(16),
                   child: Center(child: CircularProgressIndicator()),
                 );
-              }
-              final adjustedIndex = index - latterLoading;
-              if (olderLoading > 0 && adjustedIndex == state.totalLoadedDuas) {
-                return const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-              final cacheIndex = adjustedIndex - state.windowDuasStart;
-              if (cacheIndex < 0 || cacheIndex >= state.windowDuas.length) {
-                return const SizedBox(height: 200);
               }
               final authState = context.read<AuthBloc>().state;
               if (authState is! Authenticated) return const SizedBox.shrink();
-              return DuaCard(key: ValueKey(state.windowDuas[cacheIndex].id), dua: state.windowDuas[cacheIndex], currentUser: authState.user);
+              return DuaCard(key: ValueKey(state.windowDuas[index].id), dua: state.windowDuas[index], currentUser: authState.user);
             },
           ),
         ),
@@ -388,9 +388,7 @@ class _PoemFeedState extends State<_PoemFeed> {
   final _scrollController = ItemScrollController();
   final _positionsListener = ItemPositionsListener.create();
 
-  int _lastTriggeredLatterIndex = -1;
   int _lastTriggeredOlderIndex = -1;
-  int _lastRefillWindowStart = -1;
   bool _showScrollTopButton = false;
 
   @override
@@ -420,24 +418,13 @@ class _PoemFeedState extends State<_PoemFeed> {
       setState(() => _showScrollTopButton = showButton);
     }
 
-    final cacheEnd = s.windowPoemsStart + s.windowPoems.length - 1;
     debugPrint('[POEM_FEED] visible=[$first..$last] '
-        'cache=[${s.windowPoemsStart}..$cacheEnd](${s.windowPoems.length}) total=${s.totalLoadedPoems} '
-        'latter=${s.hasMoreLatterPoems}/${s.loadingLatterPoems} older=${s.hasMoreOlderPoems}/${s.loadingOlderPoems}');
+        'cache=[0..${s.windowPoems.length - 1}](${s.windowPoems.length}) total=${s.totalLoadedPoems} '
+        'older=${s.hasMoreOlderPoems}/${s.loadingOlderPoems}');
 
-    if (first <= 2 && s.hasMoreLatterPoems && !s.loadingLatterPoems && first != _lastTriggeredLatterIndex) {
-      _lastTriggeredLatterIndex = first;
-      debugPrint('[POEM_FEED_TRIGGER] fetching latter, first=$first');
-      bloc.add(FetchLatterPoems());
-    }
-    if (s.windowPoemsStart > 0 && first < s.windowPoemsStart && s.hasMoreLatterPoems && !s.loadingLatterPoems && s.windowPoemsStart != _lastRefillWindowStart) {
-      _lastRefillWindowStart = s.windowPoemsStart;
-      debugPrint('[POEM_FEED_TRIGGER] refill up, first=$first, windowStart=${s.windowPoemsStart}');
-      bloc.add(FetchLatterPoems());
-    }
     if (s.windowPoems.isNotEmpty) {
-      final cacheBottom = s.windowPoemsStart + s.windowPoems.length - 1;
-      if (last >= cacheBottom - 3 && s.hasMoreOlderPoems && !s.loadingOlderPoems && last != _lastTriggeredOlderIndex) {
+      final cacheBottom = s.windowPoems.length - 1;
+      if (last >= cacheBottom && s.hasMoreOlderPoems && !s.loadingOlderPoems && last != _lastTriggeredOlderIndex) {
         _lastTriggeredOlderIndex = last;
         debugPrint('[POEM_FEED_TRIGGER] fetching older, last=$last, cacheBottom=$cacheBottom');
         bloc.add(FetchOlderPoems());
@@ -450,9 +437,7 @@ class _PoemFeedState extends State<_PoemFeed> {
     final bloc = context.read<PoemFeedBloc>();
     bloc.add(ResetPoems());
     await bloc.stream.firstWhere((s) => !s.isLoading);
-    _lastTriggeredLatterIndex = -1;
     _lastTriggeredOlderIndex = -1;
-    _lastRefillWindowStart = -1;
     _scrollController.scrollTo(index: 0, duration: const Duration(milliseconds: 1));
     setState(() => _showScrollTopButton = false);
   }
@@ -462,9 +447,7 @@ class _PoemFeedState extends State<_PoemFeed> {
     final bloc = context.read<PoemFeedBloc>();
     bloc.add(ResetPoems());
     await bloc.stream.firstWhere((s) => !s.isLoading);
-    _lastTriggeredLatterIndex = -1;
     _lastTriggeredOlderIndex = -1;
-    _lastRefillWindowStart = -1;
     _scrollController.scrollTo(index: 0, duration: const Duration(milliseconds: 400));
     setState(() => _showScrollTopButton = false);
   }
@@ -477,7 +460,6 @@ class _PoemFeedState extends State<_PoemFeed> {
       return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
     }
 
-    final latterLoading = state.loadingLatterPoems ? 1 : 0;
     final olderLoading = state.loadingOlderPoems ? 1 : 0;
 
     return Stack(
@@ -487,28 +469,17 @@ class _PoemFeedState extends State<_PoemFeed> {
           child: ScrollablePositionedList.builder(
             itemScrollController: _scrollController,
             itemPositionsListener: _positionsListener,
-            itemCount: state.totalLoadedPoems + olderLoading + latterLoading,
+            itemCount: state.windowPoems.length + olderLoading,
             itemBuilder: (context, index) {
-              if (latterLoading > 0 && index == 0) {
+              if (olderLoading > 0 && index == state.windowPoems.length) {
                 return const Padding(
                   padding: EdgeInsets.all(16),
                   child: Center(child: CircularProgressIndicator()),
                 );
-              }
-              final adjustedIndex = index - latterLoading;
-              if (olderLoading > 0 && adjustedIndex == state.totalLoadedPoems) {
-                return const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-              final cacheIndex = adjustedIndex - state.windowPoemsStart;
-              if (cacheIndex < 0 || cacheIndex >= state.windowPoems.length) {
-                return const SizedBox(height: 200);
               }
               final authState = context.read<AuthBloc>().state;
               if (authState is! Authenticated) return const SizedBox.shrink();
-              return PoemCard(key: ValueKey(state.windowPoems[cacheIndex].id), poem: state.windowPoems[cacheIndex], currentUser: authState.user);
+              return PoemCard(key: ValueKey(state.windowPoems[index].id), poem: state.windowPoems[index], currentUser: authState.user);
             },
           ),
         ),

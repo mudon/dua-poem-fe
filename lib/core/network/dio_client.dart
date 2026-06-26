@@ -1,6 +1,12 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import '../../app/dependency_injection.dart';
+import '../../data/models/user_model.dart';
+import '../../presentation/blocs/auth_bloc/auth_bloc.dart';
+import '../../presentation/blocs/auth_bloc/auth_event.dart';
 import '../constants/app_config.dart';
+import '../constants/storage_keys.dart';
 import '../services/secure_storage_service.dart';
 import '../errors/error_helper.dart';
 import '../themes/app_theme.dart';
@@ -59,6 +65,32 @@ class _AuthInterceptor extends Interceptor {
               final newRefreshToken = response.data['refreshToken'] as String;
               await _secureStorage.write(key: DioClient.accessTokenKey, value: newAccessToken);
               await _secureStorage.write(key: DioClient.refreshTokenKey, value: newRefreshToken);
+              final userData = response.data['user'];
+              if (userData != null) {
+                final newUser = UserModel.fromJson(userData);
+                final existingRaw = await _secureStorage.read(key: StorageKeys.cachedUser);
+                final existingJson = existingRaw != null ? jsonDecode(existingRaw) as Map<String, dynamic> : null;
+                final merged = newUser.copyWith(
+                  avatar: existingJson?['avatar'],
+                  joinedDate: existingJson?['joinedDate'],
+                );
+                await _secureStorage.write(key: StorageKeys.cachedUser, value: jsonEncode({
+                  'id': merged.id,
+                  'firstName': merged.firstName,
+                  'lastName': merged.lastName,
+                  'email': merged.email,
+                  'role': merged.role.name,
+                  'createdAt': merged.createdAt.toIso8601String(),
+                  'avatar': merged.avatar,
+                  'bio': merged.bio,
+                  'avatarType': merged.avatarType?.value,
+                  'avatarValue': merged.avatarValue,
+                  'selectedBadgeSlug': merged.selectedBadgeSlug,
+                  'selectedBadgeColor': merged.selectedBadgeColor,
+                  'joinedDate': merged.joinedDate,
+                }));
+                getIt<AuthBloc>().add(UserRefreshed(merged));
+              }
               for (var req in _failedRequests) {
                 req.headers['Authorization'] = 'Bearer $newAccessToken';
                 await _dio.fetch(req);

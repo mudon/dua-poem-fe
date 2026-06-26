@@ -81,6 +81,7 @@ class _CreatePoemSheetState extends State<CreatePoemSheet> {
       final created = await getIt<PoemService>().createPoem(data);
       getIt<PoemBloc>().add(PoemCreated(created));
       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(AppTheme.successSnackBar('Poem created'));
         widget.onCreated?.call();
         Navigator.of(context).pop();
       }

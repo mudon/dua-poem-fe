@@ -4,7 +4,6 @@ import '../../../data/repositories/poem_repository.dart';
 import 'poem_feed_event.dart';
 import 'poem_feed_state.dart';
 
-const int _maxWindow = 60;
 const int _pageSize = 20;
 
 class PoemFeedBloc extends Bloc<PoemFeedEvent, PoemFeedState> {
@@ -13,7 +12,6 @@ class PoemFeedBloc extends Bloc<PoemFeedEvent, PoemFeedState> {
   PoemFeedBloc(this._poemRepo) : super(PoemFeedState()) {
     on<FetchLatestPoems>(_fetchLatest);
     on<FetchOlderPoems>(_fetchOlder);
-    on<FetchLatterPoems>(_fetchLatter);
     on<ResetPoems>(_reset);
     on<InsertPoemToFeed>(_onInsert);
     on<RemovePoemFromFeed>(_onRemove);
@@ -30,12 +28,9 @@ class PoemFeedBloc extends Bloc<PoemFeedEvent, PoemFeedState> {
       emit(state.copyWith(
         isLoading: false,
         windowPoems: paged.data,
-        windowPoemsStart: 0,
         totalLoadedPoems: paged.data.length,
         olderCursorPoems: paged.nextCursor,
         hasMoreOlderPoems: paged.hasMore,
-        latterCursorPoems: null,
-        hasMoreLatterPoems: false,
       ));
     } else {
       emit(state.copyWith(isLoading: false, error: result.error));
@@ -51,49 +46,12 @@ class PoemFeedBloc extends Bloc<PoemFeedEvent, PoemFeedState> {
       emit(state.copyWith(
         isLoading: false,
         windowPoems: paged.data,
-        windowPoemsStart: 0,
         totalLoadedPoems: paged.data.length,
         olderCursorPoems: paged.nextCursor,
         hasMoreOlderPoems: paged.hasMore,
-        latterCursorPoems: null,
-        hasMoreLatterPoems: false,
       ));
     } else {
       emit(state.copyWith(isLoading: false, error: result.error));
-    }
-  }
-
-  Future<void> _fetchLatter(FetchLatterPoems event, Emitter<PoemFeedState> emit) async {
-    if (state.loadingLatterPoems || !state.hasMoreLatterPoems || state.windowPoems.isEmpty) return;
-    debugPrint('[POEM_FEED] fetching latter, '
-        'cursor=${state.latterCursorPoems?.substring(0, 8) ?? "none"} '
-        'firstId=${state.windowPoems.first.id.substring(0, 8)}...');
-    emit(state.copyWith(loadingLatterPoems: true));
-    final firstId = state.windowPoems.first.id;
-    final result = await _poemRepo.getLatter(firstId, cursor: state.latterCursorPoems, limit: _pageSize);
-    if (result.isSuccess) {
-      final paged = result.data!;
-      final newItems = paged.data;
-      debugPrint('[POEM_FEED] latter: ${newItems.length} items hasMore=${paged.hasMore}');
-      if (newItems.isEmpty) {
-        emit(state.copyWith(loadingLatterPoems: false));
-        return;
-      }
-      final updatedWindow = [...newItems, ...state.windowPoems];
-      final newStart = state.windowPoemsStart - newItems.length;
-      if (updatedWindow.length > _maxWindow) {
-        updatedWindow.removeRange(updatedWindow.length - _pageSize, updatedWindow.length);
-      }
-      emit(state.copyWith(
-        loadingLatterPoems: false,
-        windowPoems: updatedWindow,
-        windowPoemsStart: newStart,
-        totalLoadedPoems: state.totalLoadedPoems + newItems.length,
-        latterCursorPoems: paged.nextCursor,
-        hasMoreLatterPoems: paged.hasMore && paged.data.length == _pageSize,
-      ));
-    } else {
-      emit(state.copyWith(loadingLatterPoems: false, error: result.error));
     }
   }
 
@@ -108,22 +66,13 @@ class PoemFeedBloc extends Bloc<PoemFeedEvent, PoemFeedState> {
       final paged = result.data!;
       final newItems = paged.data;
       debugPrint('[POEM_FEED] older: ${newItems.length} items hasMore=${paged.hasMore}');
-      var updatedWindow = [...state.windowPoems, ...newItems];
-      var newStart = state.windowPoemsStart;
-      var trimmed = false;
-      if (updatedWindow.length > _maxWindow) {
-        updatedWindow.removeRange(0, _pageSize);
-        newStart += _pageSize;
-        trimmed = true;
-      }
+      final updatedWindow = [...state.windowPoems, ...newItems];
       emit(state.copyWith(
         loadingOlderPoems: false,
         windowPoems: updatedWindow,
-        windowPoemsStart: newStart,
         olderCursorPoems: paged.nextCursor,
         hasMoreOlderPoems: paged.hasMore && paged.data.length == _pageSize,
         totalLoadedPoems: state.totalLoadedPoems + newItems.length,
-        hasMoreLatterPoems: trimmed ? true : state.hasMoreLatterPoems,
       ));
     } else {
       emit(state.copyWith(loadingOlderPoems: false, error: result.error));
@@ -132,9 +81,8 @@ class PoemFeedBloc extends Bloc<PoemFeedEvent, PoemFeedState> {
 
   void _onInsert(InsertPoemToFeed event, Emitter<PoemFeedState> emit) {
     if (state.windowPoems.any((p) => p.id == event.poem.id)) return;
-    final updatedWindow = [event.poem, ...state.windowPoems];
     emit(state.copyWith(
-      windowPoems: updatedWindow.length > _maxWindow ? updatedWindow.sublist(0, _maxWindow) : updatedWindow,
+      windowPoems: [event.poem, ...state.windowPoems],
       totalLoadedPoems: state.totalLoadedPoems + 1,
     ));
   }

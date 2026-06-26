@@ -9,8 +9,6 @@ class FetchLatestDuas extends DuaFeedEvent {
 
 class FetchOlderDuas extends DuaFeedEvent {}
 
-class FetchLatterDuas extends DuaFeedEvent {}
-
 class ResetDuas extends DuaFeedEvent {
   final int limit;
   ResetDuas({this.limit = 20});

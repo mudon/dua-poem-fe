@@ -134,6 +134,24 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             }
           },
         ),
+        BlocListener<DuaBloc, DuaState>(
+          listenWhen: (_, current) => current.actionType == ActionType.deleted,
+          listener: (context, state) {
+            final id = state.lastToggledDuaId;
+            if (id != null) {
+              setState(() => _favoriteDuas.removeWhere((d) => d.id == id));
+            }
+          },
+        ),
+        BlocListener<PoemBloc, PoemState>(
+          listenWhen: (_, current) => current.actionType == ActionType.deleted,
+          listener: (context, state) {
+            final id = state.lastToggledPoemId;
+            if (id != null) {
+              setState(() => _favoritePoems.removeWhere((p) => p.id == id));
+            }
+          },
+        ),
       ],
       child: Scaffold(
         appBar: AppBar(

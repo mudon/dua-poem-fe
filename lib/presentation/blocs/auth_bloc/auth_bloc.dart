@@ -43,6 +43,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<ClearAuthError>(_onClearError);
     on<GoogleLoginRequested>(_onGoogleLogin);
     on<SetPasswordRequested>(_onSetPassword);
+    on<UserRefreshed>(_onUserRefreshed);
   }
 
   Future<void> _onLogin(LoginRequested event, Emitter<AuthState> emit) async {
@@ -257,6 +258,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(Authenticated(user));
     } catch (e) {
       emit(AuthError(e is DioException ? e.userMessage : 'Failed to update profile'));
+    }
+  }
+
+  void _onUserRefreshed(UserRefreshed event, Emitter<AuthState> emit) {
+    if (state is Authenticated) {
+      _saveUser(event.user);
+      emit(Authenticated(event.user));
     }
   }
 

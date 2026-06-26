@@ -9,8 +9,6 @@ class FetchLatestPoems extends PoemFeedEvent {
 
 class FetchOlderPoems extends PoemFeedEvent {}
 
-class FetchLatterPoems extends PoemFeedEvent {}
-
 class ResetPoems extends PoemFeedEvent {
   final int limit;
   ResetPoems({this.limit = 20});

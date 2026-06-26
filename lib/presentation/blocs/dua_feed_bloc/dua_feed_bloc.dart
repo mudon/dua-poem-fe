@@ -4,7 +4,6 @@ import '../../../data/repositories/dua_repository.dart';
 import 'dua_feed_event.dart';
 import 'dua_feed_state.dart';
 
-const int _maxWindow = 60;
 const int _pageSize = 20;
 
 class DuaFeedBloc extends Bloc<DuaFeedEvent, DuaFeedState> {
@@ -13,7 +12,6 @@ class DuaFeedBloc extends Bloc<DuaFeedEvent, DuaFeedState> {
   DuaFeedBloc(this._duaRepo) : super(DuaFeedState()) {
     on<FetchLatestDuas>(_fetchLatest);
     on<FetchOlderDuas>(_fetchOlder);
-    on<FetchLatterDuas>(_fetchLatter);
     on<ResetDuas>(_reset);
     on<InsertDuaToFeed>(_onInsert);
     on<RemoveDuaFromFeed>(_onRemove);
@@ -30,12 +28,9 @@ class DuaFeedBloc extends Bloc<DuaFeedEvent, DuaFeedState> {
       emit(state.copyWith(
         isLoading: false,
         windowDuas: paged.data,
-        windowDuasStart: 0,
         totalLoadedDuas: paged.data.length,
         olderCursorDuas: paged.nextCursor,
         hasMoreOlderDuas: paged.hasMore,
-        latterCursorDuas: null,
-        hasMoreLatterDuas: false,
       ));
     } else {
       emit(state.copyWith(isLoading: false, error: result.error));
@@ -51,49 +46,12 @@ class DuaFeedBloc extends Bloc<DuaFeedEvent, DuaFeedState> {
       emit(state.copyWith(
         isLoading: false,
         windowDuas: paged.data,
-        windowDuasStart: 0,
         totalLoadedDuas: paged.data.length,
         olderCursorDuas: paged.nextCursor,
         hasMoreOlderDuas: paged.hasMore,
-        latterCursorDuas: null,
-        hasMoreLatterDuas: false,
       ));
     } else {
       emit(state.copyWith(isLoading: false, error: result.error));
-    }
-  }
-
-  Future<void> _fetchLatter(FetchLatterDuas event, Emitter<DuaFeedState> emit) async {
-    if (state.loadingLatterDuas || !state.hasMoreLatterDuas || state.windowDuas.isEmpty) return;
-    debugPrint('[DUA_FEED] fetching latter, '
-        'cursor=${state.latterCursorDuas?.substring(0, 8) ?? "none"} '
-        'firstId=${state.windowDuas.first.id.substring(0, 8)}...');
-    emit(state.copyWith(loadingLatterDuas: true));
-    final firstId = state.windowDuas.first.id;
-    final result = await _duaRepo.getLatter(firstId, cursor: state.latterCursorDuas, limit: _pageSize);
-    if (result.isSuccess) {
-      final paged = result.data!;
-      final newItems = paged.data;
-      debugPrint('[DUA_FEED] latter: ${newItems.length} items hasMore=${paged.hasMore}');
-      if (newItems.isEmpty) {
-        emit(state.copyWith(loadingLatterDuas: false));
-        return;
-      }
-      final updatedWindow = [...newItems, ...state.windowDuas];
-      final newStart = state.windowDuasStart - newItems.length;
-      if (updatedWindow.length > _maxWindow) {
-        updatedWindow.removeRange(updatedWindow.length - _pageSize, updatedWindow.length);
-      }
-      emit(state.copyWith(
-        loadingLatterDuas: false,
-        windowDuas: updatedWindow,
-        windowDuasStart: newStart,
-        totalLoadedDuas: state.totalLoadedDuas + newItems.length,
-        latterCursorDuas: paged.nextCursor,
-        hasMoreLatterDuas: paged.hasMore && paged.data.length == _pageSize,
-      ));
-    } else {
-      emit(state.copyWith(loadingLatterDuas: false, error: result.error));
     }
   }
 
@@ -108,22 +66,13 @@ class DuaFeedBloc extends Bloc<DuaFeedEvent, DuaFeedState> {
       final paged = result.data!;
       final newItems = paged.data;
       debugPrint('[DUA_FEED] older: ${newItems.length} items hasMore=${paged.hasMore}');
-      var updatedWindow = [...state.windowDuas, ...newItems];
-      var newStart = state.windowDuasStart;
-      var trimmed = false;
-      if (updatedWindow.length > _maxWindow) {
-        updatedWindow.removeRange(0, _pageSize);
-        newStart += _pageSize;
-        trimmed = true;
-      }
+      final updatedWindow = [...state.windowDuas, ...newItems];
       emit(state.copyWith(
         loadingOlderDuas: false,
         windowDuas: updatedWindow,
-        windowDuasStart: newStart,
         olderCursorDuas: paged.nextCursor,
         hasMoreOlderDuas: paged.hasMore && paged.data.length == _pageSize,
         totalLoadedDuas: state.totalLoadedDuas + newItems.length,
-        hasMoreLatterDuas: trimmed ? true : state.hasMoreLatterDuas,
       ));
     } else {
       emit(state.copyWith(loadingOlderDuas: false, error: result.error));
@@ -132,9 +81,8 @@ class DuaFeedBloc extends Bloc<DuaFeedEvent, DuaFeedState> {
 
   void _onInsert(InsertDuaToFeed event, Emitter<DuaFeedState> emit) {
     if (state.windowDuas.any((d) => d.id == event.dua.id)) return;
-    final updatedWindow = [event.dua, ...state.windowDuas];
     emit(state.copyWith(
-      windowDuas: updatedWindow.length > _maxWindow ? updatedWindow.sublist(0, _maxWindow) : updatedWindow,
+      windowDuas: [event.dua, ...state.windowDuas],
       totalLoadedDuas: state.totalLoadedDuas + 1,
     ));
   }

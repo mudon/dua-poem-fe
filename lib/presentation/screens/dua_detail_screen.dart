@@ -319,6 +319,7 @@ class _DuaDetailScreenState extends State<DuaDetailScreen> {
                     }
                     if (state.actionType == ActionType.deleted &&
                         state.lastToggledDuaId == widget.duaId) {
+                      ScaffoldMessenger.of(context).showSnackBar(AppTheme.successSnackBar('Dua deleted'));
                       if (context.mounted) context.pop();
                     }
                     if (state.actionType == ActionType.deleteError) {

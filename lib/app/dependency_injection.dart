@@ -74,7 +74,7 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton(() => DonationRepository(getIt<DonationService>()));
 
   // BLoCs
-  getIt.registerFactory(() => AuthBloc(
+  getIt.registerLazySingleton(() => AuthBloc(
     getIt<AuthRepository>(),
     getIt<UserService>(),
     getIt<SignalRService>(),

@@ -315,6 +315,7 @@ class _PoemDetailScreenState extends State<PoemDetailScreen> {
                     }
                     if (state.actionType == ActionType.deleted &&
                         state.lastToggledPoemId == widget.poemId) {
+                      ScaffoldMessenger.of(context).showSnackBar(AppTheme.successSnackBar('Poem deleted'));
                       if (context.mounted) context.pop();
                     }
                     if (state.actionType == ActionType.deleteError) {

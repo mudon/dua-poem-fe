@@ -228,7 +228,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
   void _onSignalRPoemCreated(SignalRPoemCreated event, Emitter<PoemState> emit) {
     print('[SignalR] PoemBloc received SignalRPoemCreated: poemId=${event.poem.id}, title=${event.poem.title}');
     emit(state.copyWith(
-      actionType: ActionType.created,
+      actionType: ActionType.signalrCreated,
       lastToggledPoemId: event.poem.id,
       createdPoem: event.poem,
       error: null,
@@ -247,7 +247,7 @@ class PoemBloc extends Bloc<PoemEvent, PoemState> {
   }
 
   void _onSignalRPoemDeleted(SignalRPoemDeleted event, Emitter<PoemState> emit) {
-    emit(state.copyWith(actionType: ActionType.deleted, lastToggledPoemId: event.poemId));
+    emit(state.copyWith(actionType: ActionType.signalrDeleted, lastToggledPoemId: event.poemId));
   }
 
   void _onSignalRLikeCountUpdated(SignalRLikeCountUpdated event, Emitter<PoemState> emit) {

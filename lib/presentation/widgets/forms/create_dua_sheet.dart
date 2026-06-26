@@ -113,6 +113,7 @@ class _CreateDuaSheetState extends State<CreateDuaSheet> {
       final created = await getIt<DuaService>().createDua(data);
       getIt<DuaBloc>().add(DuaCreated(created));
       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(AppTheme.successSnackBar('Dua created'));
         widget.onCreated?.call();
         Navigator.of(context).pop();
       }
