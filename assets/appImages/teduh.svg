@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Background -->
+  <rect width="1024" height="1024" fill="#F5F1E8"/>
+
+  <!-- Circle -->
+  <circle cx="512" cy="512" r="330" fill="#8EA183"/>
+
+  <!-- Stars -->
+  <path fill="#FFFDF8"
+        d="M680 260
+           l10 24
+           24 10
+           -24 10
+           -10 24
+           -10-24
+           -24-10
+           24-10z"/>
+  <circle cx="620" cy="330" r="6" fill="#FFFDF8"/>
+
+  <!-- Book -->
+  <path
+    d="M330 670
+       Q425 650 512 730
+       Q599 650 694 670
+       L684 690
+       Q600 678 512 755
+       Q424 678 340 690Z"
+    fill="#FFFDF8"/>
+
+  <path
+    d="M512 730
+       L512 675"
+    stroke="#F5F1E8"
+    stroke-width="8"
+    stroke-linecap="round"/>
+
+  <!-- Large Leaf -->
+  <path
+    d="M420 320
+       C365 390 370 515 485 600
+       C545 525 560 430 525 355
+       C500 305 455 295 420 320Z"
+    fill="#FFFDF8"/>
+
+  <!-- Leaf Vein -->
+  <path
+    d="M480 365
+       C492 455 492 540 500 620"
+    stroke="#8EA183"
+    stroke-width="12"
+    fill="none"
+    stroke-linecap="round"/>
+
+  <!-- Stem -->
+  <path
+    d="M500 620
+       C555 565 615 500 665 425"
+    stroke="#FFFDF8"
+    stroke-width="12"
+    fill="none"
+    stroke-linecap="round"/>
+
+  <!-- Small Leaves -->
+  <ellipse cx="560" cy="545" rx="18" ry="42"
+           transform="rotate(-30 560 545)"
+           fill="#FFFDF8"/>
+
+  <ellipse cx="600" cy="495" rx="18" ry="42"
+           transform="rotate(-30 600 495)"
+           fill="#FFFDF8"/>
+
+  <ellipse cx="640" cy="445" rx="18" ry="42"
+           transform="rotate(-30 640 445)"
+           fill="#FFFDF8"/>
+
+  <ellipse cx="625" cy="575" rx="18" ry="38"
+           transform="rotate(-65 625 575)"
+           fill="#FFFDF8"/>
+</svg>

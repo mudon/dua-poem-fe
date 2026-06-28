@@ -16,6 +16,7 @@ import '../widgets/common/gradient_button.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/constants/auth_error_codes.dart';
 import '../../core/themes/app_theme.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -78,12 +79,16 @@ class _AuthScreenState extends State<AuthScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                width: 56,
+                height: 56,
                 decoration: const BoxDecoration(
                   color: AppTheme.sage,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.eco, color: Colors.white, size: 24),
+                child: ClipOval(
+                  child: SvgPicture.asset('assets/appImages/teduh.svg',
+                    width: 56, height: 56, fit: BoxFit.cover),
+                ),
               ),
               const SizedBox(width: 8),
               Text(

@@ -27,6 +27,7 @@ import '../widgets/common/coffee_button.dart';
 import '../widgets/common/notification_bell.dart';
 import '../../data/repositories/dua_repository.dart';
 import '../../data/repositories/poem_repository.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 
 class HomeScreen extends StatelessWidget {
@@ -594,7 +595,10 @@ class _HeaderBar extends StatelessWidget {
                       color: AppTheme.sage,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.eco, color: Colors.white, size: 20),
+                    child: ClipOval(
+                      child: SvgPicture.asset('assets/appImages/teduh.svg',
+                        width: 38, height: 38, fit: BoxFit.cover),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Text(AppStrings.appName, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 20, color: Color(0xFF3C4F34))),

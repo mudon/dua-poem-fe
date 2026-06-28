@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:signalr_core/signalr_core.dart';
+import 'package:signalr_netcore/signalr_client.dart';
 import '../../core/services/secure_storage_service.dart';
 import '../../core/constants/app_config.dart';
 import '../../core/enums/hub_route.dart';
@@ -92,14 +92,15 @@ class SignalRService {
   }
 
   Future<void> _connectHub(HubRoute route, String token) async {
+    final httpOptions = HttpConnectionOptions(
+      transport: HttpTransportType.WebSockets,
+      accessTokenFactory: () async => token,
+      skipNegotiation: true,
+    );
     final connection = HubConnectionBuilder()
         .withUrl(
           '$_hubBaseUrl${route.path}',
-          HttpConnectionOptions(
-            transport: HttpTransportType.webSockets,
-            accessTokenFactory: () async => token,
-            skipNegotiation: true,
-          ),
+          options: httpOptions,
         )
         .withAutomaticReconnect()
         .build();
@@ -202,7 +203,7 @@ class SignalRService {
       _poemCreatedController.add(data);
     });
 
-    connection.onclose((Exception? error) {
+    connection.onclose(({Exception? error}) {
       print('[SignalR] Connection closed for ${route.path}: $error');
       _connections.remove(route);
     });
