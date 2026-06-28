@@ -102,6 +102,8 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   }
 
   void _onNotificationReceived(NotificationReceived event, Emitter<NotificationState> emit) {
+    final alreadyExists = state.notifications.any((n) => n.id == event.notification.id);
+    if (alreadyExists) return;
     print('[NotificationBloc] _onNotificationReceived: type=${event.notification.type}, unreadCount=${state.unreadCount + 1}');
     final updated = [event.notification, ...state.notifications];
     emit(state.copyWith(

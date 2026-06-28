@@ -16,6 +16,7 @@ import '../presentation/screens/user_detail_screen.dart';
 import '../presentation/screens/admin/admin_screen.dart';
 import '../presentation/screens/admin/revision_review_screen.dart';
 import '../presentation/screens/leaderboard_screen.dart';
+import '../presentation/screens/notification_screen.dart';
 import '../data/models/user_model.dart';
 
 class AuthStateNotifier extends ChangeNotifier {
@@ -127,6 +128,10 @@ class AppRouter {
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: RoutePaths.notifications,
+        builder: (_, _) => const NotificationScreen(),
       ),
       GoRoute(
         path: RoutePaths.adminRevision,

@@ -9,6 +9,7 @@ class RoutePaths {
   static const favorites = '/favorites';
   static const admin = '/admin';
   static const adminRevision = '/admin/revision';
+  static const notifications = '/notifications';
 
   static String duaDetail(String duaId) => '/dua/$duaId';
   static String poemDetail(String poemId) => '/poem/$poemId';

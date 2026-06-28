@@ -8,12 +8,8 @@ import '../../core/services/browser_notification_stub.dart'
     if (dart.library.html) '../../core/services/browser_notification_web.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
-import '../../app/dependency_injection.dart';
 import '../../app/router.dart';
-import '../../core/enums/notification_type.dart';
-import '../models/signalr/notification_update_model.dart';
 import 'device_token_service.dart';
-import 'signalr_service.dart';
 
 class FcmService {
   final DeviceTokenService _deviceTokenService;
@@ -123,7 +119,6 @@ class FcmService {
   void listenToBackgroundMessageTap() {
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       print('[FCM] App opened from notification');
-      _dispatchToNotificationBloc(message);
       final dataStr = message.data['data'] as String?;
       if (dataStr == null) return;
       try {
@@ -164,31 +159,6 @@ class FcmService {
       payload: payload,
     );
     print('[FCM] Local notification shown');
-  }
-
-  void _dispatchToNotificationBloc(RemoteMessage message) {
-    final data = message.data;
-    final notification = message.notification;
-    if (notification == null) return;
-
-    final typeStr = data['type'] ?? '';
-    final type = NotificationType.values.firstWhere(
-      (t) => t.value == typeStr,
-      orElse: () => NotificationType.likeReceived,
-    );
-
-    final update = NotificationUpdateModel(
-      id: data['id'] ?? '',
-      type: type,
-      title: notification.title ?? '',
-      body: notification.body ?? '',
-      data: data['data'],
-      isRead: false,
-      createdAt: DateTime.now(),
-    );
-
-    getIt<SignalRService>().addNotification(update);
-    print('[FCM] Dispatched to notification bloc');
   }
 
   void _navigateFromNotificationData(Map<String, dynamic> data) {
